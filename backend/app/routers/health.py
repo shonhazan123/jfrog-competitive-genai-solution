@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_session
 from app.models.capture import RawCapture
 from app.models.ledger import Claim, ClaimVersion
+from app.models.signal import Signal
 
 router = APIRouter()
 
@@ -16,4 +17,5 @@ def stats(session: Session = Depends(get_session)) -> dict[str, int]:
         "captures": session.query(RawCapture).count(),
         "claims": session.query(Claim).count(),
         "claim_versions": session.query(ClaimVersion).count(),
+        "signals": session.query(Signal).count(),
     }
