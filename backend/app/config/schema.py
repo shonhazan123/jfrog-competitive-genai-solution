@@ -13,12 +13,13 @@ class SourceConfig(BaseModel):
     entity: str
     url: str
     kind: Literal["atom", "rss", "html_page", "api", "sitemap"]
-    mode: Literal["feed", "snapshot"]
+    mode: Literal["feed", "snapshot", "api"]
     reliability_grade: Literal["A", "B", "C", "D", "E", "F"]
     is_primary: bool
     check_frequency_minutes: int = Field(ge=5)
     requires_js: bool = False
     row_selector: str | None = None
+    adapter: str | None = None
 
 class FuzzyConfig(BaseModel):
     enabled: bool = True

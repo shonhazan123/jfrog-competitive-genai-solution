@@ -26,3 +26,13 @@ sources:
     reliability_grade: A
     is_primary: true
     check_frequency_minutes: 360
+
+  - key: osv_nexus
+    entity: sonatype
+    url: https://api.osv.dev/v1/query
+    kind: api
+    mode: api
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 720
+    adapter: osv

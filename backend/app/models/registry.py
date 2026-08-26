@@ -24,6 +24,7 @@ class Source(Base, TimestampMixin):
     check_frequency_minutes: Mapped[int] = mapped_column(Integer)
     requires_js: Mapped[bool] = mapped_column(Boolean, default=False)
     row_selector: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    adapter: Mapped[str | None] = mapped_column(String(32), nullable=True)
     robots_allowed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     etag: Mapped[str | None] = mapped_column(String(256), nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
