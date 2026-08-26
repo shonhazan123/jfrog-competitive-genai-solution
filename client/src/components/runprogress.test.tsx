@@ -47,6 +47,10 @@ function renderApp(options: RenderAppOptions = {}) {
   const total = stages.length;
 
   vi.spyOn(api, "startRun").mockResolvedValue({ run_id: runId });
+  // Keep the post-invalidation ["kits"] refetch pending so the invalidated
+  // flag stays observable (fixture-mode getKits would otherwise resolve
+  // synchronously and immediately clear it).
+  vi.spyOn(api, "getKits").mockReturnValue(new Promise<never>(() => {}));
   vi.spyOn(api, "getRun").mockImplementation(async () => {
     pollCount += 1;
 

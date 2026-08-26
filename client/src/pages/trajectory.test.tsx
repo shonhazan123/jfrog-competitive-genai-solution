@@ -23,8 +23,8 @@ test("Trajectory sits immediately after Industry in the navigation", () => {
 test("Trajectory shows how a competitor's argument evolved, with dated captures", () => {
   renderPage(<Trajectory />);
   expect(screen.getAllByTestId("timeline-entry").length).toBeGreaterThanOrEqual(5);
-  expect(screen.getByText(/2021/)).toBeInTheDocument();
-  expect(screen.getByText(/2026/)).toBeInTheDocument();
+  expect(screen.getAllByText(/2021/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/2026/).length).toBeGreaterThan(0);
 });
 
 test("every timeline entry links to the archived capture", () => {

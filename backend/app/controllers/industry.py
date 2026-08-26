@@ -60,6 +60,7 @@ def list_industry(session: Session, limit: int = 50) -> dict:
                 "standard_chip": _STANDARD_CHIPS.get(signal.signal_type, "SUPPLY CHAIN"),
                 "signal_type": signal.signal_type,
                 "signal_type_label": signal_type_label(signal.signal_type, cfg),
+                "handling_label": None,
                 "headline": signal.headline,
                 "body": signal.so_what_product or signal.so_what_sales or signal.headline,
                 "occurred_at": fmt_ts(signal.occurred_at),

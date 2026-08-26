@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.config.loader import load_config
 from app.controllers.digests import exec_weekly
 from app.controllers.signals import list_signals
-from app.serializers.common import fmt_ts
+from app.serializers.common import fmt_ts, signal_type_label
 from app.services.delivery.assembly import assemble
 
 
@@ -21,6 +21,8 @@ def _email_items_from_signals(items: list[dict]) -> list[dict]:
                 "so_what": item.get("so_what") or "",
                 "flag": "⚠ caution" if item.get("handling") == "caution" else None,
                 "app_link": f"https://app.internal/signals/{item['id']}",
+                "signal_type_label": signal_type_label(item["signal_type"]),
+                "handling_label": None,
             }
         )
     return email_items
@@ -40,6 +42,8 @@ def _persona_preview(session: Session, persona: str) -> dict:
             "so_what": item.get("so_what") or "",
             "flag": None,
             "app_link": f"https://app.internal/signals/{item['signal_id']}",
+            "signal_type_label": signal_type_label("product_capability"),
+            "handling_label": None,
         }
         for item in digest.items
     ]

@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.config.loader import load_config
+from app.serializers.common import signal_type_label
 from app.services.coverage import build_coverage_matrix
 
 _COVERAGE_CAPTION = (
@@ -42,6 +43,8 @@ def get_coverage_matrix(session: Session) -> dict:
                 "signal_type": cell.signal_type,
                 "status": cell.status,
                 "source_count": cell.source_count,
+                "signal_type_label": signal_type_label(cell.signal_type, cfg),
+                "handling_label": None,
             }
             for cell in row.cells.values()
         ]
