@@ -64,11 +64,13 @@ def graph_deps():
     config = load_config()
 
     def _factory(extract=None, contextualize=None):
+        from app.services.verification import verify_quote as _verify_quote
+
         class Deps:
             max_input_chars = 50_000
             max_repairs = 2
             verification_config = config.verification
-            verify_quote = staticmethod(verify_quote)
+            verify_quote = staticmethod(_verify_quote)
             checkpointer = MemorySaver()
             use_interrupt = False
             extract_model = extract

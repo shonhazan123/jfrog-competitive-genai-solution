@@ -14,6 +14,9 @@ def _windows(text: str, size: int, step: int):
     for start in range(0, max(1, len(text) - size + 1), step):
         yield start, text[start:start + size]
 
+def _fuzzy_normalize(s: str) -> str:
+    return normalize_text(s).replace('"', "").replace("'", "")
+
 def verify_quote(claimed: str, source_text: str, cfg: VerificationConfig) -> QuoteMatch:
     """Locate the model's quote in the source and return SOURCE TEXT, never the
     model's string. The model points; we cut."""
@@ -29,19 +32,25 @@ def verify_quote(claimed: str, source_text: str, cfg: VerificationConfig) -> Quo
         return QuoteMatch(True, _cut(source_text, normalized_source, offset,
                                      len(normalized_claim)), offset, "exact")
 
-    if not fuzzy.enabled or len(normalized_claim) < fuzzy.min_quote_chars:
+    fuzzy_source = _fuzzy_normalize(source_text)
+    fuzzy_claim = _fuzzy_normalize(claimed)
+
+    if not fuzzy.enabled or len(fuzzy_claim) < fuzzy.min_quote_chars:
         return QuoteMatch(False, None, None, "failed")
 
-    size = len(normalized_claim)
-    best_score, best_offset = 0.0, -1
-    for start, window in _windows(normalized_source, size, max(1, size // 4)):
-        score = fuzz.ratio(normalized_claim, window)
-        if score > best_score:
-            best_score, best_offset = score, start
+    lo = max(1, len(fuzzy_claim) - 5)
+    hi = len(fuzzy_claim) + 10
+    best_score, best_span, best_offset = 0.0, None, -1
+    for start in range(len(source_text)):
+        for end in range(start + lo, min(len(source_text), start + hi) + 1):
+            span = source_text[start:end]
+            score = fuzz.ratio(fuzzy_claim, _fuzzy_normalize(span))
+            if score > best_score:
+                best_score, best_span, best_offset = score, span, start
 
-    if best_score >= fuzzy.accept_threshold and best_offset >= 0:
-        return QuoteMatch(True, _cut(source_text, normalized_source, best_offset, size),
-                          best_offset, "fuzzy")
+    if best_score >= fuzzy.accept_threshold and best_span is not None:
+        norm_offset = normalized_source.find(normalize_text(best_span))
+        return QuoteMatch(True, best_span, norm_offset if norm_offset >= 0 else best_offset, "fuzzy")
 
     return QuoteMatch(False, None, None, "failed")
 

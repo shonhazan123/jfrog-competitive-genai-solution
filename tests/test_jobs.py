@@ -1,8 +1,13 @@
 from pathlib import Path
 import pytest
 from app.services.collection.fetcher import FetchResult
+from app.services.collection.robots import RobotsCache
 
 ATOM = (Path(__file__).parent / "fixtures" / "nexus_releases.atom").read_bytes()
+
+@pytest.fixture(autouse=True)
+def _allow_robots_for_jobs(monkeypatch):
+    monkeypatch.setattr(RobotsCache, "allowed", lambda self, url: True)
 
 class DenyRobots:
     def allowed(self, url: str) -> bool:
@@ -14,7 +19,9 @@ def fake_robots_denying():
 
 class ScriptedFeedFetcher:
     def fetch(self, url, etag=None, last_modified=None):
-        return FetchResult(url, 200, ATOM, None, None, False)
+        if url.endswith(".atom") or "releases.atom" in url:
+            return FetchResult(url, 200, ATOM, None, None, False)
+        return FetchResult(url, 200, b'{"vulns": []}', None, None, False)
 
 @pytest.fixture
 def scripted_feed_fetcher():

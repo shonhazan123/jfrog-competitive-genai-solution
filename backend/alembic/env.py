@@ -7,6 +7,7 @@ from app.models.base import Base
 import app.models.capture  # noqa: F401
 import app.models.ledger  # noqa: F401
 import app.models.registry  # noqa: F401
+import app.models.signal  # noqa: F401
 from app.settings import settings
 
 config = context.config

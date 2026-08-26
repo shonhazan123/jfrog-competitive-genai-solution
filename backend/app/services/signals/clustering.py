@@ -28,14 +28,23 @@ def cluster(items: list[dict], cfg: ClusterConfig) -> list[list[dict]]:
         while remaining:
             seed = remaining.pop(0)
             group = [seed]
-            seed_title = normalize_text(seed["headline"])
-            still: list[dict] = []
-            for candidate in remaining:
-                if fuzz.token_set_ratio(seed_title, normalize_text(candidate["headline"])) >= cfg.title_similarity:
-                    group.append(candidate)
-                else:
-                    still.append(candidate)
-            remaining = still
+            changed = True
+            while changed:
+                changed = False
+                still: list[dict] = []
+                for candidate in remaining:
+                    if any(
+                        fuzz.partial_token_set_ratio(
+                            normalize_text(member["headline"]),
+                            normalize_text(candidate["headline"]),
+                        ) >= cfg.title_similarity
+                        for member in group
+                    ):
+                        group.append(candidate)
+                        changed = True
+                    else:
+                        still.append(candidate)
+                remaining = still
             group.sort(key=_representative_rank)
             clusters.append(group)
     return clusters
