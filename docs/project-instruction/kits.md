@@ -42,3 +42,9 @@ payloads that use this gate.
 `*_label` fields (e.g. `signal_type_label`, `handling_label`) alongside raw values so
 Settings can still use machine names. Evidence and Ask citations embed a `citation` object
 on every delivered assertion.
+
+The parallel `*_label` fields are emitted uniformly across the read endpoints that carry a
+`signal_type` — `/signals`, `/kits`, `/industry`, `/coverage` and `/email/preview` — so the
+client never has to translate a machine enum on a consumer screen. The contract-shape tests
+in `tests/test_api_reads.py` compare each endpoint against its client fixture, so a serializer
+and its fixture must agree on exactly these keys.
