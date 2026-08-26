@@ -60,3 +60,44 @@ def list_sources(session: Session, entity: str | None = None) -> dict:
             }
         )
     return {"items": items, "total": len(items), "cursor": None}
+
+
+def patch_source(
+    session: Session,
+    source_id: str,
+    *,
+    enabled: bool | None,
+    actor: str,
+    reason: str | None = None,
+) -> dict:
+    source = session.query(Source).filter_by(key=source_id).one_or_none()
+    if source is None:
+        raise ValueError(f"Source {source_id} not found")
+    if enabled is not None:
+        source.enabled = enabled
+    session.flush()
+    entities = {entity_row.id: entity_row for entity_row in session.query(Entity).all()}
+    slug_by_id = {row.id: row.slug for row in entities.values()}
+    excluded = not source.enabled or source.robots_allowed is False
+    exclusion_reason = None
+    if excluded:
+        exclusion_reason = _EXCLUSION_REASONS.get(
+            source.key,
+            "excluded — blocked by robots.txt" if source.robots_allowed is False else None,
+        )
+    return {
+        "id": source.key,
+        "name": source.key.replace("_", " ").title(),
+        "entity": slug_by_id.get(source.entity_id, "all"),
+        "kind": source.kind,
+        "mode": source.mode,
+        "reliability_grade": source.reliability_grade if source.enabled else None,
+        "credibility_score": 2 if source.enabled else None,
+        "check_frequency": _check_frequency(source.check_frequency_minutes),
+        "robots_allowed": source.robots_allowed if source.robots_allowed is not None else True,
+        "requires_js": source.requires_js,
+        "last_checked": fmt_ts(source.last_checked_at),
+        "enabled": source.enabled,
+        "excluded": excluded,
+        "exclusion_reason": exclusion_reason,
+    }

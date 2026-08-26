@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from app.config.loader import load_config
+from app.services.config_overrides import (
+    apply_materiality_override,
+    apply_watchlist_override,
+    ConfigValidationError,
+    current_config,
+    materiality_config_version,
+    watchlist_config_version,
+)
+from app.services.scoring.rescore import rescore_all_signals
 
 _WEIGHT_SPECS = [
     {
@@ -91,7 +99,7 @@ def _lookup(cfg, spec: dict) -> float:
 
 
 def get_materiality() -> dict:
-    cfg = load_config()
+    cfg = current_config()
     weights = [
         {
             "key": spec["key"],
@@ -105,9 +113,45 @@ def get_materiality() -> dict:
         }
         for spec in _WEIGHT_SPECS
     ]
-    return {"config_version": 1, "weights": weights}
+    return {"config_version": materiality_config_version(), "weights": weights}
 
 
 def get_watchlist() -> dict:
-    cfg = load_config()
-    return {"config_version": 1, "terms": list(cfg.watchlist.terms)}
+    cfg = current_config()
+    return {"config_version": watchlist_config_version(), "terms": list(cfg.watchlist.terms)}
+
+
+def _weight_patch(body: dict) -> dict:
+    modifiers: dict = {}
+    key_to_spec = {spec["key"]: spec for spec in _WEIGHT_SPECS}
+    for item in body.get("weights", []):
+        spec = key_to_spec.get(item["key"])
+        if spec is None:
+            raise ConfigValidationError(f"Unknown weight key: {item['key']}")
+        value = item["value"]
+        config_key = spec["config_key"]
+        if config_key[0] == "modifiers" and len(config_key) == 2:
+            modifiers[config_key[1]] = value
+        else:
+            raise ConfigValidationError(f"Weight {item['key']} cannot be updated via modifiers")
+    return modifiers
+
+
+def update_materiality(session, body: dict) -> dict:
+    modifier_patch: dict = dict(body.get("modifiers", {}))
+    if "weights" in body:
+        modifier_patch = {**modifier_patch, **_weight_patch(body)}
+    if not modifier_patch:
+        raise ConfigValidationError("No materiality overrides supplied")
+    apply_materiality_override(modifier_patch)
+    rescore_all_signals(session)
+    return get_materiality()
+
+
+def update_watchlist(session, body: dict) -> dict:
+    terms = body.get("terms")
+    if not isinstance(terms, list):
+        raise ConfigValidationError("terms must be a list of strings")
+    apply_watchlist_override(terms)
+    rescore_all_signals(session)
+    return get_watchlist()

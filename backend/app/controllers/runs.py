@@ -1,13 +1,14 @@
 from datetime import UTC, datetime, timedelta
 
+import worker.jobs as jobs
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy.orm import Session
-from worker.jobs import run_collection, run_interpret, run_scoring
 
 from app.models.capture import RawCapture
 from app.models.delivery import DigestRun
 from app.models.registry import Source
 from app.models.signal import Signal
+from app.serializers.common import fmt_ts
 from app.serializers.common import fmt_ts
 
 _last_run_at: datetime | None = None
@@ -17,7 +18,7 @@ _last_report: dict = {}
 def trigger_collection() -> dict:
     global _last_run_at, _last_report, _next_run_at
     _last_run_at = datetime.now(UTC)
-    _last_report = run_collection()
+    _last_report = jobs.run_collection()
     _next_run_at = CronTrigger(hour=6, minute=0, timezone="UTC").get_next_fire_time(
         None, datetime.now(UTC)
     )
@@ -26,12 +27,31 @@ def trigger_collection() -> dict:
 def trigger_interpret() -> dict:
     global _last_run_at
     _last_run_at = datetime.now(UTC)
-    return run_interpret()
+    return jobs.run_interpret()
 
 def trigger_scoring() -> dict:
     global _last_run_at
     _last_run_at = datetime.now(UTC)
-    return run_scoring()
+    return jobs.run_scoring()
+
+_JOB_BY_KIND = {
+    "collect": "run_collection",
+    "interpret": "run_interpret",
+    "scoring": "run_scoring",
+}
+
+
+def start_run(kind: str, reason: str | None = None) -> dict:
+    job_name = _JOB_BY_KIND.get(kind)
+    if job_name is None:
+        raise ValueError(f"Unknown run kind: {kind}")
+    started = datetime.now(UTC)
+    getattr(jobs, job_name)()
+    return {
+        "run_id": f"run_{started.strftime('%Y-%m-%dT%H:%MZ')}",
+        "status": "running",
+        "started_at": fmt_ts(started),
+    }
 
 def run_status() -> dict:
     global _next_run_at

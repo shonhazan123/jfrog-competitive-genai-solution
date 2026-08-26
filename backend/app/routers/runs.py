@@ -1,9 +1,18 @@
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.controllers import runs
 from app.db.session import get_session
 
 router = APIRouter(prefix="/runs", tags=["runs"])
+
+class RunRequest(BaseModel):
+    kind: str
+    reason: str | None = None
+
+@router.post("", status_code=202)
+def start_run(body: RunRequest) -> dict:
+    return runs.start_run(body.kind, body.reason)
 
 @router.post("/collect")
 def collect() -> dict:

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
-from app.models.signal import Signal, SignalEvidence
+from app.models.signal import Signal, SignalEvidence, AnalystAction
 from app.serializers.common import entity_ref, evidence_from_capture, fmt_ts
 
 
@@ -112,3 +112,44 @@ def list_signals(
         row["evidence"] = _signal_evidence(session, signal)
         items.append(row)
     return {"items": items, "total": len(items), "cursor": None}
+
+
+def create_action(
+    session: Session,
+    signal_id: int,
+    *,
+    action: str,
+    actor: str,
+    reason: str | None = None,
+    edit: dict | None = None,
+    relevance_adjustment: int | None = None,
+) -> dict:
+    signal = session.get(Signal, signal_id)
+    if signal is None:
+        raise ValueError(f"Signal {signal_id} not found")
+    row = AnalystAction(
+        target_type="signal",
+        target_id=signal_id,
+        actor=actor,
+        action=action,
+        reason=reason,
+    )
+    session.add(row)
+    session.flush()
+    if edit:
+        for field, value in edit.items():
+            if hasattr(signal, field):
+                setattr(signal, field, value)
+    if relevance_adjustment is not None:
+        persona_scores = ("score_sales", "score_product", "score_exec")
+        for score_field in persona_scores:
+            setattr(signal, score_field, getattr(signal, score_field) + relevance_adjustment)
+    session.flush()
+    return {
+        "id": f"act_{row.id}",
+        "target_type": "signal",
+        "target_id": str(signal_id),
+        "action": action,
+        "actor": actor,
+        "at": fmt_ts(row.created_at),
+    }
