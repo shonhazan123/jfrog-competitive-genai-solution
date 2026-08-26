@@ -1,6 +1,8 @@
 import pytest
 from datetime import UTC, datetime
 
+from sqlalchemy import text
+
 
 def test_an_analyst_action_is_persisted_with_actor_and_reason(client_with_data):
     response = client_with_data.post("/signals/1/actions",
@@ -70,6 +72,10 @@ def client_with_data(session):
     entities = {entity.slug: entity for entity in session.query(Entity).all()}
     now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
     latest = datetime(2026, 8, 26, 8, 0, tzinfo=UTC)
+    # Sequences are non-transactional, so signal ids climb across the suite even
+    # though each test rolls back. Restart so the first seeded signal is id=1,
+    # which the analyst-action test addresses directly.
+    session.execute(text("ALTER SEQUENCE signal_id_seq RESTART WITH 1"))
 
     def _source(slug: str) -> Source:
         source = session.query(Source).filter_by(entity_id=entities[slug].id).first()

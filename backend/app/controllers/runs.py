@@ -88,7 +88,6 @@ def get_latest_run(session: Session) -> dict:
     return {
         "run_id": f"run_{started.strftime('%Y-%m-%dT%H:%MZ')}",
         "started_at": fmt_ts(started),
-        "last_run_at": fmt_ts(started),
         "finished_at": fmt_ts(finished),
         "status": "ok",
         "next_run_at": fmt_ts(_next_run_at),

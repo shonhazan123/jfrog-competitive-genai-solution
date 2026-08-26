@@ -30,7 +30,10 @@ def _persona_preview(session: Session, persona: str) -> dict:
     cfg = load_config()
     digest = assemble(session, persona, cfg, datetime.now(UTC))
     signal_list = list_signals(session, persona=persona)
-    items = _email_items_from_signals(signal_list["items"]) or [
+    # A digest is persona-ranked: order by the persona's own score so each
+    # audience leads with what matters to them, not by recency.
+    ranked = sorted(signal_list["items"], key=lambda item: item.get("score", 0.0), reverse=True)
+    items = _email_items_from_signals(ranked) or [
         {
             "signal_type": "product_capability",
             "headline": item["headline"],

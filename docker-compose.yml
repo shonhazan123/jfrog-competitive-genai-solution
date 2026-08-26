@@ -24,6 +24,7 @@ services:
       - ./config:/app/config:ro
       - blobs:/app/data/blobs
       - ./tests:/tests:ro
+      - ./client:/client:ro
       - /var/run/docker.sock:/var/run/docker.sock
     ports: ["8000:8000"]
     depends_on:

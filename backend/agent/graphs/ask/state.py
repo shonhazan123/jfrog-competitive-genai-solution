@@ -13,7 +13,6 @@ class AskResult:
 class AskState(TypedDict, total=False):
     question: str
     filters: dict
-    hits: list
     answer: str
     citations: list
     refused: bool

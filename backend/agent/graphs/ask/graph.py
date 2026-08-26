@@ -25,9 +25,13 @@ def classify_intent(state: AskState, deps) -> dict:
         filters["entity"] = "sonatype"
     elif "jfrog" in question:
         filters["entity"] = "jfrog"
+    # Raw hit objects live on deps, never in the checkpointed state — the
+    # MemorySaver serializes state with msgpack, which cannot encode arbitrary
+    # retrieval objects. deps is already mutated for tool_calls, so this is the
+    # established place for per-invocation scratch that must not be serialized.
+    deps.accumulated_hits = []
     return {
         "filters": filters,
-        "hits": [],
         "tool_iterations": 0,
         "answer": "",
         "citations": [],
@@ -39,28 +43,27 @@ def classify_intent(state: AskState, deps) -> dict:
 def tool_loop(state: AskState, deps) -> dict:
     new_hits = deps.retrieve(state["question"], state.get("filters", {}))
     deps.tool_calls += 1
-    existing = list(state.get("hits", []))
+    existing = list(getattr(deps, "accumulated_hits", []))
     seen = {_hit_id(h) for h in existing}
     for hit in new_hits:
         hit_id = _hit_id(hit)
         if hit_id not in seen:
             seen.add(hit_id)
             existing.append(hit)
+    deps.accumulated_hits = existing
     return {
-        "hits": existing,
         "tool_iterations": state.get("tool_iterations", 0) + 1,
     }
 
 
 def grounding_gate(state: AskState, deps) -> dict:
-    hits = state.get("hits", [])
+    hits = list(getattr(deps, "accumulated_hits", []))
     if not hits:
         return {
             "refused": True,
             "reason": "No grounded evidence to support an answer.",
             "citations": [],
             "answer": "",
-            "_route": "refuse",
         }
     result = deps.model.answer(state["question"], hits)
     if _is_grounded(result, hits):
@@ -69,14 +72,12 @@ def grounding_gate(state: AskState, deps) -> dict:
             "citations": result["citations"],
             "refused": False,
             "reason": "",
-            "_route": "answer",
         }
     return {
         "refused": True,
         "reason": "Answer is not supported by grounded evidence.",
         "citations": [],
         "answer": "",
-        "_route": "refuse",
     }
 
 
@@ -97,7 +98,10 @@ def refuse(state: AskState, deps) -> dict:
 
 
 def _after_grounding(state: AskState) -> str:
-    return state.get("_route", "refuse")
+    # Route on the real, schema-declared `refused` field. A transient key like
+    # `_route` would be stripped by LangGraph (not in AskState) and always
+    # default to refuse.
+    return "refuse" if state.get("refused") else "answer"
 
 
 def build_ask_graph(deps):

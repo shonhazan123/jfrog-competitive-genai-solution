@@ -5,9 +5,63 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.config.loader import load_config
-from app.models.registry import Entity
+from app.models.registry import Entity, Source
 from app.models.signal import Signal
 from app.serializers.common import fmt_ts
+
+_PERSONA_TITLE = {"sales": "Sales", "product": "Product"}
+
+
+def persona_digest(session: Session, persona: str, date: str | None = None) -> dict:
+    """Assembled, budget-capped per-persona digest (API_CONTRACT §2.1)."""
+    from app.controllers.signals import list_signals
+    from app.services.delivery.assembly import assemble
+
+    cfg = load_config()
+    budget = cfg.materiality.budget[persona]
+    as_of = datetime.now(UTC)
+
+    ranked = sorted(
+        list_signals(session, persona=persona)["items"],
+        key=lambda item: item.get("score", 0.0),
+        reverse=True,
+    )
+    items = ranked[:budget]
+    caution = sum(1 for item in items if item.get("handling") == "caution")
+    awareness = sum(1 for item in items if item.get("awareness_only"))
+
+    digest = assemble(session, persona, cfg, as_of)
+    checked = {
+        source.entity_id: source
+        for source in session.query(Source).all()
+    }
+    entity_by_slug = {entity.slug: entity for entity in session.query(Entity).all()}
+    window_days = cfg.trends.window_weeks * 7
+    silent_entities = []
+    for slug in digest.silent_entities:
+        entity = entity_by_slug.get(slug)
+        source = checked.get(entity.id) if entity else None
+        silent_entities.append(
+            {
+                "entity": slug,
+                "note": f"No material change on record. Checked {(source.check_count if source else 0)} times.",
+                "checked_count": source.check_count if source else 0,
+                "window_days": window_days,
+            }
+        )
+
+    return {
+        "persona": persona,
+        "date": fmt_ts(as_of),
+        "subject": f"Competitive digest — {_PERSONA_TITLE.get(persona, persona.title())}",
+        "lead": "Assembled from the ledger, ranked by relevance and capped to the persona budget.",
+        "budget": budget,
+        "item_count": len(items),
+        "handling_caution_count": caution,
+        "awareness_only_count": awareness,
+        "items": items,
+        "silent_entities": silent_entities,
+    }
 
 _DIRECTION_MAP = {
     "rising": "toward_us",

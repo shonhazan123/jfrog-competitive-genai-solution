@@ -118,7 +118,7 @@ def answer_question(session: Session, question: str, persona: str | None = None)
         config={"configurable": {"thread_id": f"ask:{hash(question) & 0xffff}"}},
     )
     refused = bool(result.get("refused"))
-    hits = result.get("hits", [])
+    hits = list(getattr(deps, "accumulated_hits", []))
     hit_dicts = [
         {
             "id": h["id"] if isinstance(h, dict) else h.id,

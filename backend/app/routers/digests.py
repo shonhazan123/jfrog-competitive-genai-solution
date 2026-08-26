@@ -13,3 +13,12 @@ def exec_weekly(
     week_of: str | None = Query(None),
 ) -> dict:
     return digests.exec_weekly(session, week_of=week_of)
+
+
+@router.get("/{persona}")
+def persona_digest(
+    persona: str,
+    session: Session = Depends(get_session),
+    date: str | None = Query(None),
+) -> dict:
+    return digests.persona_digest(session, persona, date=date)

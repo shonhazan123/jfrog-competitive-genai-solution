@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -45,7 +45,7 @@ def test_list_endpoints_use_the_items_total_cursor_envelope(client_with_data):
 
 def test_timestamps_carry_a_utc_offset(client_with_data):
     body = client_with_data.get("/runs/latest").json()
-    assert body["last_run_at"].endswith("+00:00")
+    assert body["started_at"].endswith("+00:00")
 
 
 @pytest.fixture
@@ -65,6 +65,11 @@ def client_with_data(session):
     seed(session)
     entities = {entity.slug: entity for entity in session.query(Entity).all()}
     now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
+    # Seeded sources carry no check timestamp; the contract shows a real one, so
+    # stamp them all (the first row must have a non-null last_checked).
+    for seeded in session.query(Source).all():
+        seeded.last_checked_at = now
+    session.flush()
 
     runs_controller._last_run_at = now
     runs_controller._next_run_at = datetime(2026, 8, 27, 6, 0, tzinfo=UTC)
@@ -126,6 +131,8 @@ def client_with_data(session):
         subject_slug: str | None = None,
         handling: str | None = None,
         score_sales: float = 70.0,
+        score_product: float | None = None,
+        occurred_at: datetime = now,
     ) -> Signal:
         source = _source(slug)
         subject_id = entities[subject_slug].id if subject_slug else None
@@ -135,11 +142,11 @@ def client_with_data(session):
             subject_entity_id=subject_id,
             signal_type=signal_type,
             headline=headline,
-            occurred_at=now,
+            occurred_at=occurred_at,
             cluster_key=cluster_key,
             corroboration_count=2,
             score_sales=score_sales,
-            score_product=score_sales,
+            score_product=score_product if score_product is not None else score_sales,
             score_exec=score_sales,
             so_what_sales="Sales framing for the signal.",
             so_what_product="Product framing for the signal.",
@@ -160,15 +167,27 @@ def client_with_data(session):
         )
         return signal
 
+    # (type, headline, handling, score_sales, score_product, subject_slug, hours_offset)
+    # The caution security signal tops the sales view (latest + highest sales
+    # score) and carries a JFrog subject; a capability signal tops the product
+    # view via its product score, so the two personas surface different leads.
     sales_types = [
-        ("security_trust", "Advisory affecting Nexus", "caution", 78.0),
-        ("product_capability", "Nexus adds Cargo registry support", None, 66.0),
-        ("customer_evidence", "New financial-services case study", None, 62.0),
-        ("partnership_ecosystem", "Cloud marketplace listing", None, 51.0),
-        ("product_capability", "Nexus deprecates Java 11", None, 47.0),
-        ("market_regulatory", "EU CRA reporting obligations dated", None, 44.0),
+        ("security_trust", "Advisory affecting Nexus", "caution", 78.0, 78.0, "jfrog", 2),
+        ("product_capability", "Nexus adds Cargo registry support", None, 66.0, 90.0, None, 0),
+        ("customer_evidence", "New financial-services case study", None, 62.0, 62.0, None, 0),
+        ("partnership_ecosystem", "Cloud marketplace listing", None, 51.0, 51.0, None, 0),
+        ("product_capability", "Nexus deprecates Java 11", None, 47.0, 47.0, None, 0),
+        ("market_regulatory", "EU CRA reporting obligations dated", None, 44.0, 44.0, None, 0),
     ]
-    for index, (signal_type, headline, handling, score) in enumerate(sales_types):
+    for index, (
+        signal_type,
+        headline,
+        handling,
+        score,
+        score_product,
+        subject_slug,
+        hours_offset,
+    ) in enumerate(sales_types):
         _signal(
             slug="sonatype",
             headline=headline,
@@ -176,6 +195,9 @@ def client_with_data(session):
             cluster_key=f"sales-{index}",
             handling=handling,
             score_sales=score,
+            score_product=score_product,
+            subject_slug=subject_slug,
+            occurred_at=now + timedelta(hours=hours_offset),
         )
 
     industry_source = _source("industry")

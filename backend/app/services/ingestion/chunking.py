@@ -98,7 +98,7 @@ def chunk_elements(elements: list[Element], cfg: ChunkingConfig) -> list[Chunk]:
             current_group = []
 
     for element in elements:
-        if _is_heading_break(element) and current_group:
+        if _is_heading_break(element, cfg) and current_group:
             flush()
 
         if element.kind.value in cfg.never_split:
