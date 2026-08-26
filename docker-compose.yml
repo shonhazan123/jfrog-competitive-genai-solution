@@ -31,7 +31,11 @@ services:
     command: python -m worker.main
     environment:
       DATABASE_URL: postgresql+psycopg://ci:ci@db:5432/ci
-    volumes: ["./config:/app/config:ro", "blobs:/app/data/blobs"]
+      BACKFILL_SOURCE: fixtures
+    volumes:
+      - ./config:/app/config:ro
+      - blobs:/app/data/blobs
+      - ./fixtures/wayback:/app/fixtures/wayback
     depends_on:
       db: { condition: service_healthy }
 volumes:
