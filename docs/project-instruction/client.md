@@ -54,9 +54,15 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   `ask_transcript.json` is a `{ exchanges: [...] }` demo transcript with no matching
   single endpoint. The Ask screen renders the canned transcript in fixture mode;
   live mode answers one question per POST.
-- **No fixture / no client method** for `GET /digests/{persona}` (sales/product) or
-  `POST /runs`. "Run now" is a no-op in fixture mode; digest header counts are not
-  wired for sales/product.
+- **No fixture / no client method** for `GET /digests/{persona}` (sales/product);
+  digest header counts are not wired for sales/product.
+- **Non-blocking run indicator:** `StatusStrip` in the AppShell header (persists
+  across route changes) exposes **Run now** → `POST /runs` → poll `GET /runs/{id}`
+  every 1.5s. `RunProgress` shows the human `stage_label` and a `current/total`
+  counter — never a modal or full-page spinner. On `done`, the client invalidates
+  `["kits"]`, `["signals"]`, `["run-status"]`, and other daily query keys, then
+  surfaces `N new items`. On `failed`, it shows the plain-language `message`.
+  Fixture mode returns an immediate `done` progress so the UI does not hang.
 - `GET /email/preview?persona=…` ignores the `persona` query param and returns all
   three personas keyed (`sales`/`product`/`exec`) — the client fixture is keyed the
   same way, so the client works; the server-side param is a no-op.

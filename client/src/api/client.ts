@@ -41,6 +41,7 @@ import type {
   Persona,
   PutMaterialityRequest,
   PutWatchlistRequest,
+  RunProgress,
   RunStatus,
   Signal,
   SignalDetail,
@@ -107,6 +108,17 @@ function selectAskFixture(body: AskRequest): AskResponse {
   return exchanges[0];
 }
 
+const FIXTURE_RUN_ID = "fixture-run";
+
+const FIXTURE_RUN_PROGRESS: RunProgress = {
+  run_id: FIXTURE_RUN_ID,
+  status: "done",
+  stage_label: "Done",
+  progress: { current: 5, total: 5 },
+  new_items: 0,
+  message: "",
+};
+
 function selectSourceFixture(sourceId: string): Source {
   const sources = (sourcesFixture as ListResponse<Source>).items;
   return sources.find((source) => source.id === sourceId) ?? sources[0];
@@ -158,6 +170,8 @@ export const FIXTURES = {
   getEmailPreview: (emailPreviewFixture as Record<Persona, EmailPreview>).sales,
   getExecWeekly: digestExecWeeklyFixture,
   getKits: kitsFixture,
+  startRun: { run_id: FIXTURE_RUN_ID },
+  getRun: FIXTURE_RUN_PROGRESS,
 } as const;
 
 export const api = {
@@ -345,6 +359,25 @@ export const api = {
       paths.kitsPath(),
     ).then((data) =>
       Array.isArray(data) ? data : (data as ListResponse<Kit>).items,
+    );
+  },
+
+  startRun(kind?: string): Promise<{ run_id: string }> {
+    return fixtureOrLive(
+      { run_id: FIXTURE_RUN_ID },
+      paths.runsPath(),
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: kind ?? "collect" }),
+      },
+    );
+  },
+
+  getRun(runId: string): Promise<RunProgress> {
+    return fixtureOrLive(
+      { ...FIXTURE_RUN_PROGRESS, run_id: runId },
+      paths.runPath(runId),
     );
   },
 };

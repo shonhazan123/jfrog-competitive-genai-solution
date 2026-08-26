@@ -30,7 +30,7 @@ function renderPage(ui) {
 
 test("below 900px the sidebar is replaced by a bottom bar of primary items", () => {
   setViewport(390);
-  render(<MemoryRouter><AppShell /></MemoryRouter>);
+  renderPage(<AppShell />);
   expect(screen.queryByTestId("sidebar")).toBeNull();
   expect(screen.getAllByTestId("bottom-nav-item")).toHaveLength(
     NAVIGATION.filter((n) => n.primary).length);

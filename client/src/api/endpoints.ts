@@ -26,6 +26,10 @@ export function runsPath(): string {
   return "/runs";
 }
 
+export function runPath(runId: string): string {
+  return `/runs/${encodeURIComponent(runId)}`;
+}
+
 export function sinceLastVisitPath(params?: { actor?: string }): string {
   return `/activity/since-last-visit${buildQuery({ actor: params?.actor })}`;
 }
