@@ -14,6 +14,8 @@ class RawCapture(Base, TimestampMixin):
     blob_path: Mapped[str] = mapped_column(String(512))
     extracted_text: Mapped[str] = mapped_column(Text)
     provenance: Mapped[str] = mapped_column(String(16), default="live")
+    # Novelty key for feed/api sources. NULL for snapshot captures.
+    external_id: Mapped[str | None] = mapped_column(String(256), nullable=True, index=True)
 
 class Document(Base, TimestampMixin):
     __tablename__ = "document"
