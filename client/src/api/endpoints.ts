@@ -132,3 +132,7 @@ export function emailPreviewPath(params?: {
 export function execWeeklyPath(params?: { week_of?: string | null }): string {
   return `/digests/exec/weekly${buildQuery({ week_of: params?.week_of })}`;
 }
+
+export function kitsPath(): string {
+  return "/kits";
+}

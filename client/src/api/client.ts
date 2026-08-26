@@ -7,6 +7,7 @@ import coverageMatrixFixture from "../fixtures/coverage_matrix.json";
 import digestExecWeeklyFixture from "../fixtures/digest_exec_weekly.json";
 import emailPreviewFixture from "../fixtures/email_preview.json";
 import industryFeedFixture from "../fixtures/industry_feed.json";
+import kitsFixture from "../fixtures/kits.json";
 import materialityWeightsFixture from "../fixtures/materiality_weights.json";
 import runStatusFixture from "../fixtures/run_status.json";
 import signalTraceFixture from "../fixtures/signal_trace.json";
@@ -33,6 +34,7 @@ import type {
   GetIndustryParams,
   GetSignalsParams,
   IndustryItem,
+  Kit,
   ListResponse,
   MaterialityConfig,
   PatchSourceRequest,
@@ -155,6 +157,7 @@ export const FIXTURES = {
   getCoverage: coverageMatrixFixture,
   getEmailPreview: (emailPreviewFixture as Record<Persona, EmailPreview>).sales,
   getExecWeekly: digestExecWeeklyFixture,
+  getKits: kitsFixture,
 } as const;
 
 export const api = {
@@ -333,6 +336,15 @@ export const api = {
     return fixtureOrLive(
       digestExecWeeklyFixture as ExecWeekly,
       paths.execWeeklyPath(params),
+    );
+  },
+
+  getKits(): Promise<Kit[]> {
+    return fixtureOrLive(
+      kitsFixture as Kit[],
+      paths.kitsPath(),
+    ).then((data) =>
+      Array.isArray(data) ? data : (data as ListResponse<Kit>).items,
     );
   },
 };

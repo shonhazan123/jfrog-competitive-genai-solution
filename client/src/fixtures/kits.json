@@ -1,0 +1,128 @@
+[
+  {
+    "key": "deal_threats",
+    "label": "Deal Threats",
+    "question": "What will a rep hit in a live deal this quarter?",
+    "category": "early_warning",
+    "order": 1,
+    "status": "active",
+    "count": 2,
+    "priority_label": "Critical",
+    "snippet": {
+      "headline": "Sonatype hardened its comparison-page claim about JFrog malware detection",
+      "quote": "Very limited, not proactive",
+      "implication": "If a prospect cites this page, anchor on JFrog Xray contextual analysis and ask which package ecosystems they actually pull.",
+      "citation": {
+        "source_name": "Sonatype comparison page",
+        "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+        "captured_at": "2026-08-24T00:00:00+00:00",
+        "origin": "extracted",
+        "archived_url": null,
+        "grade": "A"
+      }
+    },
+    "signal_ids": ["sig_cross_malware_2026-08-24", "sig_pricing_shift_2026-08-23"],
+    "withheld": 0
+  },
+  {
+    "key": "parity_gaps",
+    "label": "Parity & Gaps",
+    "question": "Where did the capability line move — in either direction?",
+    "category": "strategic",
+    "order": 2,
+    "status": "active",
+    "count": 1,
+    "priority_label": "High",
+    "snippet": {
+      "headline": "GitLab expanded container scanning to cover Rust registry mirrors",
+      "quote": "Native Rust registry scanning is now included in Ultimate",
+      "implication": "Product teams should compare mirror coverage against Artifactory remote repos before the next parity review.",
+      "citation": {
+        "source_name": "GitLab release notes",
+        "source_url": "https://about.gitlab.com/releases/2026/08/20/container-scanning-rust/",
+        "captured_at": "2026-08-20T00:00:00+00:00",
+        "origin": "extracted",
+        "archived_url": null,
+        "grade": "B"
+      }
+    },
+    "signal_ids": ["sig_gitlab_rust_2026-08-20"],
+    "withheld": 0
+  },
+  {
+    "key": "rival_strategy",
+    "label": "Rival Strategy",
+    "question": "Is a competitor repositioning itself, and toward what?",
+    "category": "key_players",
+    "order": 3,
+    "status": "no_change",
+    "count": 0,
+    "priority_label": null,
+    "snippet": null,
+    "signal_ids": [],
+    "withheld": 0
+  },
+  {
+    "key": "category_market",
+    "label": "Category & Market",
+    "question": "Is the field forming around something new?",
+    "category": "strategic",
+    "order": 4,
+    "status": "no_change",
+    "count": 0,
+    "priority_label": null,
+    "snippet": null,
+    "signal_ids": [],
+    "withheld": 0
+  },
+  {
+    "key": "trust_security",
+    "label": "Trust & Security",
+    "question": "Incidents and advisories — theirs, and the category's.",
+    "category": "early_warning",
+    "order": 5,
+    "status": "active",
+    "count": 1,
+    "priority_label": "Notable",
+    "snippet": {
+      "headline": "Sonatype published Nexus Security Advisory 394 for a critical RCE",
+      "quote": "Immediate upgrade to Nexus Repository 3.68.1 or later is strongly recommended",
+      "implication": "Sales can note the patch cadence without leading on the advisory itself — focus on JFrog posture.",
+      "citation": {
+        "source_name": "Sonatype security advisory",
+        "source_url": "https://support.sonatype.com/hc/en-us/articles/394-critical-rce",
+        "captured_at": "2026-08-22T00:00:00+00:00",
+        "origin": "extracted",
+        "archived_url": null,
+        "grade": "A"
+      }
+    },
+    "signal_ids": ["sig_secadv_nexus_394"],
+    "withheld": 0
+  },
+  {
+    "key": "momentum",
+    "label": "Momentum & Viability",
+    "question": "Who is rising, who is stalling?",
+    "category": "key_players",
+    "order": 6,
+    "status": "active",
+    "count": 1,
+    "priority_label": "Watch",
+    "snippet": {
+      "headline": "Harness posted three senior platform hires in Austin",
+      "quote": "We are doubling the team building artifact security for enterprise pipelines",
+      "implication": "Worth watching for a packaged artifact story in Q4 — not yet a direct deal threat.",
+      "citation": {
+        "source_name": "Harness careers page",
+        "source_url": "https://www.harness.io/company/careers/platform-security-austin",
+        "captured_at": "2026-08-21T00:00:00+00:00",
+        "origin": "extracted",
+        "archived_url": null,
+        "grade": "C"
+      }
+    },
+    "signal_ids": ["sig_harness_hiring_2026-08-21"],
+    "withheld": 0
+  }
+]

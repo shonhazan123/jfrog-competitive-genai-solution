@@ -1,43 +1,43 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { ListResponse, RunStatus, SignalDetail, SinceLastVisit } from "../api/types";
-import { InterruptCard } from "../components/InterruptCard";
-import { SinceLastVisit as SinceLastVisitBanner } from "../components/SinceLastVisit";
-import { SignalCard } from "../components/SignalCard";
-import { StatusStrip } from "../components/StatusStrip";
-import runStatusFixture from "../fixtures/run_status.json";
-import signalTraceFixture from "../fixtures/signal_trace.json";
-import signalsTodayFixture from "../fixtures/signals_today.json";
-import sinceLastVisitFixture from "../fixtures/since_last_visit.json";
+import type { Kit } from "../api/types";
+import { KitTile } from "../components/KitTile";
+import kitsFixture from "../fixtures/kits.json";
+
+const PRIORITY_RANK: Record<string, number> = {
+  Critical: 0,
+  High: 1,
+  Notable: 2,
+  Watch: 3,
+};
+
+function findLeadKey(kits: Kit[]): string | null {
+  const active = kits.filter((kit) => kit.status === "active" && kit.count > 0);
+  if (active.length === 0) {
+    return null;
+  }
+
+  const sorted = [...active].sort((left, right) => {
+    const leftRank = PRIORITY_RANK[left.priority_label ?? "Watch"] ?? 99;
+    const rightRank = PRIORITY_RANK[right.priority_label ?? "Watch"] ?? 99;
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+    return left.order - right.order;
+  });
+
+  return sorted[0]?.key ?? null;
+}
 
 export function Today() {
-  const { data: runStatus } = useQuery({
-    queryKey: ["run-status"],
-    queryFn: () => api.getRunStatus(),
-    initialData: runStatusFixture as RunStatus,
+  const { data: kits } = useQuery({
+    queryKey: ["kits"],
+    queryFn: () => api.getKits(),
+    initialData: kitsFixture as Kit[],
   });
 
-  const { data: sinceLastVisit } = useQuery({
-    queryKey: ["since-last-visit"],
-    queryFn: () => api.getSinceLastVisit(),
-    initialData: sinceLastVisitFixture as SinceLastVisit,
-  });
-
-  const { data: signals } = useQuery({
-    queryKey: ["signals", "today"],
-    queryFn: () => api.getSignals({ view: "today" }),
-    initialData: signalsTodayFixture as ListResponse<import("../api/types").Signal>,
-  });
-
-  const interrupt =
-    signals.items.find((s) => s.interrupt_tier === "critical") ??
-    signals.items.find((s) => s.interrupt_tier);
-
-  const { data: interruptDetail } = useQuery({
-    queryKey: ["signal", interrupt?.id],
-    queryFn: () => api.getSignal(interrupt!.id),
-    initialData: signalTraceFixture as SignalDetail,
-  });
+  const ordered = [...kits].sort((left, right) => left.order - right.order);
+  const leadKey = findLeadKey(ordered);
 
   return (
     <div
@@ -52,24 +52,16 @@ export function Today() {
         <h1 className="page-heading">Today</h1>
       </header>
 
-      <StatusStrip data={runStatus} />
-      <SinceLastVisitBanner data={sinceLastVisit} />
-
-      {interruptDetail ? <InterruptCard signal={interruptDetail} /> : null}
-
       <div
+        data-testid="kit-grid"
         style={{
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
           gap: "var(--sp-4)",
         }}
       >
-        {signals.items.map((signal) => (
-          <SignalCard
-            key={signal.id}
-            signal={signal}
-            persona={signal.persona ?? "sales"}
-          />
+        {ordered.map((kit) => (
+          <KitTile key={kit.key} kit={kit} isLead={kit.key === leadKey} />
         ))}
       </div>
     </div>

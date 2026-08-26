@@ -1,0 +1,113 @@
+.kit-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+
+.kit-tile--wide {
+  grid-column: span 1;
+}
+
+@media (min-width: 1000px) {
+  .kit-tile--wide {
+    grid-column: span 2;
+  }
+}
+
+.kit-tile__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.kit-tile__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.kit-tile__label {
+  margin: 0;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.kit-tile__question {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+.kit-tile__meta {
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  color: var(--ink-muted);
+}
+
+.kit-tile__priority {
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  font-weight: 600;
+  color: var(--ink);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--mat-high-bg);
+}
+
+.kit-tile__quiet {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.kit-tile__snippet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.kit-tile__headline {
+  margin: 0;
+  font-size: var(--fs-headline);
+  line-height: var(--lh-headline);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.kit-tile__quote {
+  margin: 0;
+  padding-left: var(--sp-3);
+  border-left: 3px solid var(--border-strong);
+  font-family: var(--font-serif);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kit-tile__implication {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+.kit-tile__source {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+}
