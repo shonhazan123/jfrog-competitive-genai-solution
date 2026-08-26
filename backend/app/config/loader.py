@@ -21,4 +21,5 @@ def load_config() -> AppConfig:
         jfrog_positions=_read("jfrog_positions.yaml"),
         trends=_read("trends.yaml"),
         delivery=_read("delivery.yaml"),
+        retrieval=_read("retrieval.yaml"),
     )

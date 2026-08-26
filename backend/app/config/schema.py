@@ -106,6 +106,14 @@ class DeliveryConfig(BaseModel):
     recipients: dict[str, list[str]]
     app_base_url: str
 
+class RetrievalConfig(BaseModel):
+    rrf_k: int
+    candidate_pool: int
+    max_per_document: int
+    hnsw_ef_search: int
+    rerank: dict
+    presets: dict[str, dict]
+
 class AppConfig(BaseModel):
     entities: list[EntityConfig]
     sources: list[SourceConfig]
@@ -118,3 +126,4 @@ class AppConfig(BaseModel):
     jfrog_positions: JfrogPositionsConfig
     trends: TrendConfig
     delivery: DeliveryConfig
+    retrieval: RetrievalConfig

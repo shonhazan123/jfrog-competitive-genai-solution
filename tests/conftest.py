@@ -1,13 +1,16 @@
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from testcontainers.postgres import PostgresContainer
+import app.models  # noqa: F401  -- register every table on Base.metadata
 from app.models.base import Base
 
 @pytest.fixture(scope="session")
 def engine():
     with PostgresContainer("pgvector/pgvector:pg17", driver="psycopg") as pg:
         engine = create_engine(pg.get_connection_url())
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         Base.metadata.create_all(engine)
         yield engine
 

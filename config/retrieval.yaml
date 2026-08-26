@@ -1,0 +1,20 @@
+# Hybrid retrieval configuration.
+#
+# Every knob the retriever uses lives here — no magic numbers in query.py.
+# The retriever fuses a lexical (tsvector) ranking and a semantic (pgvector)
+# ranking with Reciprocal Rank Fusion, then re-ranks by evidentiary value
+# (source reliability grade, primary-source bonus) rather than topical
+# similarity. Diversity caps how many chunks one document may contribute.
+# An empty prefilter returns nothing — the retriever never widens a filter.
+rrf_k: 60                       # RRF damping constant (k in 1/(k+rank))
+candidate_pool: 50              # rows pulled from each of lexical/semantic before fusion
+max_per_document: 2             # diversity: max chunks kept from one record_id
+hnsw_ef_search: 100             # pgvector HNSW search breadth
+
+rerank:
+  grade_boost: { A: 1.0, B: 0.6, C: 0.3, D: 0.0, E: -0.3, F: -0.6 }
+  primary_source_boost: 0.5
+
+presets:
+  ask_ledger:
+    record_types: [claim, signal]

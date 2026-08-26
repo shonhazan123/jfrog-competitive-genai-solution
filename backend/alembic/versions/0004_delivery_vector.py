@@ -61,6 +61,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("record_type", sa.String(length=32), nullable=False),
         sa.Column("record_id", sa.Integer(), nullable=False),
+        sa.Column("source_id", sa.Integer(), nullable=True),
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column("prefix", sa.Text(), nullable=True),
         sa.Column("section_path", sa.JSON(), nullable=False, server_default="[]"),

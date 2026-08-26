@@ -37,6 +37,7 @@ class Chunk(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     record_type: Mapped[str] = mapped_column(String(32))
     record_id: Mapped[int] = mapped_column(Integer)
+    source_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     text: Mapped[str] = mapped_column(Text)
     prefix: Mapped[str | None] = mapped_column(Text, nullable=True)
     section_path: Mapped[list] = mapped_column(JSON, default=list)
