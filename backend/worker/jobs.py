@@ -17,12 +17,15 @@ from app.services.collection.fetcher import Fetcher, StaticFetcher
 from app.services.collection.fixture_fetcher import FixtureFetcher
 from app.services.collection.feeds import parse_feed
 from app.services.collection.robots import RobotsCache
+from app.services.delivery.assembly import assemble
+from app.services.delivery.email import send_digest
 from app.services.scoring.materiality import score
 from app.services.seeding import seed
 from app.services.signals.novelty import is_new
 from app.settings import settings
 
 _ADAPTERS = {"osv": OsvAdapter()}
+_WEEKDAYS = frozenset({"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
 
 
 def run_seed() -> None:
@@ -178,3 +181,70 @@ def run_scoring(session: Session | None = None) -> dict:
         session.commit()
         session.close()
     return {"scored": updated}
+
+
+def today_name() -> str:
+    return datetime.now(UTC).strftime("%a").upper()
+
+
+def personas_due(cfg) -> list[str]:
+    today = today_name()
+    due: list[str] = []
+    for persona, schedule in cfg.delivery.send_at.items():
+        first_token = schedule.strip().split()[0].upper()
+        if first_token in _WEEKDAYS:
+            if first_token == today:
+                due.append(persona)
+        else:
+            due.append(persona)
+    return due
+
+
+def _lazy_smtp(cfg) -> object:
+    import os
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    smtp_cfg = cfg.delivery.smtp
+
+    class _Smtp:
+        def send(self, subject: str, html: str, to: list[str]) -> None:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = smtp_cfg.get("from_name", "JFrog CI")
+            msg["To"] = ", ".join(to)
+            msg.attach(MIMEText(html, "html"))
+            with smtplib.SMTP(smtp_cfg["host"], smtp_cfg["port"]) as conn:
+                if smtp_cfg.get("starttls"):
+                    conn.starttls()
+                user = os.environ.get("SMTP_USER")
+                password = os.environ.get("SMTP_APP_PASSWORD")
+                if user and password:
+                    conn.login(user, password)
+                conn.sendmail(msg["From"], to, msg.as_string())
+
+    return _Smtp()
+
+
+def run_digest(
+    session: Session | None = None,
+    smtp: object | None = None,
+    personas: list[str] | None = None,
+    cfg=None,
+) -> dict:
+    own_session = session is None
+    if own_session:
+        session = SessionLocal()
+    cfg = cfg or load_config()
+    personas = personas if personas is not None else ["sales", "product", "exec"]
+    if smtp is None:
+        smtp = _lazy_smtp(cfg)
+    as_of = datetime.now(UTC)
+    for persona in personas:
+        digest = assemble(session, persona, cfg, as_of=as_of)
+        send_digest(session, digest, smtp, cfg)
+    if own_session:
+        session.commit()
+        session.close()
+    return {"personas": personas, "sent": len(personas)}
