@@ -1,0 +1,151 @@
+{
+  "items": [
+    {
+      "id": "claim_malware_cross",
+      "subject_entity": "jfrog",
+      "asserting_entity": "sonatype",
+      "claim_text": "JFrog malware detection is very limited, not proactive",
+      "claim_type": "positioning",
+      "capability_tags": ["malware_detection"],
+      "status": "active",
+      "reliability_grade": "A",
+      "credibility_score": 2,
+      "first_seen_at": "2021-02-01T00:00:00+00:00",
+      "last_confirmed_at": "2026-08-24T00:00:00+00:00",
+      "score": 95.0,
+      "change": {
+        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "kind": "substantive",
+        "was": "Limited",
+        "now": "Very limited, not proactive"
+      },
+      "evidence": [
+        {
+          "quote": "Very limited, not proactive",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "versions": [
+        {
+          "changed_at": "2026-05-01T00:00:00+00:00",
+          "change_kind": "substantive",
+          "old_text": "Limited",
+          "new_text": "Very limited, not proactive",
+          "evidence_id": "ev_malware_2026-05"
+        }
+      ]
+    },
+    {
+      "id": "claim_accuracy_cross",
+      "subject_entity": "jfrog",
+      "asserting_entity": "sonatype",
+      "claim_text": "80% more accurate data than JFrog",
+      "claim_type": "positioning",
+      "capability_tags": ["data_accuracy"],
+      "status": "active",
+      "reliability_grade": "A",
+      "credibility_score": 3,
+      "first_seen_at": "2025-11-01T00:00:00+00:00",
+      "last_confirmed_at": "2026-08-24T00:00:00+00:00",
+      "score": 71.0,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "80% more accurate data than JFrog.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "versions": [
+        {
+          "changed_at": "2025-11-01T00:00:00+00:00",
+          "change_kind": "new",
+          "old_text": null,
+          "new_text": "80% more accurate data than JFrog",
+          "evidence_id": "ev_accuracy_2025-11"
+        }
+      ]
+    },
+    {
+      "id": "claim_sbom_cross",
+      "subject_entity": "jfrog",
+      "asserting_entity": "sonatype",
+      "claim_text": "JFrog SBOM support is export only",
+      "claim_type": "capability",
+      "capability_tags": ["sbom"],
+      "status": "active",
+      "reliability_grade": "A",
+      "credibility_score": 3,
+      "first_seen_at": "2024-01-01T00:00:00+00:00",
+      "last_confirmed_at": "2026-07-11T00:00:00+00:00",
+      "score": 64.0,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "JFrog SBOM support is export only.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-07-11T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "versions": [
+        {
+          "changed_at": "2024-01-01T00:00:00+00:00",
+          "change_kind": "new",
+          "old_text": null,
+          "new_text": "JFrog SBOM support is export only",
+          "evidence_id": "ev_sbom_2024-01"
+        }
+      ]
+    },
+    {
+      "id": "claim_pricing_cross",
+      "subject_entity": "jfrog",
+      "asserting_entity": "sonatype",
+      "claim_text": "Beware hidden costs with JFrog Artifactory",
+      "claim_type": "pricing",
+      "capability_tags": ["pricing"],
+      "status": "active",
+      "reliability_grade": "A",
+      "credibility_score": 3,
+      "first_seen_at": "2023-03-01T00:00:00+00:00",
+      "last_confirmed_at": "2026-08-24T00:00:00+00:00",
+      "score": 60.0,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Beware hidden costs with JFrog Artifactory.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "versions": [
+        {
+          "changed_at": "2023-03-01T00:00:00+00:00",
+          "change_kind": "new",
+          "old_text": null,
+          "new_text": "Beware hidden costs with JFrog Artifactory",
+          "evidence_id": "ev_pricing_2023-03"
+        }
+      ]
+    }
+  ],
+  "total": 4,
+  "cursor": null
+}

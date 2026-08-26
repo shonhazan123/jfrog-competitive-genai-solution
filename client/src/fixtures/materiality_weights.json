@@ -1,0 +1,65 @@
+{
+  "config_version": 1,
+  "weights": [
+    {
+      "key": "subject_is_jfrog",
+      "label": "JFrog is the subject (multiplier)",
+      "value": 2.0,
+      "min": 1.0,
+      "max": 3.0,
+      "step": 0.1,
+      "note": "Prioritisation may be biased \u2014 visibly and tunably. Lower to \u00d71.0 to treat cross-assertions like any other claim.",
+      "unit": "multiplier"
+    },
+    {
+      "key": "tier_1_bonus",
+      "label": "Tier-1 entity bonus",
+      "value": 15,
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "note": "Deep-coverage competitors (Sonatype) score above shallow-coverage ones.",
+      "unit": "points"
+    },
+    {
+      "key": "substantive_bonus",
+      "label": "Substantive change bonus",
+      "value": 20,
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "note": "A real claim change outweighs a cosmetic one.",
+      "unit": "points"
+    },
+    {
+      "key": "recency_halflife_days",
+      "label": "Recency half-life (days)",
+      "value": 14,
+      "min": 3,
+      "max": 45,
+      "step": 1,
+      "note": "How fast a signal's score decays.",
+      "unit": "days"
+    },
+    {
+      "key": "sales_budget",
+      "label": "Sales digest budget (items)",
+      "value": 6,
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "note": "A hard cap, applied after ranking. A digest that grows without bound is one nobody finishes.",
+      "unit": "items"
+    },
+    {
+      "key": "interrupt_cvss",
+      "label": "Interrupt CVSS threshold",
+      "value": 8.0,
+      "min": 6,
+      "max": 10,
+      "step": 0.1,
+      "note": "Security signals at or above this severity break the daily cadence.",
+      "unit": "cvss"
+    }
+  ]
+}

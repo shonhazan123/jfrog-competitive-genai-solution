@@ -1,0 +1,20 @@
+{
+  "run_id": "run_2026-08-26T06:00Z",
+  "started_at": "2026-08-26T06:00:00+00:00",
+  "finished_at": "2026-08-26T06:04:12+00:00",
+  "status": "ok",
+  "next_run_at": "2026-08-27T06:00:00+00:00",
+  "live": true,
+  "sources_count": 23,
+  "funnel": [
+    ["collected", 94],
+    ["clustered", 41],
+    ["material", 11],
+    ["delivered", 14]
+  ],
+  "delivered_breakdown": [
+    ["sales", 6],
+    ["product", 8],
+    ["exec", 0]
+  ]
+}

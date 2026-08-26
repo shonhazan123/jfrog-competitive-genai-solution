@@ -1,0 +1,82 @@
+{
+  "caption": "This grid answers the one question a competitor tracker must be able to answer: what are we blind to? Collection must be unbiased even though prioritisation is not \u2014 an empty cell is a configured gap, made visible rather than assumed away.",
+  "columns": ["product", "security", "market/reg", "partnership", "talent", "customer", "positioning", "pricing"],
+  "rows": [
+    {
+      "entity": "sonatype",
+      "tier": 1,
+      "cells": [
+        { "signal_type": "product_capability", "status": "multiple", "source_count": 2 },
+        { "signal_type": "security_trust", "status": "multiple", "source_count": 2 },
+        { "signal_type": "market_regulatory", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "partnership_ecosystem", "status": "one", "source_count": 1 },
+        { "signal_type": "talent_org", "status": "multiple", "source_count": 2 },
+        { "signal_type": "customer_evidence", "status": "one", "source_count": 1 },
+        { "signal_type": "positioning_messaging", "status": "multiple", "source_count": 2 },
+        { "signal_type": "pricing_packaging", "status": "one", "source_count": 1 }
+      ]
+    },
+    {
+      "entity": "gitlab",
+      "tier": 2,
+      "cells": [
+        { "signal_type": "product_capability", "status": "multiple", "source_count": 2 },
+        { "signal_type": "security_trust", "status": "multiple", "source_count": 2 },
+        { "signal_type": "market_regulatory", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "partnership_ecosystem", "status": "one", "source_count": 1 },
+        { "signal_type": "talent_org", "status": "gap", "source_count": 0 },
+        { "signal_type": "customer_evidence", "status": "gap", "source_count": 0 },
+        { "signal_type": "positioning_messaging", "status": "one", "source_count": 1 },
+        { "signal_type": "pricing_packaging", "status": "one", "source_count": 1 }
+      ]
+    },
+    {
+      "entity": "github",
+      "tier": 2,
+      "cells": [
+        { "signal_type": "product_capability", "status": "multiple", "source_count": 2 },
+        { "signal_type": "security_trust", "status": "multiple", "source_count": 2 },
+        { "signal_type": "market_regulatory", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "partnership_ecosystem", "status": "one", "source_count": 1 },
+        { "signal_type": "talent_org", "status": "gap", "source_count": 0 },
+        { "signal_type": "customer_evidence", "status": "gap", "source_count": 0 },
+        { "signal_type": "positioning_messaging", "status": "gap", "source_count": 0 },
+        { "signal_type": "pricing_packaging", "status": "not_applicable", "source_count": 0 }
+      ]
+    },
+    {
+      "entity": "harbor",
+      "tier": 2,
+      "cells": [
+        { "signal_type": "product_capability", "status": "multiple", "source_count": 2 },
+        { "signal_type": "security_trust", "status": "multiple", "source_count": 2 },
+        { "signal_type": "market_regulatory", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "partnership_ecosystem", "status": "one", "source_count": 1 },
+        { "signal_type": "talent_org", "status": "one", "source_count": 1 },
+        { "signal_type": "customer_evidence", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "positioning_messaging", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "pricing_packaging", "status": "not_applicable", "source_count": 0 }
+      ]
+    },
+    {
+      "entity": "industry",
+      "tier": null,
+      "cells": [
+        { "signal_type": "product_capability", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "security_trust", "status": "one", "source_count": 1 },
+        { "signal_type": "market_regulatory", "status": "multiple", "source_count": 2 },
+        { "signal_type": "partnership_ecosystem", "status": "one", "source_count": 1 },
+        { "signal_type": "talent_org", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "customer_evidence", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "positioning_messaging", "status": "not_applicable", "source_count": 0 },
+        { "signal_type": "pricing_packaging", "status": "not_applicable", "source_count": 0 }
+      ]
+    }
+  ],
+  "legend": [
+    ["\u2713\u2713", "multiple sources"],
+    ["\u2713", "one source"],
+    ["\u2717", "configured gap \u2014 no source yet"],
+    ["\u2014", "not applicable for this entity"]
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "items": [
+    {
+      "id": "bcr_malware",
+      "dimension": "Malware detection",
+      "jfrog_position": "Proactive; contextual analysis via Xray + Curation",
+      "competitor_position": "Claims JFrog is \"very limited, not proactive\"",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_malware_cross"],
+      "reliability_grade": "A",
+      "credibility_score": 2,
+      "last_changed_at": "2026-08-24T00:00:00+00:00",
+      "changed_recently": true,
+      "evidence": [
+        {
+          "quote": "80% more accurate data than JFrog \u2026 JFrog malware detection is very limited, not proactive.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "change": {
+        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "kind": "substantive",
+        "was": "Limited",
+        "now": "Very limited, not proactive"
+      },
+      "no_claim_on_record": false
+    },
+    {
+      "id": "bcr_sbom",
+      "dimension": "SBOM",
+      "jfrog_position": "Generate, sign, distribute; continuous",
+      "competitor_position": "Claims JFrog SBOM is \"export only\"",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_sbom_cross"],
+      "reliability_grade": "A",
+      "credibility_score": 3,
+      "last_changed_at": "2026-07-11T00:00:00+00:00",
+      "changed_recently": false,
+      "evidence": [
+        {
+          "quote": "JFrog SBOM support is export only.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-07-11T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "change": null,
+      "no_claim_on_record": false
+    },
+    {
+      "id": "bcr_pricing",
+      "dimension": "Pricing model",
+      "jfrog_position": "Tiered subscription; published tiers",
+      "competitor_position": "Claims JFrog has \"hidden costs\"",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_pricing_cross"],
+      "reliability_grade": "A",
+      "credibility_score": 3,
+      "last_changed_at": "2026-08-24T00:00:00+00:00",
+      "changed_recently": true,
+      "evidence": [
+        {
+          "quote": "Beware hidden costs with JFrog Artifactory.",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "change": null,
+      "no_claim_on_record": false
+    },
+    {
+      "id": "bcr_formats",
+      "dimension": "Package format coverage",
+      "jfrog_position": "30+ formats native",
+      "competitor_position": "Adding formats iteratively; Cargo added in 3.95 (sample)",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_cargo_cap"],
+      "reliability_grade": "A",
+      "credibility_score": 2,
+      "last_changed_at": "2026-08-25T00:00:00+00:00",
+      "changed_recently": false,
+      "evidence": [
+        {
+          "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "change": null,
+      "no_claim_on_record": false
+    },
+    {
+      "id": "bcr_ai_model",
+      "dimension": "AI / model artifacts",
+      "jfrog_position": "AI Catalog + Xray contextual analysis",
+      "competitor_position": "Hugging Face model scanning in Firewall (format-limited, sample)",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_hf_cap"],
+      "reliability_grade": "A",
+      "credibility_score": 2,
+      "last_changed_at": "2026-08-21T00:00:00+00:00",
+      "changed_recently": true,
+      "evidence": [
+        {
+          "quote": "Firewall policies can now quarantine Hugging Face model components by license and malware signature.",
+          "source_url": "https://www.sonatype.com/blog/model-firewall",
+          "source_name": "Sonatype blog",
+          "captured_at": "2026-08-21T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "change": null,
+      "no_claim_on_record": false
+    },
+    {
+      "id": "bcr_runtime",
+      "dimension": "Runtime security",
+      "jfrog_position": "Runtime posture via integrations",
+      "competitor_position": "Positions at build/proxy stage; no runtime claim on record",
+      "competitor": "sonatype",
+      "supporting_claim_ids": [],
+      "reliability_grade": "C",
+      "credibility_score": 4,
+      "last_changed_at": null,
+      "changed_recently": false,
+      "evidence": [],
+      "change": null,
+      "no_claim_on_record": true
+    },
+    {
+      "id": "bcr_saas",
+      "dimension": "SaaS / self-hosted",
+      "jfrog_position": "Both, single platform",
+      "competitor_position": "Both; self-hosted heritage, SaaS available",
+      "competitor": "sonatype",
+      "supporting_claim_ids": ["claim_saas_cap"],
+      "reliability_grade": "A",
+      "credibility_score": 2,
+      "last_changed_at": "2026-06-03T00:00:00+00:00",
+      "changed_recently": false,
+      "evidence": [
+        {
+          "quote": "Deploy Nexus Repository self-hosted or as a managed cloud offering.",
+          "source_url": "https://www.sonatype.com/products/nexus-repository",
+          "source_name": "Sonatype product page",
+          "captured_at": "2026-06-03T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "change": null,
+      "no_claim_on_record": false
+    }
+  ],
+  "total": 7,
+  "cursor": null
+}

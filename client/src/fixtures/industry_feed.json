@@ -1,0 +1,108 @@
+{
+  "items": [
+    {
+      "id": "ind_cra",
+      "standard_chip": "EU CRA",
+      "signal_type": "market_regulatory",
+      "headline": "Cyber Resilience Act: 24-hour reporting for exploited vulnerabilities is now live (sample)",
+      "body": "Manufacturers placing products on the EU market must report actively exploited vulnerabilities within 24 hours. SBOM generation moves from best practice to a procurement precondition in scope sectors.",
+      "occurred_at": "2026-08-22T00:00:00+00:00",
+      "evidence": {
+        "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
+        "source_url": "https://digital-strategy.ec.europa.eu/cra",
+        "source_name": "European Commission",
+        "captured_at": "2026-08-22T00:00:00+00:00",
+        "reliability_grade": "A",
+        "credibility_score": 1,
+        "is_primary": true
+      }
+    },
+    {
+      "id": "ind_nis2",
+      "standard_chip": "NIS2",
+      "signal_type": "market_regulatory",
+      "headline": "NIS2 enforcement guidance clarifies software supply chain obligations for essential entities (sample)",
+      "body": "New guidance ties supply-chain risk management to concrete evidence requirements. Organisations in essential sectors will need demonstrable provenance and vulnerability handling across their software dependencies.",
+      "occurred_at": "2026-08-20T00:00:00+00:00",
+      "evidence": {
+        "quote": "Entities must manage supply-chain risks with demonstrable provenance and vulnerability handling.",
+        "source_url": "https://www.enisa.europa.eu/nis2",
+        "source_name": "ENISA",
+        "captured_at": "2026-08-20T00:00:00+00:00",
+        "reliability_grade": "A",
+        "credibility_score": 2,
+        "is_primary": true
+      }
+    },
+    {
+      "id": "ind_slsa",
+      "standard_chip": "SLSA",
+      "signal_type": "market_regulatory",
+      "headline": "SLSA v1.1 build-provenance adoption crosses majority default-on across CI providers (sample)",
+      "body": "Provenance generation is becoming a default rather than an opt-in across major build platforms. The centre of gravity for supply-chain integrity is shifting from scanning after the fact to attesting at build time.",
+      "occurred_at": "2026-08-19T00:00:00+00:00",
+      "evidence": {
+        "quote": "Build platforms report majority default-on generation of SLSA provenance.",
+        "source_url": "https://slsa.dev/blog",
+        "source_name": "SLSA project blog",
+        "captured_at": "2026-08-19T00:00:00+00:00",
+        "reliability_grade": "B",
+        "credibility_score": 2,
+        "is_primary": false
+      }
+    },
+    {
+      "id": "ind_openssf",
+      "standard_chip": "OpenSSF",
+      "signal_type": "market_regulatory",
+      "headline": "OpenSSF publishes updated baseline for open-source project security posture (sample)",
+      "body": "A refreshed security baseline raises expectations for signing, provenance and vulnerability disclosure across widely used open-source projects \u2014 nudging the entire ecosystem toward attestable artifacts.",
+      "occurred_at": "2026-08-18T00:00:00+00:00",
+      "evidence": {
+        "quote": "The baseline raises expectations for signing, provenance and vulnerability disclosure.",
+        "source_url": "https://openssf.org/blog",
+        "source_name": "OpenSSF",
+        "captured_at": "2026-08-18T00:00:00+00:00",
+        "reliability_grade": "A",
+        "credibility_score": 2,
+        "is_primary": true
+      }
+    },
+    {
+      "id": "ind_supplychain_campaign",
+      "standard_chip": "SUPPLY CHAIN",
+      "signal_type": "security_trust",
+      "headline": "Malicious-package campaign targets popular npm and PyPI namespaces via typosquatting (sample)",
+      "body": "A coordinated campaign uploaded lookalike packages to public registries, with install-time payloads. Reinforces the case for curation and malware scanning at the proxy boundary rather than at deploy time.",
+      "occurred_at": "2026-08-21T00:00:00+00:00",
+      "evidence": {
+        "quote": "Lookalike packages with install-time payloads were uploaded to public registries.",
+        "source_url": "https://openssf.org/advisory-sample",
+        "source_name": "Security researcher report",
+        "captured_at": "2026-08-21T00:00:00+00:00",
+        "reliability_grade": "B",
+        "credibility_score": 2,
+        "is_primary": false
+      }
+    },
+    {
+      "id": "ind_cncf",
+      "standard_chip": "CNCF",
+      "signal_type": "partnership_ecosystem",
+      "headline": "A supply-chain security project reaches CNCF graduation (sample)",
+      "body": "Graduation signals production maturity and broad adoption for a project in the artifact-signing space. Ecosystem consolidation around a small number of graduated tools shapes what buyers expect as standard.",
+      "occurred_at": "2026-08-17T00:00:00+00:00",
+      "evidence": {
+        "quote": "The project has reached graduated maturity level within CNCF.",
+        "source_url": "https://www.cncf.io/announcements",
+        "source_name": "CNCF announcement",
+        "captured_at": "2026-08-17T00:00:00+00:00",
+        "reliability_grade": "A",
+        "credibility_score": 2,
+        "is_primary": true
+      }
+    }
+  ],
+  "total": 6,
+  "cursor": null
+}

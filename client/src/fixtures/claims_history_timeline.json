@@ -1,0 +1,53 @@
+{
+  "source_id": "src_sonatype_comparison",
+  "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+  "method": "Wayback CDX (collapse=digest)",
+  "total_versions": 19,
+  "sampled": true,
+  "span_start": "2021-02-01T00:00:00+00:00",
+  "span_end": "2026-05-01T00:00:00+00:00",
+  "versions": [
+    {
+      "captured_at": "2021-02-01T00:00:00+00:00",
+      "label": "First archived version \u2014 feature checklist only",
+      "is_milestone": true,
+      "size_bytes": 20480,
+      "provenance": "archive"
+    },
+    {
+      "captured_at": "2022-06-01T00:00:00+00:00",
+      "label": "4 versions",
+      "is_milestone": false,
+      "size_bytes": 23552,
+      "provenance": "archive"
+    },
+    {
+      "captured_at": "2023-03-01T00:00:00+00:00",
+      "label": "Pricing \"hidden costs\" language added",
+      "is_milestone": true,
+      "size_bytes": 27648,
+      "provenance": "archive"
+    },
+    {
+      "captured_at": "2024-06-01T00:00:00+00:00",
+      "label": "6 versions",
+      "is_milestone": false,
+      "size_bytes": 31744,
+      "provenance": "archive"
+    },
+    {
+      "captured_at": "2025-11-01T00:00:00+00:00",
+      "label": "\"80% more accurate data\" claim introduced",
+      "is_milestone": true,
+      "size_bytes": 35840,
+      "provenance": "archive"
+    },
+    {
+      "captured_at": "2026-05-01T00:00:00+00:00",
+      "label": "Malware wording hardened to \"not proactive\"",
+      "is_milestone": true,
+      "size_bytes": 38912,
+      "provenance": "archive"
+    }
+  ]
+}

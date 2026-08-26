@@ -1,0 +1,271 @@
+{
+  "items": [
+    {
+      "id": "sig_cap_nexus_release_395",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Nexus Repository 3.95 release note \u2014 3 material signals out of 40 bullets (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Cargo format support (parity item) and a new provenance-attestation option. The release also drops Java 11. Classification runs at bullet level \u2014 the other 37 bullets were bug fixes and dependency bumps, filtered as no_signal.",
+      "score": 66.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        },
+        {
+          "quote": "New: optional SLSA provenance attestation on published components.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_395",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_hf_firewall",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Nexus Firewall extends policy to Hugging Face model artifacts (sample)",
+      "occurred_at": "2026-08-21T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Model-artifact scanning appears in a competitor for the first time \u2014 coverage claimed for Hugging Face format only. Parity-gap analysis vs JFrog AI Catalog + Xray contextual analysis is warranted this sprint.",
+      "score": 59.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Firewall policies can now quarantine Hugging Face model components by license and malware signature.",
+          "source_url": "https://www.sonatype.com/blog/model-firewall",
+          "source_name": "Sonatype blog",
+          "captured_at": "2026-08-21T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_hf_firewall",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_talent_sonatype_ml",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "talent_org",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Three Sonatype job postings reference model registries and ML artifact scanning (sample)",
+      "occurred_at": "2026-08-20T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Hiring reveals roadmap intent 6\u201312 months before anything ships. Three roles clustered on ML-artifact security signals a sustained investment, not a one-off feature \u2014 the only predictive signal type in the system.",
+      "score": 55.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Senior Engineer, ML Supply Chain \u2014 design scanning for model registries and ML artifact formats.",
+          "source_url": "https://boards.greenhouse.io/sonatype",
+          "source_name": "Greenhouse public board (Sonatype)",
+          "captured_at": "2026-08-20T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_sonatype_ml_hiring",
+      "corroboration_count": 3,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_talent_harbor_oci",
+      "entity": { "slug": "harbor", "name": "Harbor", "tier": 2 },
+      "signal_type": "talent_org",
+      "signal_flavour": null,
+      "subject_entity": "harbor",
+      "asserting_entity": "harbor",
+      "mentions_jfrog": false,
+      "headline": "Harbor community posting seeks a maintainer for OCI-native SBOM storage (sample)",
+      "occurred_at": "2026-08-18T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "A maintainer role framed around OCI-native SBOM suggests the open-source registry is moving toward storing attestations as first-class OCI objects \u2014 worth tracking for format-interoperability planning.",
+      "score": 42.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Help design OCI-referrers-based storage for SBOMs and signatures in Harbor.",
+          "source_url": "https://jobs.lever.co/harbor-sample",
+          "source_name": "Lever public board (Harbor)",
+          "captured_at": "2026-08-18T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_harbor_oci",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_reg_slsa_adoption",
+      "entity": { "slug": "industry", "name": "Industry", "tier": null },
+      "signal_type": "market_regulatory",
+      "signal_flavour": null,
+      "subject_entity": null,
+      "asserting_entity": "industry",
+      "mentions_jfrog": false,
+      "headline": "SLSA v1.1 adoption crosses a threshold across major CI providers (sample)",
+      "occurred_at": "2026-08-19T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Provenance generation is becoming a default CI expectation rather than an opt-in. No roadmap change implied today; noted so the trend is visible before it forces one.",
+      "score": 38.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": true,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Build platforms report majority default-on generation of SLSA provenance.",
+          "source_url": "https://slsa.dev/blog",
+          "source_name": "SLSA project blog",
+          "captured_at": "2026-08-19T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 2,
+          "is_primary": false
+        }
+      ],
+      "cluster_id": "cl_slsa_adoption",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_secadv_nexus_394_product",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "security_trust",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "osv",
+      "mentions_jfrog": false,
+      "headline": "Advisory affecting Nexus Repository \u2264 3.94 \u2014 auth bypass (sample)",
+      "occurred_at": "2026-08-26T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Relevant to how competitors handle access-control hardening on-prem. Informs our own threat-model messaging; the fix arrived in the same 3.95 release above.",
+      "score": 57.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
+          "source_url": "https://osv.dev/vulnerability/GHSA-xxxx-sample",
+          "source_name": "OSV.dev",
+          "captured_at": "2026-08-26T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_authbypass",
+      "corroboration_count": 2,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_github_retention",
+      "entity": { "slug": "github", "name": "GitHub", "tier": 2 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "github",
+      "asserting_entity": "github",
+      "mentions_jfrog": false,
+      "headline": "GitHub Packages adds retention policies for container images (sample)",
+      "occurred_at": "2026-08-17T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Lifecycle management catching up to established registry norms. A shallow-coverage competitor closing a hygiene gap; no parity concern for the platform roadmap.",
+      "score": 35.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": true,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Configure retention rules to automatically delete untagged image versions.",
+          "source_url": "https://github.blog/changelog",
+          "source_name": "GitHub changelog",
+          "captured_at": "2026-08-17T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_github_retention",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_gitlab_slsa_product",
+      "entity": { "slug": "gitlab", "name": "GitLab", "tier": 2 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "gitlab",
+      "asserting_entity": "gitlab",
+      "mentions_jfrog": false,
+      "headline": "GitLab Package Registry emits SLSA provenance from pipelines (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": "product",
+      "so_what": "Provenance moves into a competitor's default CI path. Parity-relevant for how JFrog positions build-info and evidence collection in AppTrust; assess whether our provenance story is legible to buyers.",
+      "score": 48.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Pipelines can now emit SLSA-compliant provenance stored alongside the package.",
+          "source_url": "https://about.gitlab.com/releases",
+          "source_name": "GitLab releases",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_gitlab_slsa",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    }
+  ],
+  "total": 8,
+  "cursor": null
+}

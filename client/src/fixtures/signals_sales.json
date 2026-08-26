@@ -1,0 +1,198 @@
+{
+  "items": [
+    {
+      "id": "sig_secadv_nexus_394",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "security_trust",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "osv",
+      "mentions_jfrog": false,
+      "headline": "High-severity advisory affecting Nexus Repository \u2264 3.94 (sample)",
+      "occurred_at": "2026-08-26T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "If they claim on-prem is safer: \"Both models carry advisories \u2014 what matters is time-to-detect. JFrog Xray flags known-affected packages in your graph the moment an advisory lands, with contextual impact analysis.\" Do not name their specific CVE unprompted.",
+      "score": 78.0,
+      "score_breakdown": null,
+      "handling": "caution",
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
+          "source_url": "https://osv.dev/vulnerability/GHSA-xxxx-sample",
+          "source_name": "OSV.dev",
+          "captured_at": "2026-08-26T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_authbypass",
+      "corroboration_count": 2,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_cargo_395_sales",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Nexus 3.95 adds Cargo registry support (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "If they raise \"we now support Cargo too\": \"Format support is table stakes \u2014 ask them about Cargo malware scanning and license curation on those crates. JFrog Curation blocks a malicious crate before it enters your build; a registry that only hosts the format doesn't.\"",
+      "score": 66.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_395",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cust_bank_casestudy_sales",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "customer_evidence",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "New financial-services case study on Sonatype's customer page (sample)",
+      "occurred_at": "2026-08-24T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "If they cite this reference in a banking deal: \"Ask what that bank did about binary-level runtime exposure and multi-site replication \u2014 governance of open-source metadata is one layer. JFrog offers the artifact store, scanning and distribution as one system.\" Named-account overlap flagged to the competitive desk.",
+      "score": 62.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "A top-20 European bank standardised its open-source governance on Sonatype.",
+          "source_url": "https://www.sonatype.com/customers",
+          "source_name": "Sonatype customers page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_bank_casestudy",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_partner_marketplace_sales",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "partnership_ecosystem",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Sonatype now listed in a major cloud marketplace with committed-spend eligibility (sample)",
+      "occurred_at": "2026-08-23T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "If procurement pushes marketplace drawdown: \"JFrog is available through the same marketplace with equivalent committed-spend treatment \u2014 the procurement path is not a differentiator here. Bring the conversation back to platform breadth.\" Confirm current listing status with deal desk before quoting.",
+      "score": 51.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Available in the marketplace; counts toward your committed cloud spend.",
+          "source_url": "https://aws.amazon.com/marketplace",
+          "source_name": "AWS Marketplace listing",
+          "captured_at": "2026-08-23T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 2,
+          "is_primary": false
+        }
+      ],
+      "cluster_id": "cl_marketplace",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_java11_deprecation",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Nexus 3.95 deprecates Java 11 runtime; end-of-support dated (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "Migration angle for two accounts on Java 11: \"Their upgrade forces a runtime migration anyway \u2014 that's the moment to evaluate alternatives rather than re-platform in place. Offer a side-by-side proof-of-concept while they're already touching the deployment.\"",
+      "score": 47.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Java 11 is deprecated and support will be removed in a future release.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_395",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_reg_cra_sales",
+      "entity": { "slug": "industry", "name": "Industry", "tier": null },
+      "signal_type": "market_regulatory",
+      "signal_flavour": null,
+      "subject_entity": null,
+      "asserting_entity": "industry",
+      "mentions_jfrog": false,
+      "headline": "EU CRA vulnerability-reporting obligations now dated (sample)",
+      "occurred_at": "2026-08-22T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "When procurement raises CRA readiness: \"CRA makes SBOM generation and vulnerability reporting a buying requirement, not a nice-to-have. JFrog produces signed SBOMs and full-graph vulnerability context in one place \u2014 bring compliance and security into the same conversation.\"",
+      "score": 44.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
+          "source_url": "https://digital-strategy.ec.europa.eu/cra",
+          "source_name": "European Commission",
+          "captured_at": "2026-08-22T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_cra",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    }
+  ],
+  "total": 6,
+  "cursor": null
+}

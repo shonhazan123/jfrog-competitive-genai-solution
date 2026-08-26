@@ -1,0 +1,253 @@
+{
+  "items": [
+    {
+      "id": "sig_cross_malware_2026-08-24",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "positioning_messaging",
+      "signal_flavour": "cross",
+      "subject_entity": "jfrog",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": true,
+      "headline": "Sonatype hardened its comparison-page claim about JFrog malware detection",
+      "occurred_at": "2026-08-24T00:00:00+00:00",
+      "persona": "sales",
+      "so_what": "If a prospect cites this: the page now reads harsher than a month ago — the wording moved, the underlying capability did not. Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the \"not proactive\" claim doesn't hold.",
+      "score": 95.0,
+      "score_breakdown": {
+        "total": 95.0,
+        "parts": [
+          ["positioning \u2192 sales base 3 \u2192 30", 30.0],
+          ["\u00d7 subject_is_jfrog \u00d72.0", 30.0],
+          ["+ tier_1 entity", 15.0],
+          ["+ substantive change", 20.0]
+        ]
+      },
+      "handling": null,
+      "awareness_only": false,
+      "change": {
+        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "kind": "substantive",
+        "was": "Limited",
+        "now": "Very limited, not proactive"
+      },
+      "evidence": [
+        {
+          "quote": "Very limited, not proactive",
+          "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+          "source_name": "Sonatype comparison page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_malware_cross",
+      "corroboration_count": 1,
+      "interrupt_tier": "critical"
+    },
+    {
+      "id": "sig_secadv_nexus_394",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "security_trust",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "osv",
+      "mentions_jfrog": false,
+      "headline": "Advisory affecting Nexus Repository \u2264 3.94 \u2014 authentication bypass, CVSS 9.1 (sample)",
+      "occurred_at": "2026-08-26T00:00:00+00:00",
+      "persona": null,
+      "so_what": "A high-severity auth-bypass class issue in the competitor's on-prem line. Relevant to security-posture conversations; frame around capability, not the individual CVE.",
+      "score": 78.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
+          "source_url": "https://osv.dev/vulnerability/GHSA-xxxx-sample",
+          "source_name": "OSV.dev",
+          "captured_at": "2026-08-26T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_authbypass",
+      "corroboration_count": 2,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_cargo_395",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Nexus Repository 3.95 adds Cargo registry support; deprecates Java 11 runtime (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": null,
+      "so_what": "Closes a format gap where Rust toolchains are in scope. Bake-off relevant in accounts standardising on Cargo.",
+      "score": 66.0,
+      "score_breakdown": {
+        "total": 66.0,
+        "parts": [
+          ["product_capability \u2192 base 1 \u2192 10", 10.0],
+          ["\u00d7 subject weight \u00d71.0", 0.0],
+          ["+ tier_1", 15.0],
+          ["+ substantive", 20.0],
+          ["+ watchlist \"cargo\"", 12.0],
+          ["+ source grade A", 9.0]
+        ]
+      },
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
+          "source_url": "https://github.com/sonatype/nexus-public/releases",
+          "source_name": "GitHub Releases (nexus-public)",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_nexus_395",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cap_gitlab_slsa",
+      "entity": { "slug": "gitlab", "name": "GitLab", "tier": 2 },
+      "signal_type": "product_capability",
+      "signal_flavour": null,
+      "subject_entity": "gitlab",
+      "asserting_entity": "gitlab",
+      "mentions_jfrog": false,
+      "headline": "GitLab Package Registry adds SLSA provenance attestation to CI-built artifacts (sample)",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "persona": null,
+      "so_what": "Supply-chain provenance is moving into the default CI path for a shallow-coverage competitor. Awareness item for the product lane.",
+      "score": 58.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Pipelines can now emit SLSA-compliant provenance stored alongside the package.",
+          "source_url": "https://about.gitlab.com/releases",
+          "source_name": "GitLab releases",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 2,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_gitlab_slsa",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_reg_cra",
+      "entity": { "slug": "industry", "name": "Industry", "tier": null },
+      "signal_type": "market_regulatory",
+      "signal_flavour": null,
+      "subject_entity": null,
+      "asserting_entity": "industry",
+      "mentions_jfrog": false,
+      "headline": "EU Cyber Resilience Act: reporting duty for actively exploited vulnerabilities takes effect (sample)",
+      "occurred_at": "2026-08-22T00:00:00+00:00",
+      "persona": null,
+      "so_what": "SBOM and vulnerability reporting become procurement preconditions in scope sectors \u2014 a demand-shaping event, not a competitor event.",
+      "score": 61.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
+          "source_url": "https://digital-strategy.ec.europa.eu/cra",
+          "source_name": "European Commission",
+          "captured_at": "2026-08-22T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_cra",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_cust_bank_casestudy",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "customer_evidence",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "New financial-services case study appeared on Sonatype's customer page (sample)",
+      "occurred_at": "2026-08-24T00:00:00+00:00",
+      "persona": null,
+      "so_what": "A new logo in a segment where JFrog has named-account overlap. A win signal worth a competitive-desk question.",
+      "score": 54.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "A top-20 European bank standardised its open-source governance on Sonatype.",
+          "source_url": "https://www.sonatype.com/customers",
+          "source_name": "Sonatype customers page",
+          "captured_at": "2026-08-24T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ],
+      "cluster_id": "cl_bank_casestudy",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    },
+    {
+      "id": "sig_partner_marketplace",
+      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "signal_type": "partnership_ecosystem",
+      "signal_flavour": null,
+      "subject_entity": "sonatype",
+      "asserting_entity": "sonatype",
+      "mentions_jfrog": false,
+      "headline": "Sonatype listing appears in a major cloud marketplace with committed-spend eligibility (sample)",
+      "occurred_at": "2026-08-23T00:00:00+00:00",
+      "persona": null,
+      "so_what": "Changes the procurement path in enterprise deals where cloud-marketplace drawdown is a buying lever. Deal-mechanics signal, not a capability one.",
+      "score": 49.0,
+      "score_breakdown": null,
+      "handling": null,
+      "awareness_only": false,
+      "change": null,
+      "evidence": [
+        {
+          "quote": "Available in the marketplace; counts toward your committed cloud spend.",
+          "source_url": "https://aws.amazon.com/marketplace",
+          "source_name": "AWS Marketplace listing",
+          "captured_at": "2026-08-23T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 2,
+          "is_primary": false
+        }
+      ],
+      "cluster_id": "cl_marketplace",
+      "corroboration_count": 1,
+      "interrupt_tier": null
+    }
+  ],
+  "total": 7,
+  "cursor": null
+}

@@ -1,0 +1,45 @@
+{
+  "week_of": "2026-08-24T00:00:00+00:00",
+  "assembled_at": "2026-08-28T16:00:00+00:00",
+  "subject": "Executive weekly roll-up \u00b7 week of 24 Aug",
+  "lead": "Four trends with direction, velocity and confidence \u2014 not events. Assembled Friday. One is an explicit stability statement.",
+  "trends": [
+    {
+      "id": "trend_ai_artifact_category",
+      "title": "The AI-artifact security category is forming, and JFrog is positioned as the incumbent to displace",
+      "body": "A third competitor move into model/ML-artifact scanning this quarter (sample). The pattern across releases, hiring and messaging is category formation, not isolated features. Strategic implication: defend the \"we were here first\" narrative while the category is still being named.",
+      "direction": "against_us",
+      "velocity": "accelerating",
+      "confidence_grade": "A",
+      "confidence_note": "3 corroborating signals",
+      "contributing_signal_ids": ["sig_cap_hf_firewall", "sig_talent_sonatype_ml", "sig_cross_malware_2026-08-24"]
+    },
+    {
+      "id": "trend_regulation_tailwind",
+      "title": "Regulation is moving demand toward us: SBOM and vulnerability reporting are becoming procurement preconditions",
+      "body": "EU CRA reporting duties took effect this week; SBOM mandates are spreading into scope sectors (sample). This is a tailwind \u2014 buyers increasingly must have what the platform already produces. Implication: lead regulated-sector GTM with compliance-by-default framing.",
+      "direction": "toward_us",
+      "velocity": "steady",
+      "confidence_grade": "A",
+      "confidence_note": "official sources",
+      "contributing_signal_ids": ["sig_reg_cra", "sig_reg_slsa_adoption"]
+    },
+    {
+      "id": "trend_procurement_path",
+      "title": "Competitors are shifting the buying conversation from repository to procurement path",
+      "body": "A competitor cloud-marketplace listing with committed-spend eligibility appeared this week (sample), following a pattern of moving competition onto deal-mechanics rather than capability. Implication: ensure marketplace and procurement parity is not a silent disadvantage in enterprise cycles.",
+      "direction": "lateral",
+      "velocity": "emerging",
+      "confidence_grade": "B",
+      "confidence_note": "single signal",
+      "contributing_signal_ids": ["sig_partner_marketplace"]
+    }
+  ],
+  "stability": [
+    {
+      "title": "No material change in competitor positioning this week.",
+      "detail": "Comparison pages, homepages and pricing for all five tracked competitors were captured and diffed. Nothing crossed the materiality threshold. Reporting stability is intelligence, not an empty slot.",
+      "entities_checked": ["sonatype", "gitlab", "github", "harbor"]
+    }
+  ]
+}

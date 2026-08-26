@@ -1,0 +1,59 @@
+{
+  "sales": {
+    "persona": "sales",
+    "from_name": "CI System",
+    "from_email": "ci-digest@example.internal",
+    "subject": "Competitive digest \u2014 Sales \u00b7 Tue 26 Aug",
+    "meta": "6 items \u00b7 1 handling caution \u00b7 budget capped",
+    "lead": "Six things you could use in a live conversation today. Each is an objection you might hear and the response, with the source attached.",
+    "items": [
+      { "signal_type": "security_trust", "headline": "Advisory affecting Nexus \u2264 3.94", "so_what": "Handling caution \u2014 lead on posture, not the CVE. Response framing supplied.", "flag": "\u26a0 caution", "app_link": "https://app.internal/signals/sig_secadv_nexus_394" },
+      { "signal_type": "product_capability", "headline": "Nexus 3.95 adds Cargo registry support", "so_what": "Counter: format support is table stakes \u2014 pivot to Cargo malware scanning and curation.", "flag": null, "app_link": "https://app.internal/signals/sig_cap_cargo_395_sales" },
+      { "signal_type": "customer_evidence", "headline": "New financial-services case study on Sonatype customer page", "so_what": "Named-account overlap flagged to the competitive desk.", "flag": null, "app_link": "https://app.internal/signals/sig_cust_bank_casestudy_sales" },
+      { "signal_type": "partnership_ecosystem", "headline": "Sonatype now in a cloud marketplace", "so_what": "Procurement-path parity: JFrog is available the same way. Don\u2019t concede the point.", "flag": null, "app_link": "https://app.internal/signals/sig_partner_marketplace_sales" },
+      { "signal_type": "product_capability", "headline": "Nexus deprecates Java 11", "so_what": "Migration angle for two accounts \u2014 evaluate alternatives while they re-platform.", "flag": null, "app_link": "https://app.internal/signals/sig_cap_java11_deprecation" },
+      { "signal_type": "market_regulatory", "headline": "EU CRA reporting obligations dated", "so_what": "Bring compliance + security into one conversation; JFrog produces signed SBOMs.", "flag": null, "app_link": "https://app.internal/signals/sig_reg_cra_sales" }
+    ],
+    "sent_at": "2026-08-26T06:05:00+00:00",
+    "delivery_logged": true,
+    "footer": "Every item links to its evidence in the app. Unsubscribe or change cadence in Settings. Sent by the scheduler at 06:05 \u00b7 delivery logged."
+  },
+  "product": {
+    "persona": "product",
+    "from_name": "CI System",
+    "from_email": "ci-digest@example.internal",
+    "subject": "Competitive digest \u2014 Product \u00b7 Tue 26 Aug",
+    "meta": "8 items \u00b7 2 awareness-only \u00b7 bullet-level",
+    "lead": "Eight capability deltas with the verbatim release-note bullet and a link to the primary source. Two are flagged awareness-only.",
+    "items": [
+      { "signal_type": "product_capability", "headline": "Nexus 3.95 \u2014 3 signals from 40 bullets", "so_what": "Cargo support + provenance attestation; 37 bullets filtered as no_signal.", "flag": null, "app_link": "https://app.internal/signals/sig_cap_nexus_release_395" },
+      { "signal_type": "product_capability", "headline": "Nexus Firewall scans Hugging Face model artifacts", "so_what": "Format-limited. Parity-gap analysis vs AI Catalog + Xray warranted this sprint.", "flag": null, "app_link": "https://app.internal/signals/sig_cap_hf_firewall" },
+      { "signal_type": "talent_org", "headline": "Three Sonatype ML supply-chain roles", "so_what": "Leading indicator \u2014 roadmap intent 6\u201312 months out.", "flag": null, "app_link": "https://app.internal/signals/sig_talent_sonatype_ml" },
+      { "signal_type": "talent_org", "headline": "Harbor seeks OCI-native SBOM maintainer", "so_what": "Format-interoperability signal.", "flag": null, "app_link": "https://app.internal/signals/sig_talent_harbor_oci" },
+      { "signal_type": "market_regulatory", "headline": "SLSA v1.1 adoption crosses majority", "so_what": "Awareness only \u2014 no roadmap change implied today.", "flag": "awareness", "app_link": "https://app.internal/signals/sig_reg_slsa_adoption" },
+      { "signal_type": "product_capability", "headline": "GitLab emits SLSA provenance from pipelines", "so_what": "Assess whether our provenance story is legible to buyers.", "flag": null, "app_link": "https://app.internal/signals/sig_cap_gitlab_slsa_product" },
+      { "signal_type": "product_capability", "headline": "GitHub Packages adds image retention policies", "so_what": "Hygiene parity by a shallow-coverage competitor.", "flag": "awareness", "app_link": "https://app.internal/signals/sig_cap_github_retention" },
+      { "signal_type": "security_trust", "headline": "Nexus \u2264 3.94 auth-bypass advisory", "so_what": "Informs our own threat-model messaging; fixed in 3.95.", "flag": null, "app_link": "https://app.internal/signals/sig_secadv_nexus_394_product" }
+    ],
+    "sent_at": "2026-08-26T06:05:00+00:00",
+    "delivery_logged": true,
+    "footer": "Every item links to its evidence in the app. Unsubscribe or change cadence in Settings. Sent by the scheduler at 06:05 \u00b7 delivery logged."
+  },
+  "exec": {
+    "persona": "exec",
+    "from_name": "CI System",
+    "from_email": "ci-digest@example.internal",
+    "subject": "Executive weekly roll-up \u00b7 week of 24 Aug",
+    "meta": "4 items \u00b7 weekly \u00b7 stability reported",
+    "lead": "Four trends with direction, velocity and confidence \u2014 not events. Assembled Friday. One is an explicit stability statement.",
+    "items": [
+      { "signal_type": "trend \u2191 against us", "headline": "AI-artifact security category is forming", "so_what": "Third competitor move this quarter; JFrog positioned as incumbent to displace. Confidence A.", "flag": null, "app_link": "https://app.internal/exec/trend_ai_artifact_category" },
+      { "signal_type": "trend \u2191 toward us", "headline": "Regulation is moving demand toward us", "so_what": "CRA + SBOM mandates becoming procurement preconditions. Confidence A.", "flag": null, "app_link": "https://app.internal/exec/trend_regulation_tailwind" },
+      { "signal_type": "trend \u2192 lateral", "headline": "Competition shifting to procurement path", "so_what": "Marketplace / committed-spend moves. Single signal, confidence B.", "flag": null, "app_link": "https://app.internal/exec/trend_procurement_path" },
+      { "signal_type": "stability", "headline": "No material change in competitor positioning this week", "so_what": "All five tracked competitors captured and diffed; nothing crossed threshold.", "flag": "stable", "app_link": "https://app.internal/exec/stability" }
+    ],
+    "sent_at": "2026-08-28T16:05:00+00:00",
+    "delivery_logged": true,
+    "footer": "Every item links to its evidence in the app. Unsubscribe or change cadence in Settings. Sent by the scheduler \u00b7 delivery logged."
+  }
+}
