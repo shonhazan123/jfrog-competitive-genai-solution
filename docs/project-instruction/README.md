@@ -12,6 +12,7 @@ this folder instead.
 | File | Covers |
 |---|---|
 | [digests.md](./digests.md) | `GET /digests/{persona}` vs `GET /digests/exec/weekly` |
+| [runs.md](./runs.md) | `POST /runs` async progress, `GET /runs/{id}`, human stages |
 | [kits.md](./kits.md) | `GET /kits`, KIT rollup, citations, display labels |
 | [ask.md](./ask.md) | Ask graph routing, hit accumulation, `POST /ask` bridge |
 | [client.md](./client.md) | React client: fixture/live switch, IA-as-data, tokens, SignalCard rule, live-wiring contract drift |

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.controllers import runs
@@ -11,8 +11,8 @@ class RunRequest(BaseModel):
     reason: str | None = None
 
 @router.post("", status_code=202)
-def start_run(body: RunRequest) -> dict:
-    return runs.start_run(body.kind, body.reason)
+def start_run(body: RunRequest, background_tasks: BackgroundTasks) -> dict:
+    return runs.start_run(body.kind, body.reason, background_tasks)
 
 @router.post("/collect")
 def collect() -> dict:
@@ -25,3 +25,10 @@ def status() -> dict:
 @router.get("/latest")
 def latest(session: Session = Depends(get_session)) -> dict:
     return runs.get_latest_run(session)
+
+@router.get("/{run_id}")
+def get_run_progress(run_id: str) -> dict:
+    progress = runs.get_run_progress(run_id)
+    if progress is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return progress
