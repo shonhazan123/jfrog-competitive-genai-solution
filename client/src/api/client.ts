@@ -112,7 +112,7 @@ function selectSourceFixture(sourceId: string): Source {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${getBaseUrl()}${path}`;
-  const response = await fetch(url, init);
+  const response = await fetch(url, init ?? {});
   const body = await response.json();
   if (!response.ok) {
     const errorBody = body as { error?: { message?: string } };
