@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 
+from apscheduler.triggers.cron import CronTrigger
 from worker.jobs import run_collection, run_interpret, run_scoring
 
 _last_run_at: datetime | None = None
@@ -7,9 +8,12 @@ _next_run_at: datetime | None = None
 _last_report: dict = {}
 
 def trigger_collection() -> dict:
-    global _last_run_at, _last_report
+    global _last_run_at, _last_report, _next_run_at
     _last_run_at = datetime.now(UTC)
     _last_report = run_collection()
+    _next_run_at = CronTrigger(hour=6, minute=0, timezone="UTC").get_next_fire_time(
+        None, datetime.now(UTC)
+    )
     return _last_report
 
 def trigger_interpret() -> dict:
@@ -23,13 +27,11 @@ def trigger_scoring() -> dict:
     return run_scoring()
 
 def run_status() -> dict:
-    from worker.scheduler import build_scheduler
     global _next_run_at
     if _next_run_at is None:
-        scheduler = build_scheduler()
-        job = scheduler.get_job("collect")
-        if job and job.next_run_time:
-            _next_run_at = job.next_run_time
+        _next_run_at = CronTrigger(hour=6, minute=0, timezone="UTC").get_next_fire_time(
+            None, datetime.now(UTC)
+        )
     return {
         "last_run_at": _last_run_at.isoformat() if _last_run_at else None,
         "next_run_at": _next_run_at.isoformat() if _next_run_at else None,
