@@ -37,6 +37,14 @@ def sample_claim(session):
     return claim
 
 @pytest.fixture
+def not_modified_fetcher():
+    class _NotModified:
+        def fetch(self, url, etag=None):
+            class R: not_modified = True; body = b""; status = 304
+            return R()
+    return _NotModified()
+
+@pytest.fixture
 def seeded_source(session):
     from app.services.seeding import seed
     from app.models.registry import Source

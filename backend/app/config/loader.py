@@ -18,4 +18,7 @@ def load_config() -> AppConfig:
         routing=_read("routing.yaml"),
         materiality=_read("materiality.yaml"),
         watchlist=_read("watchlist.yaml"),
+        jfrog_positions=_read("jfrog_positions.yaml"),
+        trends=_read("trends.yaml"),
+        delivery=_read("delivery.yaml"),
     )

@@ -1,0 +1,31 @@
+# JFrog's own position per comparison dimension.
+#
+# This file is AUTHORED by the Competitive Intelligence team, not extracted
+# from a source. Competitor cells in the comparison view carry an Admiralty
+# grade because they were extracted from a graded source and verified against
+# a stored capture. These cells cannot and must not — there is no capture to
+# verify them against. The interface marks them "authored" for exactly that
+# reason. Presenting authored text as graded evidence would be the same
+# category of unfounded confidence the system exists to prevent.
+positions:
+  - dimension: malware_detection
+    origin: authored
+    text: "Curation blocks malicious packages at the gate; Xray adds contextual analysis to determine applicability."
+  - dimension: sbom
+    origin: authored
+    text: "AppTrust provides SBOM generation, management and evidence collection across the release lifecycle."
+  - dimension: pricing_model
+    origin: authored
+    text: "Subscription tiers by capability; enterprise pricing is quoted."
+  - dimension: package_format_support
+    origin: authored
+    text: "Universal binary repository — 30+ package types under one system of record."
+  - dimension: model_registry
+    origin: authored
+    text: "AI Catalog and JFrog ML provide model and MCP-artifact management alongside binaries."
+  - dimension: runtime_security
+    origin: authored
+    text: "Runtime Security correlates deployed workloads back to build and package provenance."
+  - dimension: deployment_model
+    origin: authored
+    text: "Self-hosted, SaaS, hybrid and air-gapped."

@@ -1,0 +1,13 @@
+# config/trends.yaml
+window_weeks: 4
+comparison_windows: 2          # current window vs the preceding one
+min_signals_for_trend: 3
+direction:
+  rising_ratio: 1.35           # current / prior above this = rising
+  falling_ratio: 0.70
+velocity:
+  emerging_prior_max: 1        # near-zero prior volume = emerging
+  accelerating_ratio: 1.80
+confidence:
+  high: { min_signals: 8, min_sources: 3 }
+  medium: { min_signals: 4, min_sources: 2 }

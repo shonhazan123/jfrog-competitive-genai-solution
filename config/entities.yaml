@@ -4,4 +4,5 @@ entities:
   - { slug: github,    name: GitHub Packages, kind: competitor, tier: 2, aliases: ["GitHub Packages"] }
   - { slug: gitlab,    name: GitLab,          kind: competitor, tier: 2, aliases: [] }
   - { slug: harbor,    name: Harbor,          kind: competitor, tier: 2, aliases: [goharbor] }
+  - { slug: azure_artifacts, name: Azure Artifacts, kind: competitor, tier: 2, aliases: ["Azure DevOps Artifacts"] }
   - { slug: industry,  name: Industry,        kind: industry,   tier: 1, aliases: [] }

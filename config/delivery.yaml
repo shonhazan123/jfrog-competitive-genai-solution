@@ -1,0 +1,15 @@
+# config/delivery.yaml
+smtp:
+  host: smtp.gmail.com
+  port: 587
+  starttls: true
+  from_name: JFrog Competitive Intelligence
+send_at:
+  sales:   "07:00"
+  product: "07:00"
+  exec:    "FRI 08:00"
+recipients:
+  sales:   []
+  product: []
+  exec:    []
+app_base_url: http://localhost:5173

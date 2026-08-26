@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, ForeignKey, Integer, String, JSON
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, TimestampMixin
 
@@ -28,3 +30,6 @@ class Source(Base, TimestampMixin):
     robots_allowed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     etag: Mapped[str | None] = mapped_column(String(256), nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    check_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    covers: Mapped[list] = mapped_column(JSON, default=list)

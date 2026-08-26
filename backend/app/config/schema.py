@@ -20,6 +20,7 @@ class SourceConfig(BaseModel):
     requires_js: bool = False
     row_selector: str | None = None
     adapter: str | None = None
+    covers: list[str] = Field(default_factory=list)
 
 class FuzzyConfig(BaseModel):
     enabled: bool = True
@@ -41,6 +42,7 @@ class ChunkingConfig(BaseModel):
 class SignalTypesConfig(BaseModel):
     types: list[str]
     capability_tags: list[str]
+    coverage_columns: list[str]
 
 class RoutingConfig(BaseModel):
     matrix: dict[str, dict[str, int]]
@@ -82,6 +84,28 @@ class MaterialityConfig(BaseModel):
 class WatchlistConfig(BaseModel):
     terms: list[str]
 
+class JfrogPosition(BaseModel):
+    dimension: str
+    origin: Literal["authored"]
+    text: str
+
+class JfrogPositionsConfig(BaseModel):
+    positions: list[JfrogPosition]
+
+class TrendConfig(BaseModel):
+    window_weeks: int
+    comparison_windows: int
+    min_signals_for_trend: int
+    direction: dict[str, float]
+    velocity: dict[str, float]
+    confidence: dict[str, dict[str, int]]
+
+class DeliveryConfig(BaseModel):
+    smtp: dict
+    send_at: dict[str, str]
+    recipients: dict[str, list[str]]
+    app_base_url: str
+
 class AppConfig(BaseModel):
     entities: list[EntityConfig]
     sources: list[SourceConfig]
@@ -91,3 +115,6 @@ class AppConfig(BaseModel):
     routing: RoutingConfig
     materiality: MaterialityConfig
     watchlist: WatchlistConfig
+    jfrog_positions: JfrogPositionsConfig
+    trends: TrendConfig
+    delivery: DeliveryConfig

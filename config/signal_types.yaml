@@ -9,6 +9,17 @@ types:
   - market_regulatory
   - talent_org
 
+coverage_columns:
+  - product_capability
+  - positioning_messaging
+  - pricing_packaging
+  - security_trust
+  - corporate_financial
+  - partnership_ecosystem
+  - customer_evidence
+  - market_regulatory
+  - talent_org
+
 capability_tags:
   - malware_detection
   - sbom
