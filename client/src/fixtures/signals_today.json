@@ -2,7 +2,11 @@
   "items": [
     {
       "id": "sig_cross_malware_2026-08-24",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "positioning_messaging",
       "signal_flavour": "cross",
       "subject_entity": "jfrog",
@@ -16,16 +20,28 @@
       "score_breakdown": {
         "total": 95.0,
         "parts": [
-          ["positioning \u2192 sales base 3 \u2192 30", 30.0],
-          ["\u00d7 subject_is_jfrog \u00d72.0", 30.0],
-          ["+ tier_1 entity", 15.0],
-          ["+ substantive change", 20.0]
+          [
+            "positioning → sales base 3 → 30",
+            30.0
+          ],
+          [
+            "× subject_is_jfrog ×2.0",
+            30.0
+          ],
+          [
+            "+ tier_1 entity",
+            15.0
+          ],
+          [
+            "+ substantive change",
+            20.0
+          ]
         ]
       },
       "handling": null,
       "awareness_only": false,
       "change": {
-        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "dimension": "row \"Malware detection\" · cell \"JFrog\"",
         "kind": "substantive",
         "was": "Limited",
         "now": "Very limited, not proactive"
@@ -38,22 +54,36 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_malware_cross",
       "corroboration_count": 1,
-      "interrupt_tier": "critical"
+      "interrupt_tier": "critical",
+      "signal_type_label": "Positioning",
+      "handling_label": null
     },
     {
       "id": "sig_secadv_nexus_394",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "security_trust",
       "signal_flavour": null,
       "subject_entity": "sonatype",
       "asserting_entity": "osv",
       "mentions_jfrog": false,
-      "headline": "Advisory affecting Nexus Repository \u2264 3.94 \u2014 authentication bypass, CVSS 9.1 (sample)",
+      "headline": "Advisory affecting Nexus Repository ≤ 3.94 — authentication bypass, CVSS 9.1 (sample)",
       "occurred_at": "2026-08-26T00:00:00+00:00",
       "persona": null,
       "so_what": "A high-severity auth-bypass class issue in the competitor's on-prem line. Relevant to security-posture conversations; frame around capability, not the individual CVE.",
@@ -70,16 +100,30 @@
           "captured_at": "2026-08-26T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 1,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "OSV.dev",
+            "source_url": "https://osv.dev/vulnerability/GHSA-xxxx-sample",
+            "captured_at": "2026-08-26T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_nexus_authbypass",
       "corroboration_count": 2,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Security advisory",
+      "handling_label": null
     },
     {
       "id": "sig_cap_cargo_395",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "sonatype",
@@ -93,12 +137,30 @@
       "score_breakdown": {
         "total": 66.0,
         "parts": [
-          ["product_capability \u2192 base 1 \u2192 10", 10.0],
-          ["\u00d7 subject weight \u00d71.0", 0.0],
-          ["+ tier_1", 15.0],
-          ["+ substantive", 20.0],
-          ["+ watchlist \"cargo\"", 12.0],
-          ["+ source grade A", 9.0]
+          [
+            "product_capability → base 1 → 10",
+            10.0
+          ],
+          [
+            "× subject weight ×1.0",
+            0.0
+          ],
+          [
+            "+ tier_1",
+            15.0
+          ],
+          [
+            "+ substantive",
+            20.0
+          ],
+          [
+            "+ watchlist \"cargo\"",
+            12.0
+          ],
+          [
+            "+ source grade A",
+            9.0
+          ]
         ]
       },
       "handling": null,
@@ -112,16 +174,30 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitHub Releases (nexus-public)",
+            "source_url": "https://github.com/sonatype/nexus-public/releases",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_nexus_395",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     },
     {
       "id": "sig_cap_gitlab_slsa",
-      "entity": { "slug": "gitlab", "name": "GitLab", "tier": 2 },
+      "entity": {
+        "slug": "gitlab",
+        "name": "GitLab",
+        "tier": 2
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "gitlab",
@@ -144,16 +220,30 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "B",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitLab releases",
+            "source_url": "https://about.gitlab.com/releases",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "B"
+          }
         }
       ],
       "cluster_id": "cl_gitlab_slsa",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     },
     {
       "id": "sig_reg_cra",
-      "entity": { "slug": "industry", "name": "Industry", "tier": null },
+      "entity": {
+        "slug": "industry",
+        "name": "Industry",
+        "tier": null
+      },
       "signal_type": "market_regulatory",
       "signal_flavour": null,
       "subject_entity": null,
@@ -162,7 +252,7 @@
       "headline": "EU Cyber Resilience Act: reporting duty for actively exploited vulnerabilities takes effect (sample)",
       "occurred_at": "2026-08-22T00:00:00+00:00",
       "persona": null,
-      "so_what": "SBOM and vulnerability reporting become procurement preconditions in scope sectors \u2014 a demand-shaping event, not a competitor event.",
+      "so_what": "SBOM and vulnerability reporting become procurement preconditions in scope sectors — a demand-shaping event, not a competitor event.",
       "score": 61.0,
       "score_breakdown": null,
       "handling": null,
@@ -176,16 +266,30 @@
           "captured_at": "2026-08-22T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 1,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "European Commission",
+            "source_url": "https://digital-strategy.ec.europa.eu/cra",
+            "captured_at": "2026-08-22T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_cra",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "sig_cust_bank_casestudy",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "customer_evidence",
       "signal_flavour": null,
       "subject_entity": "sonatype",
@@ -208,16 +312,30 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype customers page",
+            "source_url": "https://www.sonatype.com/customers",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_bank_casestudy",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Customer evidence",
+      "handling_label": null
     },
     {
       "id": "sig_partner_marketplace",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "partnership_ecosystem",
       "signal_flavour": null,
       "subject_entity": "sonatype",
@@ -240,12 +358,22 @@
           "captured_at": "2026-08-23T00:00:00+00:00",
           "reliability_grade": "B",
           "credibility_score": 2,
-          "is_primary": false
+          "is_primary": false,
+          "citation": {
+            "source_name": "AWS Marketplace listing",
+            "source_url": "https://aws.amazon.com/marketplace",
+            "captured_at": "2026-08-23T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "B"
+          }
         }
       ],
       "cluster_id": "cl_marketplace",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Partnership",
+      "handling_label": null
     }
   ],
   "total": 7,

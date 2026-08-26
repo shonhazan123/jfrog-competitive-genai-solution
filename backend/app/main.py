@@ -14,6 +14,7 @@ from app.routers import (
     email_preview,
     health,
     industry,
+    kits,
     runs,
     signals,
     sources,
@@ -30,6 +31,7 @@ app.include_router(health.router)
 app.include_router(runs.router)
 app.include_router(activity.router)
 app.include_router(signals.router)
+app.include_router(kits.router)
 app.include_router(digests.router)
 app.include_router(comparison.router)
 app.include_router(claims.router)

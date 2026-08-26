@@ -1,0 +1,56 @@
+# Key Intelligence Topics — the six standing questions the CI team asks.
+# Signal types are how the machine classifies. KITs are how the team thinks.
+# Every signal type belongs to exactly one KIT; nothing is orphaned or double-counted.
+kits:
+  - key: deal_threats
+    label: Deal Threats
+    question: What will a rep hit in a live deal this quarter?
+    category: early_warning
+    order: 1
+    includes:
+      signal_types: [positioning_messaging, pricing_packaging, customer_evidence]
+
+  - key: parity_gaps
+    label: Parity & Gaps
+    question: Where did the capability line move — in either direction?
+    category: strategic
+    order: 2
+    includes:
+      signal_types: [product_capability]
+
+  - key: rival_strategy
+    label: Rival Strategy
+    question: Is a competitor repositioning itself, and toward what?
+    category: key_players
+    order: 3
+    includes:
+      signal_types: [partnership_ecosystem]
+
+  - key: category_market
+    label: Category & Market
+    question: Is the field forming around something new?
+    category: strategic
+    order: 4
+    includes:
+      signal_types: [market_regulatory]
+
+  - key: trust_security
+    label: Trust & Security
+    question: Incidents and advisories — theirs, and the category's.
+    category: early_warning
+    order: 5
+    includes:
+      signal_types: [security_trust]
+
+  - key: momentum
+    label: Momentum & Viability
+    question: Who is rising, who is stalling?
+    category: key_players
+    order: 6
+    includes:
+      signal_types: [corporate_financial, talent_org]
+
+# A signal whose subject is JFrog is promoted into Deal Threats regardless of
+# its type — a competitor talking about us is always deal-relevant.
+promote_to_deal_threats_when:
+  subject_entity: jfrog

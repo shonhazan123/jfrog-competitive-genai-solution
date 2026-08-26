@@ -14,8 +14,18 @@
         "captured_at": "2026-08-22T00:00:00+00:00",
         "reliability_grade": "A",
         "credibility_score": 1,
-        "is_primary": true
-      }
+        "is_primary": true,
+        "citation": {
+          "source_name": "European Commission",
+          "source_url": "https://digital-strategy.ec.europa.eu/cra",
+          "captured_at": "2026-08-22T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "A"
+        }
+      },
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "ind_nis2",
@@ -31,8 +41,18 @@
         "captured_at": "2026-08-20T00:00:00+00:00",
         "reliability_grade": "A",
         "credibility_score": 2,
-        "is_primary": true
-      }
+        "is_primary": true,
+        "citation": {
+          "source_name": "ENISA",
+          "source_url": "https://www.enisa.europa.eu/nis2",
+          "captured_at": "2026-08-20T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "A"
+        }
+      },
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "ind_slsa",
@@ -48,15 +68,25 @@
         "captured_at": "2026-08-19T00:00:00+00:00",
         "reliability_grade": "B",
         "credibility_score": 2,
-        "is_primary": false
-      }
+        "is_primary": false,
+        "citation": {
+          "source_name": "SLSA project blog",
+          "source_url": "https://slsa.dev/blog",
+          "captured_at": "2026-08-19T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "B"
+        }
+      },
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "ind_openssf",
       "standard_chip": "OpenSSF",
       "signal_type": "market_regulatory",
       "headline": "OpenSSF publishes updated baseline for open-source project security posture (sample)",
-      "body": "A refreshed security baseline raises expectations for signing, provenance and vulnerability disclosure across widely used open-source projects \u2014 nudging the entire ecosystem toward attestable artifacts.",
+      "body": "A refreshed security baseline raises expectations for signing, provenance and vulnerability disclosure across widely used open-source projects — nudging the entire ecosystem toward attestable artifacts.",
       "occurred_at": "2026-08-18T00:00:00+00:00",
       "evidence": {
         "quote": "The baseline raises expectations for signing, provenance and vulnerability disclosure.",
@@ -65,8 +95,18 @@
         "captured_at": "2026-08-18T00:00:00+00:00",
         "reliability_grade": "A",
         "credibility_score": 2,
-        "is_primary": true
-      }
+        "is_primary": true,
+        "citation": {
+          "source_name": "OpenSSF",
+          "source_url": "https://openssf.org/blog",
+          "captured_at": "2026-08-18T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "A"
+        }
+      },
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "ind_supplychain_campaign",
@@ -82,8 +122,18 @@
         "captured_at": "2026-08-21T00:00:00+00:00",
         "reliability_grade": "B",
         "credibility_score": 2,
-        "is_primary": false
-      }
+        "is_primary": false,
+        "citation": {
+          "source_name": "Security researcher report",
+          "source_url": "https://openssf.org/advisory-sample",
+          "captured_at": "2026-08-21T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "B"
+        }
+      },
+      "signal_type_label": "Security advisory",
+      "handling_label": null
     },
     {
       "id": "ind_cncf",
@@ -99,8 +149,18 @@
         "captured_at": "2026-08-17T00:00:00+00:00",
         "reliability_grade": "A",
         "credibility_score": 2,
-        "is_primary": true
-      }
+        "is_primary": true,
+        "citation": {
+          "source_name": "CNCF announcement",
+          "source_url": "https://www.cncf.io/announcements",
+          "captured_at": "2026-08-17T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "A"
+        }
+      },
+      "signal_type_label": "Partnership",
+      "handling_label": null
     }
   ],
   "total": 6,

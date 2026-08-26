@@ -7,6 +7,7 @@ from app.models.capture import RawCapture
 from app.models.ledger import Claim, ClaimVersion, Evidence
 from app.models.registry import Entity, Source
 from app.serializers.common import evidence_from_capture, fmt_ts
+from app.config.loader import load_config
 
 
 def _claim_change(session: Session, claim: Claim) -> dict | None:
@@ -27,6 +28,7 @@ def _claim_change(session: Session, claim: Claim) -> dict | None:
 
 
 def _claim_evidence(session: Session, claim: Claim) -> list[dict]:
+    cfg = load_config()
     row = session.execute(
         select(Evidence, RawCapture, Source)
         .join(RawCapture, Evidence.capture_id == RawCapture.id)
@@ -44,6 +46,7 @@ def _claim_evidence(session: Session, claim: Claim) -> list[dict]:
             source=source,
             reliability_grade=claim.reliability_grade,
             credibility_score=3,
+            cfg=cfg,
         )
     ]
 

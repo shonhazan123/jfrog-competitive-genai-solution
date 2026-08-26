@@ -13,16 +13,32 @@
           "source_name": "Sonatype comparison page",
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
-          "credibility_score": 2
+          "credibility_score": 2,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         },
         {
           "n": 2,
-          "quote": "was \"Limited\" \u2192 now \"Very limited, not proactive\" (structural diff)",
+          "quote": "was \"Limited\" → now \"Very limited, not proactive\" (structural diff)",
           "source_url": "https://ledger.internal/claim_version/4471",
           "source_name": "claim_version #4471",
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
-          "credibility_score": 2
+          "credibility_score": 2,
+          "citation": {
+            "source_name": "claim_version #4471",
+            "source_url": "https://ledger.internal/claim_version/4471",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         },
         {
           "n": 3,
@@ -31,7 +47,15 @@
           "source_name": "Sonatype comparison page",
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
-          "credibility_score": 3
+          "credibility_score": 3,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "nearby_evidence": []
@@ -39,7 +63,7 @@
     {
       "question": "On AI and model artifacts, where does Sonatype stand versus JFrog right now?",
       "grounded": true,
-      "answer": "From the ledger: Sonatype added Hugging Face model scanning to Nexus Firewall (format-limited, per its own blog). JFrog's recorded position is AI Catalog plus Xray contextual analysis. The comparison dimension \"AI / model artifacts\" is flagged as recently changed (21 Aug 2026). The material distinction on record is breadth of model-format coverage \u2014 the competitor claim is scoped to one format.",
+      "answer": "From the ledger: Sonatype added Hugging Face model scanning to Nexus Firewall (format-limited, per its own blog). JFrog's recorded position is AI Catalog plus Xray contextual analysis. The comparison dimension \"AI / model artifacts\" is flagged as recently changed (21 Aug 2026). The material distinction on record is breadth of model-format coverage — the competitor claim is scoped to one format.",
       "refusal_reason": null,
       "evidence": [
         {
@@ -49,16 +73,32 @@
           "source_name": "Sonatype blog",
           "captured_at": "2026-08-21T00:00:00+00:00",
           "reliability_grade": "A",
-          "credibility_score": 2
+          "credibility_score": 2,
+          "citation": {
+            "source_name": "Sonatype blog",
+            "source_url": "https://www.sonatype.com/blog/model-firewall",
+            "captured_at": "2026-08-21T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         },
         {
           "n": 2,
-          "quote": "battlecard_row \"AI / model artifacts\" \u00b7 JFrog: AI Catalog + Xray contextual analysis",
+          "quote": "battlecard_row \"AI / model artifacts\" · JFrog: AI Catalog + Xray contextual analysis",
           "source_url": "https://ledger.internal/battlecard_row/bcr_ai_model",
-          "source_name": "ledger \u00b7 battlecard_row",
+          "source_name": "ledger · battlecard_row",
           "captured_at": "2026-08-21T00:00:00+00:00",
           "reliability_grade": "A",
-          "credibility_score": 2
+          "credibility_score": 2,
+          "citation": {
+            "source_name": "ledger · battlecard_row",
+            "source_url": "https://ledger.internal/battlecard_row/bcr_ai_model",
+            "captured_at": "2026-08-21T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "nearby_evidence": []
@@ -66,13 +106,19 @@
     {
       "question": "How many net-new enterprise customers did Sonatype win from JFrog last quarter?",
       "grounded": false,
-      "answer": "I don't have grounded evidence for that. Win/loss counts require CRM records and buyer interviews that this system does not collect \u2014 and Sonatype is privately held, so no regulated financial disclosure exists to corroborate against. I won't estimate a number I can't source. Here's what I do have nearby:",
+      "answer": "I don't have grounded evidence for that. Win/loss counts require CRM records and buyer interviews that this system does not collect — and Sonatype is privately held, so no regulated financial disclosure exists to corroborate against. I won't estimate a number I can't source. Here's what I do have nearby:",
       "refusal_reason": "No grounded evidence",
       "evidence": [],
       "nearby_evidence": [
-        { "text": "One new Sonatype financial-services case study appeared on their customer page (24 Aug 2026) \u2014 a single self-reported logo, grade A3, not a count." },
-        { "text": "Three Sonatype job postings referencing ML supply-chain roles (20 Aug 2026) \u2014 a hiring signal, not a revenue one." },
-        { "text": "Win/loss analysis is named out of scope in the PRD; it needs internal primary sources (Salesforce closed-lost, call transcripts) the system is designed to attach later." }
+        {
+          "text": "One new Sonatype financial-services case study appeared on their customer page (24 Aug 2026) — a single self-reported logo, grade A3, not a count."
+        },
+        {
+          "text": "Three Sonatype job postings referencing ML supply-chain roles (20 Aug 2026) — a hiring signal, not a revenue one."
+        },
+        {
+          "text": "Win/loss analysis is named out of scope in the PRD; it needs internal primary sources (Salesforce closed-lost, call transcripts) the system is designed to attach later."
+        }
       ]
     }
   ]

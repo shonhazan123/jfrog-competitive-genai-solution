@@ -6,7 +6,9 @@
       "asserting_entity": "sonatype",
       "claim_text": "JFrog malware detection is very limited, not proactive",
       "claim_type": "positioning",
-      "capability_tags": ["malware_detection"],
+      "capability_tags": [
+        "malware_detection"
+      ],
       "status": "active",
       "reliability_grade": "A",
       "credibility_score": 2,
@@ -14,7 +16,7 @@
       "last_confirmed_at": "2026-08-24T00:00:00+00:00",
       "score": 95.0,
       "change": {
-        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "dimension": "row \"Malware detection\" · cell \"JFrog\"",
         "kind": "substantive",
         "was": "Limited",
         "now": "Very limited, not proactive"
@@ -27,7 +29,15 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "versions": [
@@ -46,7 +56,9 @@
       "asserting_entity": "sonatype",
       "claim_text": "80% more accurate data than JFrog",
       "claim_type": "positioning",
-      "capability_tags": ["data_accuracy"],
+      "capability_tags": [
+        "data_accuracy"
+      ],
       "status": "active",
       "reliability_grade": "A",
       "credibility_score": 3,
@@ -62,7 +74,15 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "versions": [
@@ -81,7 +101,9 @@
       "asserting_entity": "sonatype",
       "claim_text": "JFrog SBOM support is export only",
       "claim_type": "capability",
-      "capability_tags": ["sbom"],
+      "capability_tags": [
+        "sbom"
+      ],
       "status": "active",
       "reliability_grade": "A",
       "credibility_score": 3,
@@ -97,7 +119,15 @@
           "captured_at": "2026-07-11T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-07-11T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "versions": [
@@ -116,7 +146,9 @@
       "asserting_entity": "sonatype",
       "claim_text": "Beware hidden costs with JFrog Artifactory",
       "claim_type": "pricing",
-      "capability_tags": ["pricing"],
+      "capability_tags": [
+        "pricing"
+      ],
       "status": "active",
       "reliability_grade": "A",
       "credibility_score": 3,
@@ -132,7 +164,15 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "versions": [

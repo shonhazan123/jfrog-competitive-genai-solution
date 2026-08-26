@@ -6,29 +6,47 @@
       "jfrog_position": "Proactive; contextual analysis via Xray + Curation",
       "competitor_position": "Claims JFrog is \"very limited, not proactive\"",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_malware_cross"],
+      "supporting_claim_ids": [
+        "claim_malware_cross"
+      ],
       "reliability_grade": "A",
       "credibility_score": 2,
       "last_changed_at": "2026-08-24T00:00:00+00:00",
       "changed_recently": true,
       "evidence": [
         {
-          "quote": "80% more accurate data than JFrog \u2026 JFrog malware detection is very limited, not proactive.",
+          "quote": "80% more accurate data than JFrog … JFrog malware detection is very limited, not proactive.",
           "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
           "source_name": "Sonatype comparison page",
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": {
-        "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+        "dimension": "row \"Malware detection\" · cell \"JFrog\"",
         "kind": "substantive",
         "was": "Limited",
         "now": "Very limited, not proactive"
       },
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_sbom",
@@ -36,7 +54,9 @@
       "jfrog_position": "Generate, sign, distribute; continuous",
       "competitor_position": "Claims JFrog SBOM is \"export only\"",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_sbom_cross"],
+      "supporting_claim_ids": [
+        "claim_sbom_cross"
+      ],
       "reliability_grade": "A",
       "credibility_score": 3,
       "last_changed_at": "2026-07-11T00:00:00+00:00",
@@ -49,11 +69,27 @@
           "captured_at": "2026-07-11T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-07-11T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": null,
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_pricing",
@@ -61,7 +97,9 @@
       "jfrog_position": "Tiered subscription; published tiers",
       "competitor_position": "Claims JFrog has \"hidden costs\"",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_pricing_cross"],
+      "supporting_claim_ids": [
+        "claim_pricing_cross"
+      ],
       "reliability_grade": "A",
       "credibility_score": 3,
       "last_changed_at": "2026-08-24T00:00:00+00:00",
@@ -74,11 +112,27 @@
           "captured_at": "2026-08-24T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype comparison page",
+            "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+            "captured_at": "2026-08-24T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": null,
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_formats",
@@ -86,7 +140,9 @@
       "jfrog_position": "30+ formats native",
       "competitor_position": "Adding formats iteratively; Cargo added in 3.95 (sample)",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_cargo_cap"],
+      "supporting_claim_ids": [
+        "claim_cargo_cap"
+      ],
       "reliability_grade": "A",
       "credibility_score": 2,
       "last_changed_at": "2026-08-25T00:00:00+00:00",
@@ -99,11 +155,27 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitHub Releases (nexus-public)",
+            "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": null,
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_ai_model",
@@ -111,7 +183,9 @@
       "jfrog_position": "AI Catalog + Xray contextual analysis",
       "competitor_position": "Hugging Face model scanning in Firewall (format-limited, sample)",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_hf_cap"],
+      "supporting_claim_ids": [
+        "claim_hf_cap"
+      ],
       "reliability_grade": "A",
       "credibility_score": 2,
       "last_changed_at": "2026-08-21T00:00:00+00:00",
@@ -124,11 +198,27 @@
           "captured_at": "2026-08-21T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype blog",
+            "source_url": "https://www.sonatype.com/blog/model-firewall",
+            "captured_at": "2026-08-21T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": null,
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_runtime",
@@ -143,7 +233,15 @@
       "changed_recently": false,
       "evidence": [],
       "change": null,
-      "no_claim_on_record": true
+      "no_claim_on_record": true,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     },
     {
       "id": "bcr_saas",
@@ -151,7 +249,9 @@
       "jfrog_position": "Both, single platform",
       "competitor_position": "Both; self-hosted heritage, SaaS available",
       "competitor": "sonatype",
-      "supporting_claim_ids": ["claim_saas_cap"],
+      "supporting_claim_ids": [
+        "claim_saas_cap"
+      ],
       "reliability_grade": "A",
       "credibility_score": 2,
       "last_changed_at": "2026-06-03T00:00:00+00:00",
@@ -164,11 +264,27 @@
           "captured_at": "2026-06-03T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype product page",
+            "source_url": "https://www.sonatype.com/products/nexus-repository",
+            "captured_at": "2026-06-03T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "change": null,
-      "no_claim_on_record": false
+      "no_claim_on_record": false,
+      "jfrog_citation": {
+        "source_name": "CI team",
+        "source_url": "",
+        "captured_at": "2026-08-26T06:00:00+00:00",
+        "origin": "authored",
+        "archived_url": null,
+        "grade": null
+      }
     }
   ],
   "total": 7,

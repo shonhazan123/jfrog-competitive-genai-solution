@@ -22,4 +22,6 @@ def load_config() -> AppConfig:
         trends=_read("trends.yaml"),
         delivery=_read("delivery.yaml"),
         retrieval=_read("retrieval.yaml"),
+        kits=_read("kits.yaml"),
+        labels=_read("labels.yaml"),
     )

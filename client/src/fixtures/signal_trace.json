@@ -1,6 +1,10 @@
 {
   "id": "sig_cross_malware_2026-08-24",
-  "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+  "entity": {
+    "slug": "sonatype",
+    "name": "Sonatype",
+    "tier": 1
+  },
   "signal_type": "positioning_messaging",
   "signal_flavour": "cross",
   "subject_entity": "jfrog",
@@ -9,21 +13,33 @@
   "headline": "Sonatype hardened its comparison-page claim about JFrog malware detection",
   "occurred_at": "2026-08-24T00:00:00+00:00",
   "persona": "sales",
-  "so_what": "If a prospect cites this: the page now reads harsher than a month ago \u2014 the wording moved, the underlying capability did not. Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the \"not proactive\" claim doesn't hold.",
+  "so_what": "If a prospect cites this: the page now reads harsher than a month ago — the wording moved, the underlying capability did not. Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the \"not proactive\" claim doesn't hold.",
   "score": 95.0,
   "score_breakdown": {
     "total": 95.0,
     "parts": [
-      ["positioning \u2192 sales base 3 \u2192 30", 30.0],
-      ["\u00d7 subject_is_jfrog \u00d72.0", 30.0],
-      ["+ tier_1 entity", 15.0],
-      ["+ substantive change", 20.0]
+      [
+        "positioning → sales base 3 → 30",
+        30.0
+      ],
+      [
+        "× subject_is_jfrog ×2.0",
+        30.0
+      ],
+      [
+        "+ tier_1 entity",
+        15.0
+      ],
+      [
+        "+ substantive change",
+        20.0
+      ]
     ]
   },
   "handling": null,
   "awareness_only": false,
   "change": {
-    "dimension": "row \"Malware detection\" \u00b7 cell \"JFrog\"",
+    "dimension": "row \"Malware detection\" · cell \"JFrog\"",
     "kind": "substantive",
     "was": "Limited",
     "now": "Very limited, not proactive"
@@ -36,45 +52,110 @@
       "captured_at": "2026-08-24T00:00:00+00:00",
       "reliability_grade": "A",
       "credibility_score": 2,
-      "is_primary": true
+      "is_primary": true,
+      "citation": {
+        "source_name": "Sonatype comparison page",
+        "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+        "captured_at": "2026-08-24T00:00:00+00:00",
+        "origin": "extracted",
+        "archived_url": null,
+        "grade": "A"
+      }
     }
   ],
   "cluster_id": "cl_malware_cross",
   "corroboration_count": 1,
   "interrupt_tier": "critical",
   "trace": [
-    { "n": 1, "node": "sanitize", "status": "ok", "detail": "stripped nav, footer, scripts, hidden elements before hashing" },
-    { "n": 2, "node": "detect", "status": "ok", "detail": "normalised-hash differed; structural diff isolated one changed cell" },
-    { "n": 3, "node": "extract", "status": "ok", "detail": "signal_type=positioning_messaging \u00b7 subject=jfrog \u00b7 asserter=sonatype" },
-    { "n": 4, "node": "verify", "status": "ok", "detail": "\"Very limited, not proactive\" matched capture at offset 4471" },
-    { "n": 5, "node": "contextualize", "status": "ok", "detail": "sales so-what written against JFrog's ledger position" }
+    {
+      "n": 1,
+      "node": "sanitize",
+      "status": "ok",
+      "detail": "stripped nav, footer, scripts, hidden elements before hashing"
+    },
+    {
+      "n": 2,
+      "node": "detect",
+      "status": "ok",
+      "detail": "normalised-hash differed; structural diff isolated one changed cell"
+    },
+    {
+      "n": 3,
+      "node": "extract",
+      "status": "ok",
+      "detail": "signal_type=positioning_messaging · subject=jfrog · asserter=sonatype"
+    },
+    {
+      "n": 4,
+      "node": "verify",
+      "status": "ok",
+      "detail": "\"Very limited, not proactive\" matched capture at offset 4471"
+    },
+    {
+      "n": 5,
+      "node": "contextualize",
+      "status": "ok",
+      "detail": "sales so-what written against JFrog's ledger position"
+    }
   ],
   "all_persona_scores": {
     "sales": {
       "total": 95.0,
       "parts": [
-        ["positioning \u2192 sales base 3 \u2192 30", 30.0],
-        ["\u00d7 subject_is_jfrog \u00d72.0", 30.0],
-        ["+ tier_1 entity", 15.0],
-        ["+ substantive change", 20.0]
+        [
+          "positioning → sales base 3 → 30",
+          30.0
+        ],
+        [
+          "× subject_is_jfrog ×2.0",
+          30.0
+        ],
+        [
+          "+ tier_1 entity",
+          15.0
+        ],
+        [
+          "+ substantive change",
+          20.0
+        ]
       ]
     },
     "product": {
       "total": 45.0,
       "parts": [
-        ["positioning \u2192 product base 1 \u2192 10", 10.0],
-        ["+ tier_1 entity", 15.0],
-        ["+ substantive change", 20.0]
+        [
+          "positioning → product base 1 → 10",
+          10.0
+        ],
+        [
+          "+ tier_1 entity",
+          15.0
+        ],
+        [
+          "+ substantive change",
+          20.0
+        ]
       ]
     },
     "exec": {
       "total": 45.0,
       "parts": [
-        ["positioning \u2192 exec base 1 \u2192 10", 10.0],
-        ["+ tier_1 entity", 15.0],
-        ["+ substantive change", 20.0]
+        [
+          "positioning → exec base 1 → 10",
+          10.0
+        ],
+        [
+          "+ tier_1 entity",
+          15.0
+        ],
+        [
+          "+ substantive change",
+          20.0
+        ]
       ]
     }
   },
-  "bullet_classification": null
+  "bullet_classification": null,
+  "signal_type_label": "Positioning",
+  "handling_label": null
 }

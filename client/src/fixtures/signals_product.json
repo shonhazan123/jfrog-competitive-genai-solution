@@ -2,16 +2,20 @@
   "items": [
     {
       "id": "sig_cap_nexus_release_395",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "sonatype",
       "asserting_entity": "sonatype",
       "mentions_jfrog": false,
-      "headline": "Nexus Repository 3.95 release note \u2014 3 material signals out of 40 bullets (sample)",
+      "headline": "Nexus Repository 3.95 release note — 3 material signals out of 40 bullets (sample)",
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": "product",
-      "so_what": "Cargo format support (parity item) and a new provenance-attestation option. The release also drops Java 11. Classification runs at bullet level \u2014 the other 37 bullets were bug fixes and dependency bumps, filtered as no_signal.",
+      "so_what": "Cargo format support (parity item) and a new provenance-attestation option. The release also drops Java 11. Classification runs at bullet level — the other 37 bullets were bug fixes and dependency bumps, filtered as no_signal.",
       "score": 66.0,
       "score_breakdown": null,
       "handling": null,
@@ -25,7 +29,15 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitHub Releases (nexus-public)",
+            "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         },
         {
           "quote": "New: optional SLSA provenance attestation on published components.",
@@ -34,16 +46,30 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitHub Releases (nexus-public)",
+            "source_url": "https://github.com/sonatype/nexus-public/releases/tag/3.95.0",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_nexus_395",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     },
     {
       "id": "sig_cap_hf_firewall",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "sonatype",
@@ -52,7 +78,7 @@
       "headline": "Nexus Firewall extends policy to Hugging Face model artifacts (sample)",
       "occurred_at": "2026-08-21T00:00:00+00:00",
       "persona": "product",
-      "so_what": "Model-artifact scanning appears in a competitor for the first time \u2014 coverage claimed for Hugging Face format only. Parity-gap analysis vs JFrog AI Catalog + Xray contextual analysis is warranted this sprint.",
+      "so_what": "Model-artifact scanning appears in a competitor for the first time — coverage claimed for Hugging Face format only. Parity-gap analysis vs JFrog AI Catalog + Xray contextual analysis is warranted this sprint.",
       "score": 59.0,
       "score_breakdown": null,
       "handling": null,
@@ -66,16 +92,30 @@
           "captured_at": "2026-08-21T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Sonatype blog",
+            "source_url": "https://www.sonatype.com/blog/model-firewall",
+            "captured_at": "2026-08-21T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_hf_firewall",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     },
     {
       "id": "sig_talent_sonatype_ml",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "talent_org",
       "signal_flavour": null,
       "subject_entity": "sonatype",
@@ -84,7 +124,7 @@
       "headline": "Three Sonatype job postings reference model registries and ML artifact scanning (sample)",
       "occurred_at": "2026-08-20T00:00:00+00:00",
       "persona": "product",
-      "so_what": "Hiring reveals roadmap intent 6\u201312 months before anything ships. Three roles clustered on ML-artifact security signals a sustained investment, not a one-off feature \u2014 the only predictive signal type in the system.",
+      "so_what": "Hiring reveals roadmap intent 6–12 months before anything ships. Three roles clustered on ML-artifact security signals a sustained investment, not a one-off feature — the only predictive signal type in the system.",
       "score": 55.0,
       "score_breakdown": null,
       "handling": null,
@@ -92,22 +132,36 @@
       "change": null,
       "evidence": [
         {
-          "quote": "Senior Engineer, ML Supply Chain \u2014 design scanning for model registries and ML artifact formats.",
+          "quote": "Senior Engineer, ML Supply Chain — design scanning for model registries and ML artifact formats.",
           "source_url": "https://boards.greenhouse.io/sonatype",
           "source_name": "Greenhouse public board (Sonatype)",
           "captured_at": "2026-08-20T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Greenhouse public board (Sonatype)",
+            "source_url": "https://boards.greenhouse.io/sonatype",
+            "captured_at": "2026-08-20T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_sonatype_ml_hiring",
       "corroboration_count": 3,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Hiring signal",
+      "handling_label": null
     },
     {
       "id": "sig_talent_harbor_oci",
-      "entity": { "slug": "harbor", "name": "Harbor", "tier": 2 },
+      "entity": {
+        "slug": "harbor",
+        "name": "Harbor",
+        "tier": 2
+      },
       "signal_type": "talent_org",
       "signal_flavour": null,
       "subject_entity": "harbor",
@@ -116,7 +170,7 @@
       "headline": "Harbor community posting seeks a maintainer for OCI-native SBOM storage (sample)",
       "occurred_at": "2026-08-18T00:00:00+00:00",
       "persona": "product",
-      "so_what": "A maintainer role framed around OCI-native SBOM suggests the open-source registry is moving toward storing attestations as first-class OCI objects \u2014 worth tracking for format-interoperability planning.",
+      "so_what": "A maintainer role framed around OCI-native SBOM suggests the open-source registry is moving toward storing attestations as first-class OCI objects — worth tracking for format-interoperability planning.",
       "score": 42.0,
       "score_breakdown": null,
       "handling": null,
@@ -130,16 +184,30 @@
           "captured_at": "2026-08-18T00:00:00+00:00",
           "reliability_grade": "B",
           "credibility_score": 3,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "Lever public board (Harbor)",
+            "source_url": "https://jobs.lever.co/harbor-sample",
+            "captured_at": "2026-08-18T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "B"
+          }
         }
       ],
       "cluster_id": "cl_harbor_oci",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Hiring signal",
+      "handling_label": null
     },
     {
       "id": "sig_reg_slsa_adoption",
-      "entity": { "slug": "industry", "name": "Industry", "tier": null },
+      "entity": {
+        "slug": "industry",
+        "name": "Industry",
+        "tier": null
+      },
       "signal_type": "market_regulatory",
       "signal_flavour": null,
       "subject_entity": null,
@@ -162,22 +230,36 @@
           "captured_at": "2026-08-19T00:00:00+00:00",
           "reliability_grade": "B",
           "credibility_score": 2,
-          "is_primary": false
+          "is_primary": false,
+          "citation": {
+            "source_name": "SLSA project blog",
+            "source_url": "https://slsa.dev/blog",
+            "captured_at": "2026-08-19T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "B"
+          }
         }
       ],
       "cluster_id": "cl_slsa_adoption",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
     },
     {
       "id": "sig_secadv_nexus_394_product",
-      "entity": { "slug": "sonatype", "name": "Sonatype", "tier": 1 },
+      "entity": {
+        "slug": "sonatype",
+        "name": "Sonatype",
+        "tier": 1
+      },
       "signal_type": "security_trust",
       "signal_flavour": null,
       "subject_entity": "sonatype",
       "asserting_entity": "osv",
       "mentions_jfrog": false,
-      "headline": "Advisory affecting Nexus Repository \u2264 3.94 \u2014 auth bypass (sample)",
+      "headline": "Advisory affecting Nexus Repository ≤ 3.94 — auth bypass (sample)",
       "occurred_at": "2026-08-26T00:00:00+00:00",
       "persona": "product",
       "so_what": "Relevant to how competitors handle access-control hardening on-prem. Informs our own threat-model messaging; the fix arrived in the same 3.95 release above.",
@@ -194,16 +276,30 @@
           "captured_at": "2026-08-26T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 1,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "OSV.dev",
+            "source_url": "https://osv.dev/vulnerability/GHSA-xxxx-sample",
+            "captured_at": "2026-08-26T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_nexus_authbypass",
       "corroboration_count": 2,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Security advisory",
+      "handling_label": null
     },
     {
       "id": "sig_cap_github_retention",
-      "entity": { "slug": "github", "name": "GitHub", "tier": 2 },
+      "entity": {
+        "slug": "github",
+        "name": "GitHub",
+        "tier": 2
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "github",
@@ -226,16 +322,30 @@
           "captured_at": "2026-08-17T00:00:00+00:00",
           "reliability_grade": "A",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitHub changelog",
+            "source_url": "https://github.blog/changelog",
+            "captured_at": "2026-08-17T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "A"
+          }
         }
       ],
       "cluster_id": "cl_github_retention",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     },
     {
       "id": "sig_cap_gitlab_slsa_product",
-      "entity": { "slug": "gitlab", "name": "GitLab", "tier": 2 },
+      "entity": {
+        "slug": "gitlab",
+        "name": "GitLab",
+        "tier": 2
+      },
       "signal_type": "product_capability",
       "signal_flavour": null,
       "subject_entity": "gitlab",
@@ -258,12 +368,22 @@
           "captured_at": "2026-08-25T00:00:00+00:00",
           "reliability_grade": "B",
           "credibility_score": 2,
-          "is_primary": true
+          "is_primary": true,
+          "citation": {
+            "source_name": "GitLab releases",
+            "source_url": "https://about.gitlab.com/releases",
+            "captured_at": "2026-08-25T00:00:00+00:00",
+            "origin": "extracted",
+            "archived_url": null,
+            "grade": "B"
+          }
         }
       ],
       "cluster_id": "cl_gitlab_slsa",
       "corroboration_count": 1,
-      "interrupt_tier": null
+      "interrupt_tier": null,
+      "signal_type_label": "Product release",
+      "handling_label": null
     }
   ],
   "total": 8,

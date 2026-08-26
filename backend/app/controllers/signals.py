@@ -3,10 +3,17 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config.loader import load_config
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
 from app.models.signal import Signal, SignalEvidence, AnalystAction
-from app.serializers.common import entity_ref, evidence_from_capture, fmt_ts
+from app.serializers.common import (
+    entity_ref,
+    evidence_from_capture,
+    fmt_ts,
+    signal_type_label,
+    state_label,
+)
 
 
 def _entity_map(session: Session) -> dict[int, Entity]:
@@ -14,6 +21,7 @@ def _entity_map(session: Session) -> dict[int, Entity]:
 
 
 def _signal_evidence(session: Session, signal: Signal) -> list[dict]:
+    cfg = load_config()
     rows = session.execute(
         select(SignalEvidence, RawCapture, Source)
         .join(RawCapture, SignalEvidence.capture_id == RawCapture.id)
@@ -22,6 +30,15 @@ def _signal_evidence(session: Session, signal: Signal) -> list[dict]:
     ).all()
     if not rows:
         source = session.get(Source, signal.source_id)
+        from app.services.citation import DeliveryRecord, build_citation, citation_to_dict
+
+        record = DeliveryRecord(
+            source_name=source.key.replace("_", " ").title() if source else "unknown",
+            source_url=source.url if source else "",
+            fetched_at=signal.occurred_at,
+            provenance="extracted",
+            reliability_grade=source.reliability_grade if source else "A",
+        )
         return [
             {
                 "quote": signal.headline,
@@ -31,6 +48,7 @@ def _signal_evidence(session: Session, signal: Signal) -> list[dict]:
                 "reliability_grade": "A",
                 "credibility_score": 2,
                 "is_primary": True,
+                "citation": citation_to_dict(build_citation(record)),
             }
         ]
     evidence = []
@@ -43,6 +61,7 @@ def _signal_evidence(session: Session, signal: Signal) -> list[dict]:
                 reliability_grade=source.reliability_grade,
                 credibility_score=2,
                 is_primary=idx == 0,
+                cfg=cfg,
             )
         )
     return evidence
@@ -53,6 +72,7 @@ def _serialize_signal(
     entities: dict[int, Entity],
     persona: str | None,
 ) -> dict:
+    cfg = load_config()
     entity = entities[signal.entity_id]
     subject = entities.get(signal.subject_entity_id) if signal.subject_entity_id else None
     asserting = entities.get(entity.id)
@@ -70,6 +90,7 @@ def _serialize_signal(
         "id": f"sig_{signal.id}",
         "entity": entity_ref(entity),
         "signal_type": signal.signal_type,
+        "signal_type_label": signal_type_label(signal.signal_type, cfg),
         "signal_flavour": flavour,
         "subject_entity": subject.slug if subject else None,
         "asserting_entity": asserting.slug if asserting else entity.slug,
@@ -81,6 +102,7 @@ def _serialize_signal(
         "score": float(getattr(signal, f"score_{active_persona}")),
         "score_breakdown": score_breakdown,
         "handling": signal.handling,
+        "handling_label": state_label(signal.handling, cfg),
         "awareness_only": bool(breakdown.get("awareness_only")),
         "change": breakdown.get("change"),
         "evidence": [],

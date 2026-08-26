@@ -114,6 +114,32 @@ class RetrievalConfig(BaseModel):
     rerank: dict
     presets: dict[str, dict]
 
+class KitIncludes(BaseModel):
+    signal_types: list[str]
+
+class KitDef(BaseModel):
+    key: str
+    label: str
+    question: str
+    category: str
+    order: int
+    includes: KitIncludes
+
+class KitsConfig(BaseModel):
+    kits: list[KitDef]
+    promote_to_deal_threats_when: dict[str, str]
+
+class PriorityBand(BaseModel):
+    max: int = Field(ge=0, le=100)
+    label: str
+
+class LabelsConfig(BaseModel):
+    signal_types: dict[str, str]
+    priority_bands: list[PriorityBand]
+    states: dict[str, str]
+    personas: dict[str, str]
+    origins: dict[str, str]
+
 class AppConfig(BaseModel):
     entities: list[EntityConfig]
     sources: list[SourceConfig]
@@ -127,3 +153,5 @@ class AppConfig(BaseModel):
     trends: TrendConfig
     delivery: DeliveryConfig
     retrieval: RetrievalConfig
+    kits: KitsConfig
+    labels: LabelsConfig

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -10,6 +11,7 @@ from agent.graphs.ask.graph import build_ask_graph
 from agent.llm import get_checkpointer, prompt as load_prompt
 from app.models.registry import Entity, Source
 from app.serializers.common import fmt_ts
+from app.services.citation import DeliveryRecord, build_citation, citation_to_dict
 from app.services.config_overrides import current_config
 from app.services.retrieval.query import search
 
@@ -94,15 +96,24 @@ def _format_evidence(session: Session, hits: list[dict], citations: list[str]) -
         if hit_id not in cited:
             continue
         source = sources.get(hit.get("source_id"))
+        fetched_at = source.last_checked_at if source and source.last_checked_at else datetime.now(UTC)
+        record = DeliveryRecord(
+            source_name=source.key.replace("_", " ").title() if source else "unknown",
+            source_url=source.url if source else "",
+            fetched_at=fetched_at,
+            provenance="extracted",
+            reliability_grade=hit.get("reliability_grade") or (source.reliability_grade if source else "C"),
+        )
         evidence.append(
             {
                 "n": n,
                 "quote": hit["text"],
                 "source_url": source.url if source else "",
                 "source_name": source.key.replace("_", " ").title() if source else "unknown",
-                "captured_at": fmt_ts(source.last_checked_at) if source else None,
+                "captured_at": fmt_ts(fetched_at),
                 "reliability_grade": hit.get("reliability_grade") or (source.reliability_grade if source else "C"),
                 "credibility_score": 2,
+                "citation": citation_to_dict(build_citation(record)),
             }
         )
         n += 1

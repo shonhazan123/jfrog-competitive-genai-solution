@@ -7,14 +7,35 @@
   "live": true,
   "sources_count": 23,
   "funnel": [
-    ["collected", 94],
-    ["clustered", 41],
-    ["material", 11],
-    ["delivered", 14]
+    [
+      "collected",
+      94
+    ],
+    [
+      "clustered",
+      41
+    ],
+    [
+      "material",
+      11
+    ],
+    [
+      "delivered",
+      14
+    ]
   ],
   "delivered_breakdown": [
-    ["sales", 6],
-    ["product", 8],
-    ["exec", 0]
+    [
+      "sales",
+      6
+    ],
+    [
+      "product",
+      8
+    ],
+    [
+      "exec",
+      0
+    ]
   ]
 }

@@ -126,7 +126,7 @@
       "last_checked": null,
       "enabled": false,
       "excluded": true,
-      "exclusion_reason": "excluded \u2014 blocked by robots.txt"
+      "exclusion_reason": "excluded — blocked by robots.txt"
     },
     {
       "id": "src_g2_reviews",
@@ -142,7 +142,7 @@
       "last_checked": null,
       "enabled": false,
       "excluded": true,
-      "exclusion_reason": "excluded \u2014 ToS prohibits automated collection (G2)"
+      "exclusion_reason": "excluded — ToS prohibits automated collection (G2)"
     }
   ],
   "total": 9,

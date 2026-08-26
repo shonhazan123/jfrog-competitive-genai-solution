@@ -8,7 +8,12 @@ from sqlalchemy.orm import Session
 from app.models.capture import RawCapture
 from app.models.ledger import Claim, ClaimVersion, Evidence
 from app.models.registry import Source
-from app.serializers.common import evidence_from_capture, fmt_ts
+from app.serializers.common import (
+    authored_citation,
+    evidence_from_capture,
+    fmt_ts,
+    signal_type_label,
+)
 from app.services.comparison import build_comparison
 
 
@@ -36,6 +41,9 @@ def _claim_ids_for_dimension(session: Session, competitor_id: int, dimension: st
 def _evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
     if claim is None:
         return []
+    from app.config.loader import load_config
+
+    cfg = load_config()
     row = session.execute(
         select(Evidence, RawCapture, Source)
         .join(RawCapture, Evidence.capture_id == RawCapture.id)
@@ -53,6 +61,7 @@ def _evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
             source=source,
             reliability_grade=claim.reliability_grade,
             credibility_score=3,
+            cfg=cfg,
         )
     ]
 
@@ -103,6 +112,7 @@ def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
                 "id": f"bcr_{row.dimension}",
                 "dimension": _DIMENSION_LABELS.get(row.dimension, row.dimension),
                 "jfrog_position": row.jfrog.text or "",
+                "jfrog_citation": authored_citation(),
                 "competitor_position": row.competitor.text or (
                     "Positions at build/proxy stage; no runtime claim on record"
                     if no_claim
