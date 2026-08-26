@@ -1,0 +1,10 @@
+.quote {
+  margin: 0;
+  padding-left: var(--sp-3);
+  border-left: 3px solid var(--border-strong);
+  font-family: var(--font-serif);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-style: italic;
+  color: var(--ink);
+}

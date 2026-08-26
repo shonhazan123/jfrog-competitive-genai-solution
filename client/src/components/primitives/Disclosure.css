@@ -1,0 +1,33 @@
+.disclosure {
+  border-top: 1px solid var(--border);
+}
+
+.disclosure__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-3) 0;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  font-weight: 500;
+  color: var(--ink-secondary);
+  text-align: left;
+}
+
+.disclosure__trigger:hover {
+  color: var(--ink);
+}
+
+.disclosure__icon {
+  font-size: var(--fs-meta);
+  line-height: 1;
+  color: var(--ink-muted);
+}
+
+.disclosure__content {
+  padding-bottom: var(--sp-3);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}

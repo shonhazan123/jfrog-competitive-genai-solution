@@ -1,0 +1,36 @@
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sp-6);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.score-badge[data-tier="low"] {
+  color: var(--mat-low-fg);
+  background-color: var(--mat-low-bg);
+  font-weight: 400;
+}
+
+.score-badge[data-tier="mid"] {
+  color: var(--mat-mid-fg);
+  background-color: var(--mat-mid-bg);
+  font-weight: 500;
+}
+
+.score-badge[data-tier="high"] {
+  color: var(--mat-high-fg);
+  background-color: var(--mat-high-bg);
+  font-weight: 600;
+}
+
+.score-badge[data-tier="peak"] {
+  color: var(--mat-peak-fg);
+  background-color: var(--mat-peak-bg);
+  font-weight: 700;
+}

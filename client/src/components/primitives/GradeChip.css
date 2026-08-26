@@ -1,0 +1,23 @@
+.grade-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--grade-fg);
+  background-color: var(--surface);
+  border: 1px solid var(--grade-border);
+}
+
+.grade-chip--strong {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.grade-chip--weak {
+  color: var(--grade-weak-fg);
+  border-color: var(--grade-weak-border);
+}

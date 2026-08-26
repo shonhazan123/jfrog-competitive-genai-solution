@@ -1,0 +1,12 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  font-weight: 500;
+  color: var(--chip-hue);
+  background-color: color-mix(in srgb, var(--chip-hue) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-hue) 25%, transparent);
+}

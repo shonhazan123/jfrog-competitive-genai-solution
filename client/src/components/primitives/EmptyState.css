@@ -1,0 +1,22 @@
+.empty-state {
+  padding: var(--sp-5);
+  background-color: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-align: center;
+}
+
+.empty-state__headline {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.empty-state__detail {
+  margin: 0;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  color: var(--ink-muted);
+}
