@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { ExecWeekly, ListResponse, Persona, Signal } from "../api/types";
@@ -15,8 +15,29 @@ const TAB_PERSONA: Record<"sales" | "product", Persona> = {
   product: "product",
 };
 
+const GRID_BREAKPOINT = 1000;
+
+function useGridColumns(): string {
+  const [columns, setColumns] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < GRID_BREAKPOINT
+      ? "1"
+      : "auto",
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setColumns(window.innerWidth < GRID_BREAKPOINT ? "1" : "auto");
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return columns;
+}
+
 export function Divisions() {
   const [tab, setTab] = useState<DivisionTab>("sales");
+  const gridColumns = useGridColumns();
 
   const { data: salesSignals } = useQuery({
     queryKey: ["signals", "sales"],
@@ -152,9 +173,11 @@ export function Divisions() {
         </div>
       ) : (
         <div
+          data-testid="card-grid"
+          data-columns={gridColumns}
           style={{
-            display: "flex",
-            flexDirection: "column",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
             gap: "var(--sp-4)",
           }}
         >

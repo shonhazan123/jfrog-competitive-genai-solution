@@ -1,28 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import type { ArchiveTimeline, Claim, ListResponse } from "../api/types";
-import { ClaimTimeline } from "../components/ClaimTimeline";
+import type { Claim, ListResponse } from "../api/types";
 import { GradeChip } from "../components/primitives/GradeChip";
 import { Panel } from "../components/primitives/Panel";
 import { Quote } from "../components/primitives/Quote";
 import { SectionLabel } from "../components/primitives/SectionLabel";
 import { WasNow } from "../components/primitives/WasNow";
 import claimsFixture from "../fixtures/claims_about_jfrog.json";
-import timelineFixture from "../fixtures/claims_history_timeline.json";
-
-const SOURCE_ID = "src_sonatype_comparison";
 
 export function AboutUs() {
   const { data: claimsData } = useQuery({
     queryKey: ["claims", { subject: "jfrog" }],
     queryFn: () => api.getClaims({ subject: "jfrog", include_history: true }),
     initialData: claimsFixture as ListResponse<Claim>,
-  });
-
-  const { data: timeline } = useQuery({
-    queryKey: ["claimHistory", SOURCE_ID],
-    queryFn: () => api.getClaimHistory(SOURCE_ID),
-    initialData: timelineFixture as ArchiveTimeline,
   });
 
   return (
@@ -46,11 +37,18 @@ export function AboutUs() {
         >
           What competitors publicly claim about JFrog, with history.
         </p>
+        <p style={{ marginTop: "var(--sp-3)" }}>
+          <Link
+            to="/trajectory"
+            style={{
+              fontSize: "var(--fs-body)",
+              color: "var(--accent)",
+            }}
+          >
+            View full history
+          </Link>
+        </p>
       </header>
-
-      <Panel>
-        <ClaimTimeline timeline={timeline} claims={claimsData.items} />
-      </Panel>
 
       <div
         style={{

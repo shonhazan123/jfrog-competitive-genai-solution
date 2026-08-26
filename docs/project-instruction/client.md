@@ -1,6 +1,6 @@
 # Client — operational flow
 
-The React client (`client/`) renders all eight screens. It is built and tested
+The React client (`client/`) renders all nine screens. It is built and tested
 against `client/src/fixtures/*.json` and switched to the live API by one flag.
 
 ## Mode switch
@@ -15,7 +15,16 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
 ## Structure that encodes decisions
 - **IA is data:** `client/src/config/navigation.ts` (`NAVIGATION`, grouped
   `daily`/`reference`/`tools`). Regrouping never touches JSX. The router registers
-  all eight routes + a dev `/styleguide`; page tasks only fill their own page file.
+  all nine routes + a dev `/styleguide`; page tasks only fill their own page file.
+  **Trajectory** (`/trajectory`, reference group, immediately after Industry) is
+  the dedicated archive tab — how a competitor's comparison argument evolved
+  over five years, with dated Wayback captures and `SourceLink` per version.
+  **Competitors → Us** (`/about-us`) keeps current claims and links to
+  Trajectory via "View full history"; the multi-year timeline no longer renders
+  there.
+- **Card grids (Divisions, Industry):** signal cards use
+  `repeat(auto-fill, minmax(420px, 1fr))` inside `data-testid="card-grid"`.
+  `data-columns` is `"1"` when viewport width &lt; 1000px, otherwise `"auto"`.
 - **All styling is tokens:** `client/src/styles/tokens.css` is the entire visual
   language (colour, type scale, spacing, radius, elevation, dark override). No
   component hardcodes a hex — a test scans every `.tsx` for `#rrggbb`.

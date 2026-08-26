@@ -1,24 +1,33 @@
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { IndustryItem, ListResponse } from "../api/types";
+import { signalHue } from "../config/labels";
 import { Chip } from "../components/primitives/Chip";
 import { GradeChip } from "../components/primitives/GradeChip";
 import { Quote } from "../components/primitives/Quote";
 import { SectionLabel } from "../components/primitives/SectionLabel";
 import industryFeedFixture from "../fixtures/industry_feed.json";
 
-const HUE_TOKENS: Record<string, string> = {
-  product_capability: "var(--sig-product)",
-  positioning_messaging: "var(--sig-positioning)",
-  pricing_packaging: "var(--sig-pricing)",
-  security_trust: "var(--sig-security)",
-  corporate_financial: "var(--sig-corporate)",
-  partnership_ecosystem: "var(--sig-partnership)",
-  customer_evidence: "var(--sig-customer)",
-  market_regulatory: "var(--sig-regulatory)",
-  talent_org: "var(--sig-talent)",
-};
+const GRID_BREAKPOINT = 1000;
+
+function useGridColumns(): string {
+  const [columns, setColumns] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < GRID_BREAKPOINT
+      ? "1"
+      : "auto",
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setColumns(window.innerWidth < GRID_BREAKPOINT ? "1" : "auto");
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return columns;
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -29,7 +38,7 @@ function formatDate(iso: string): string {
 }
 
 function IndustryCard({ item }: { item: IndustryItem }) {
-  const hue = HUE_TOKENS[item.signal_type] ?? "var(--sig-regulatory)";
+  const hue = signalHue(item.signal_type);
   const cardStyle = { "--signal-hue": hue } as CSSProperties;
 
   return (
@@ -129,6 +138,8 @@ function IndustryCard({ item }: { item: IndustryItem }) {
 }
 
 export function Industry() {
+  const gridColumns = useGridColumns();
+
   const { data } = useQuery({
     queryKey: ["industry"],
     queryFn: () => api.getIndustry(),
@@ -160,9 +171,11 @@ export function Industry() {
       </header>
 
       <div
+        data-testid="card-grid"
+        data-columns={gridColumns}
         style={{
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
           gap: "var(--sp-5)",
         }}
       >

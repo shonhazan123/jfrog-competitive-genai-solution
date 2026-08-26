@@ -5,6 +5,7 @@ import { Divisions } from "../pages/Divisions";
 import { Industry } from "../pages/Industry";
 import { Comparison } from "../pages/Comparison";
 import { AboutUs } from "../pages/AboutUs";
+import { Trajectory } from "../pages/Trajectory";
 import { Ask } from "../pages/Ask";
 import { Settings } from "../pages/Settings";
 import { Digest } from "../pages/Digest";
@@ -17,6 +18,7 @@ export function AppRoutes() {
         <Route path="/" element={<Today />} />
         <Route path="/divisions" element={<Divisions />} />
         <Route path="/industry" element={<Industry />} />
+        <Route path="/trajectory" element={<Trajectory />} />
         <Route path="/comparison" element={<Comparison />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/ask" element={<Ask />} />
