@@ -1,0 +1,28 @@
+sources:
+  - key: sonatype_compare_jfrog
+    entity: sonatype
+    url: https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory
+    kind: html_page
+    mode: snapshot
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 1440
+    row_selector: "table tr"
+
+  - key: sonatype_nexus_releases
+    entity: sonatype
+    url: https://github.com/sonatype/nexus-public/releases.atom
+    kind: atom
+    mode: feed
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 360
+
+  - key: harbor_releases
+    entity: harbor
+    url: https://github.com/goharbor/harbor/releases.atom
+    kind: atom
+    mode: feed
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 360

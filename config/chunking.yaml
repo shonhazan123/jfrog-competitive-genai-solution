@@ -1,0 +1,4 @@
+target_tokens: 800
+max_tokens: 1200
+break_on_heading_level: 2
+never_split: [table_row, list_item, code_block]
