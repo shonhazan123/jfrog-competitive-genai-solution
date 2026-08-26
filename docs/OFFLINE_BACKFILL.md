@@ -8,6 +8,25 @@ The Day-1 milestone replays Sonatype comparison-page history from the Internet A
 
 Run from a machine or VPN that can reach `web.archive.org`. This records the exact CDX query URLs and snapshot HTML bodies the pipeline requests at replay time.
 
+#### Fetch fixtures on the host (no Docker)
+
+Use this when VPN works on the host but **not** inside Docker containers. The tool uses the host network (stdlib Python only — no `pip install`, no `app` imports), writes `fixtures/wayback/manifest.json` plus `.bin` files, and keys each entry with the same URLs `wayback.py` builds at replay time.
+
+```powershell
+# From repo root; VPN must be on
+python tools/fetch_fixtures_local.py
+```
+
+Optional URL override (defaults to snapshot sources in `config/sources.yaml`):
+
+```powershell
+python tools/fetch_fixtures_local.py "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory"
+```
+
+This is the **only** step that needs Internet Archive access. Commit the resulting `fixtures/wayback/` files so every developer and demo environment can replay offline.
+
+#### Other capture options
+
 **Outside Docker** (local venv with backend installed):
 
 ```powershell
@@ -22,9 +41,18 @@ python -m scripts.capture_wayback
 docker compose run --rm worker python -m scripts.capture_wayback
 ```
 
-Output is written to `fixtures/wayback/` (`manifest.json` plus `.bin` files). Commit those files so every developer and demo environment can replay without network access.
-
 ### 2. Replay (offline, default)
+
+After fixtures are committed, inject them into Postgres and check stats (no Archive access needed):
+
+```powershell
+docker compose up -d db
+docker compose run --rm worker python -m worker.main
+docker compose up -d api
+Invoke-WebRequest -UseBasicParsing http://localhost:8000/stats | Select-Object -ExpandProperty Content
+```
+
+Or start everything at once:
 
 ```powershell
 docker compose up
