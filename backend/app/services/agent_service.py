@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
 from agent.graphs.interpret.graph import build_interpret_graph
-from agent.llm import prompt as load_prompt
+from agent.llm import get_model, prompt as load_prompt
+from agent.schemas import Contextualisation, build_extraction_model
 from app.config.loader import load_config
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
@@ -26,6 +29,11 @@ class InterpretResult:
 
 def thread_id_for(capture_id: int, prompt_version: int = PROMPT_VERSION) -> str:
     return f"interpret:{capture_id}:v{prompt_version}"
+
+def _persist_cluster_key(facets: dict, window_days: int) -> str:
+    entity, tags, bucket = cluster_key(facets, window_days)
+    payload = json.dumps([entity, sorted(tags), bucket], sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 def _entity_id(session: Session, slug: str | None) -> int | None:
     if not slug:
@@ -74,11 +82,11 @@ def _persist_signal(session: Session, capture: RawCapture, source: Source, final
         headline=extraction.get("headline", "")[:256],
         occurred_at=occurred_at,
         capability_tags=capability_tags,
-        cluster_key=str(cluster_key({
+        cluster_key=_persist_cluster_key({
             "entity": asserting_slug or entity.slug,
             "capability_tags": capability_tags,
             "occurred_at": occurred_at,
-        }, config.materiality.cluster.window_days)),
+        }, config.materiality.cluster.window_days),
         score_sales=score(facets, "sales", config).total,
         score_product=score(facets, "product", config).total,
         score_exec=score(facets, "exec", config).total,
@@ -102,26 +110,65 @@ def _persist_signal(session: Session, capture: RawCapture, source: Source, final
     session.flush()
     return signal
 
+def _production_deps(session: Session):
+    from langgraph.checkpoint.memory import MemorySaver
+
+    config = load_config()
+    entities = [entity.slug for entity in config.entities]
+    tags = config.signal_types.capability_tags
+    extraction_model = build_extraction_model(entities, tags)
+    extract_llm = get_model("extract").with_structured_output(extraction_model, strict=True)
+    contextualize_llm = get_model("contextualize").with_structured_output(
+        Contextualisation, strict=True,
+    )
+    claim_lookup = DbClaimLookup(session)
+
+    class ContextualizeAdapter:
+        def invoke(self, state):
+            extraction = state.get("extraction") or {}
+            verification = state.get("verification") or {}
+            verified = verification.get("verified_claims") or extraction.get("claims") or []
+            capability_tags: list[str] = []
+            for claim in verified:
+                capability_tags.extend(claim.get("capability_tags", []))
+            payload = {
+                "extraction": extraction,
+                "verified_quotes": [claim.get("quote") for claim in verified],
+                "relations": state.get("relations") or [],
+                "jfrog_positions": {
+                    tag: claim_lookup.jfrog_position(tag)
+                    for tag in dict.fromkeys(capability_tags)
+                },
+            }
+            prompt_text = (
+                load_prompt("contextualize")
+                + "\n\nDATA:\n"
+                + json.dumps(payload, default=str)
+            )
+            return contextualize_llm.invoke(prompt_text)
+
+    class RuntimeDeps:
+        max_input_chars = 50_000
+        max_repairs = 2
+        verification_config = config.verification
+        verify_quote = staticmethod(verify_quote)
+        checkpointer = MemorySaver()
+        use_interrupt = True
+        extract_model = extract_llm
+        contextualize_model = ContextualizeAdapter()
+        prompt = staticmethod(load_prompt)
+
+        @staticmethod
+        def crossref(_state):
+            return []
+
+    return RuntimeDeps()
+
 def interpret_capture(capture_id: int, *, session: Session, deps=None) -> InterpretResult:
     capture = session.query(RawCapture).filter_by(id=capture_id).one()
     source = session.query(Source).filter_by(id=capture.source_id).one()
     if deps is None:
-        from langgraph.checkpoint.memory import MemorySaver
-        config = load_config()
-        class RuntimeDeps:
-            max_input_chars = 50_000
-            max_repairs = 2
-            verification_config = config.verification
-            verify_quote = staticmethod(verify_quote)
-            checkpointer = MemorySaver()
-            use_interrupt = True
-            extract_model = None
-            contextualize_model = None
-            prompt = staticmethod(load_prompt)
-            @staticmethod
-            def crossref(_state):
-                return []
-        deps = RuntimeDeps()
+        deps = _production_deps(session)
 
     thread_id = thread_id_for(capture_id)
     graph = build_interpret_graph(deps)

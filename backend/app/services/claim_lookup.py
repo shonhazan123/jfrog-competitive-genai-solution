@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import JSONB
 from app.models.ledger import Claim
 from agent.ports import ClaimRef
 
@@ -13,7 +14,7 @@ class DbClaimLookup:
             return []
         query = self._session.query(Claim).filter(Claim.subject_entity_id == entity.id)
         if tags:
-            query = query.filter(Claim.capability_tags.contains(tags))
+            query = query.filter(Claim.capability_tags.cast(JSONB).contains(tags))
         rows = query.limit(k).all()
         return [ClaimRef(id=r.id, claim_text=r.claim_text, capability_tags=r.capability_tags) for r in rows]
 
@@ -24,7 +25,10 @@ class DbClaimLookup:
             return None
         claim = (
             self._session.query(Claim)
-            .filter(Claim.subject_entity_id == jfrog.id, Claim.capability_tags.contains([capability_tag]))
+            .filter(
+                Claim.subject_entity_id == jfrog.id,
+                Claim.capability_tags.cast(JSONB).contains([capability_tag]),
+            )
             .first()
         )
         return claim.claim_text if claim else None

@@ -122,7 +122,7 @@ def run_collection(
     return report
 
 
-def run_interpret(session: Session | None = None) -> dict:
+def run_interpret(session: Session | None = None, limit: int | None = None) -> dict:
     own_session = session is None
     if own_session:
         session = SessionLocal()
@@ -132,9 +132,12 @@ def run_interpret(session: Session | None = None) -> dict:
         row[0] for row in session.query(SignalEvidence.capture_id).distinct().all()
     }
     if interpreted_ids:
-        captures = session.query(RawCapture).filter(RawCapture.id.notin_(interpreted_ids)).all()
+        query = session.query(RawCapture).filter(RawCapture.id.notin_(interpreted_ids))
     else:
-        captures = session.query(RawCapture).all()
+        query = session.query(RawCapture)
+    captures = query.all()
+    if limit is not None:
+        captures = captures[:limit]
     for capture in captures:
         result = interpret_capture(capture.id, session=session)
         if result.status == "ok":
