@@ -1,0 +1,10 @@
+matrix:
+  product_capability:     { sales: 2, product: 3, exec: 1 }
+  positioning_messaging:  { sales: 3, product: 1, exec: 2 }
+  pricing_packaging:      { sales: 3, product: 1, exec: 2 }
+  security_trust:         { sales: 2, product: 3, exec: 2 }
+  corporate_financial:    { sales: 0, product: 0, exec: 3 }
+  partnership_ecosystem:  { sales: 2, product: 2, exec: 2 }
+  customer_evidence:      { sales: 3, product: 1, exec: 2 }
+  market_regulatory:      { sales: 1, product: 2, exec: 3 }
+  talent_org:             { sales: 0, product: 3, exec: 2 }

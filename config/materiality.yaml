@@ -1,0 +1,30 @@
+base_multiplier: 10
+
+modifiers:
+  subject_is_jfrog: 2.0          # policy, not collection — an analyst may set this to 1.0
+  entity_tier_1: 15
+  change_kind_substantive: 20
+  corroboration_threshold: 3
+  corroboration_bonus: 10
+  watchlist_bonus: 12
+  reliability_grade: { A: 20, B: 12, C: 5, D: -5, E: -10, F: -20 }
+
+recency_halflife_days: 14
+llm_adjustment_range: [-1.0, 1.0]
+
+threshold: { sales: 45, product: 35, exec: 60 }
+budget:    { sales: 6,  product: 8,  exec: 5 }
+max_per_entity: 3
+
+interrupt:
+  cross_assertion_about_jfrog: true
+  security_cvss_at_least: 8.5
+  corporate_subtypes: [m_and_a]
+
+candidates:
+  min_candidate_chars: 40
+  max_candidates_per_document: 60
+
+cluster:
+  window_days: 3
+  title_similarity: 88

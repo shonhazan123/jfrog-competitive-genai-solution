@@ -1,0 +1,22 @@
+types:
+  - product_capability
+  - positioning_messaging
+  - pricing_packaging
+  - security_trust
+  - corporate_financial
+  - partnership_ecosystem
+  - customer_evidence
+  - market_regulatory
+  - talent_org
+
+capability_tags:
+  - malware_detection
+  - sbom
+  - pricing_model
+  - package_format_support
+  - model_registry
+  - runtime_security
+  - policy_engine
+  - deployment_model
+  - vulnerability_scanning
+  - build_provenance

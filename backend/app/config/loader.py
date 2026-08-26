@@ -14,4 +14,8 @@ def load_config() -> AppConfig:
         sources=_read("sources.yaml")["sources"],
         verification=_read("verification.yaml"),
         chunking=_read("chunking.yaml"),
+        signal_types=_read("signal_types.yaml"),
+        routing=_read("routing.yaml"),
+        materiality=_read("materiality.yaml"),
+        watchlist=_read("watchlist.yaml"),
     )
