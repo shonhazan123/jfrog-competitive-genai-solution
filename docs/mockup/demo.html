@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI System — Visual Spec (Demo)</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Register: analyst tool. Restrained palette, one accent,
+   per-signal-type hue driven by a --h custom property.
+   ============================================================ */
+:root{
+  --bg:            hsl(220 22% 96.5%);
+  --surface:       hsl(0 0% 100%);
+  --surface-2:     hsl(220 24% 98.5%);
+  --surface-sunk:  hsl(220 20% 94%);
+  --ink:           hsl(222 34% 13%);
+  --ink-2:         hsl(220 12% 34%);
+  --ink-3:         hsl(220 10% 48%);
+  --line:          hsl(220 18% 88%);
+  --line-2:        hsl(220 18% 82%);
+  --accent:        hsl(224 62% 50%);
+  --accent-2:      hsl(224 62% 44%);
+  --accent-soft:   hsl(224 62% 95%);
+  --accent-ink:    hsl(0 0% 100%);
+  --good:          hsl(150 46% 34%);
+  --good-soft:     hsl(150 44% 94%);
+  --warn:          hsl(28 78% 40%);
+  --warn-soft:     hsl(36 86% 93%);
+  --danger:        hsl(2 62% 44%);
+  --danger-soft:   hsl(6 74% 95%);
+  --demo-bg:       hsl(36 92% 52%);
+  --demo-ink:      hsl(30 60% 12%);
+  --radius:        13px;
+  --radius-sm:     8px;
+  --radius-pill:   999px;
+  --shadow:        0 1px 2px hsl(220 30% 20% / .06), 0 4px 12px hsl(220 30% 20% / .05);
+  --shadow-pop:    0 6px 24px hsl(220 30% 15% / .16);
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* semantic z-scale */
+  --z-sticky: 100;
+  --z-tooltip: 400;
+}
+:root[data-theme="dark"]{
+  --bg:            hsl(222 24% 8%);
+  --surface:       hsl(222 20% 12%);
+  --surface-2:     hsl(222 18% 14.5%);
+  --surface-sunk:  hsl(222 20% 10%);
+  --ink:           hsl(220 24% 94%);
+  --ink-2:         hsl(220 14% 72%);
+  --ink-3:         hsl(220 12% 58%);
+  --line:          hsl(220 16% 22%);
+  --line-2:        hsl(220 16% 28%);
+  --accent:        hsl(220 84% 70%);
+  --accent-2:      hsl(220 84% 76%);
+  --accent-soft:   hsl(222 40% 20%);
+  --accent-ink:    hsl(222 40% 10%);
+  --good:          hsl(150 52% 60%);
+  --good-soft:     hsl(150 30% 18%);
+  --warn:          hsl(38 88% 66%);
+  --warn-soft:     hsl(36 40% 18%);
+  --danger:        hsl(6 78% 68%);
+  --danger-soft:   hsl(6 40% 20%);
+  --demo-bg:       hsl(36 84% 54%);
+  --demo-ink:      hsl(30 60% 10%);
+  --shadow:        0 1px 2px hsl(0 0% 0% / .3), 0 4px 14px hsl(0 0% 0% / .28);
+  --shadow-pop:    0 8px 30px hsl(0 0% 0% / .5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:            hsl(222 24% 8%);
+    --surface:       hsl(222 20% 12%);
+    --surface-2:     hsl(222 18% 14.5%);
+    --surface-sunk:  hsl(222 20% 10%);
+    --ink:           hsl(220 24% 94%);
+    --ink-2:         hsl(220 14% 72%);
+    --ink-3:         hsl(220 12% 58%);
+    --line:          hsl(220 16% 22%);
+    --line-2:        hsl(220 16% 28%);
+    --accent:        hsl(220 84% 70%);
+    --accent-2:      hsl(220 84% 76%);
+    --accent-soft:   hsl(222 40% 20%);
+    --accent-ink:    hsl(222 40% 10%);
+    --good:          hsl(150 52% 60%);
+    --good-soft:     hsl(150 30% 18%);
+    --warn:          hsl(38 88% 66%);
+    --warn-soft:     hsl(36 40% 18%);
+    --danger:        hsl(6 78% 68%);
+    --danger-soft:   hsl(6 40% 20%);
+    --shadow:        0 1px 2px hsl(0 0% 0% / .3), 0 4px 14px hsl(0 0% 0% / .28);
+    --shadow-pop:    0 8px 30px hsl(0 0% 0% / .5);
+  }
+}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{margin:0;line-height:1.2;text-wrap:balance;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+button{font-family:inherit;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+
+/* ============================================================
+   DEMO BANNER — persistent
+   ============================================================ */
+.demo-banner{
+  background:var(--demo-bg);
+  color:var(--demo-ink);
+  font-size:12.5px;
+  font-weight:650;
+  letter-spacing:.01em;
+  text-align:center;
+  padding:6px 14px;
+  position:sticky;top:0;
+  z-index:var(--z-sticky);
+}
+.demo-banner span{opacity:.82;font-weight:550;}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.app-header{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 22px 12px;
+  max-width:1360px;margin:0 auto;
+}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;}
+.brand-mark{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(150deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:var(--accent-ink);
+}
+.brand-mark svg{width:19px;height:19px;}
+.brand-text h1{font-size:16px;font-weight:680;letter-spacing:-.01em;}
+.brand-text p{font-size:12px;color:var(--ink-3);margin-top:1px;}
+.header-spacer{flex:1;}
+.theme-toggle{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--line-2);background:var(--surface);
+  color:var(--ink-2);border-radius:var(--radius-pill);
+  padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.theme-toggle:hover{border-color:var(--accent);color:var(--ink);}
+.theme-toggle svg{width:15px;height:15px;}
+
+/* ============================================================
+   TAB NAV
+   ============================================================ */
+.tabs-wrap{
+  position:sticky;top:31px;z-index:var(--z-sticky);
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
+.tabs{
+  display:flex;gap:2px;overflow-x:auto;
+  max-width:1360px;margin:0 auto;padding:0 14px;
+  scrollbar-width:thin;
+}
+.tabs::-webkit-scrollbar{height:6px;}
+.tabs::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px;}
+.tab{
+  appearance:none;border:none;background:none;
+  padding:12px 13px 11px;font-size:13.5px;font-weight:600;
+  color:var(--ink-3);cursor:pointer;white-space:nowrap;
+  border-bottom:2.5px solid transparent;
+  display:flex;align-items:center;gap:7px;
+  transition:color .15s;
+}
+.tab:hover{color:var(--ink-2);}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}
+.tab .tab-num{
+  font-size:10.5px;font-family:var(--mono);color:var(--ink-3);
+  background:var(--surface-sunk);border-radius:5px;padding:1px 5px;
+}
+.tab[aria-selected="true"] .tab-num{background:var(--accent-soft);color:var(--accent);}
+
+/* ============================================================
+   STATUS STRIP — appears on every screen (persistent)
+   ============================================================ */
+.status-strip{
+  max-width:1360px;margin:0 auto;
+  display:flex;align-items:center;gap:0;flex-wrap:wrap;
+  padding:9px 22px;font-size:12.5px;color:var(--ink-2);
+  border-bottom:1px solid var(--line);
+  background:var(--surface-2);
+}
+.status-strip .ss-item{display:inline-flex;align-items:center;gap:5px;padding:0 12px;position:relative;}
+.status-strip .ss-item + .ss-item::before{
+  content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:1px;height:12px;background:var(--line-2);
+}
+.status-strip b{color:var(--ink);font-weight:680;font-variant-numeric:tabular-nums;}
+.status-strip .ss-live{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-soft);}
+.status-strip .ss-run{
+  margin-left:auto;border:1px solid var(--accent);color:var(--accent);
+  background:transparent;border-radius:var(--radius-pill);
+  padding:4px 13px;font-size:12px;font-weight:650;cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.status-strip .ss-run:hover{background:var(--accent);color:var(--accent-ink);}
+
+/* ============================================================
+   PAGE / PANELS
+   ============================================================ */
+main{max-width:1360px;margin:0 auto;padding:22px 22px 80px;}
+.panel{display:none;animation:fade .35s var(--ease,cubic-bezier(.22,1,.36,1));}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){
+  .panel{animation:none;}
+  *{scroll-behavior:auto !important;}
+}
+
+.page-head{margin-bottom:18px;}
+.page-head h2{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+.page-head .explainer{font-size:13.5px;color:var(--ink-2);margin-top:5px;max-width:70ch;}
+.since{
+  display:inline-flex;align-items:center;gap:7px;margin-top:12px;
+  font-size:12.5px;color:var(--ink-2);
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
+  padding:5px 12px;border-radius:var(--radius-pill);
+}
+.since b{color:var(--ink);}
+
+/* ============================================================
+   THE CARD
+   Fixed order: WHAT CHANGED → WHY DO I CARE → HOW DO I KNOW
+   ============================================================ */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:16px;}
+@media (max-width:920px){.card-grid{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px 17px 14px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.card-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.entity-chip{
+  font-size:11.5px;font-weight:700;letter-spacing:.01em;
+  background:var(--surface-sunk);color:var(--ink);
+  border:1px solid var(--line-2);
+  padding:3px 9px;border-radius:var(--radius-sm);
+}
+.type-chip{
+  font-size:11px;font-weight:650;letter-spacing:.005em;
+  padding:3px 9px;border-radius:var(--radius-pill);
+  background:hsl(var(--h) 46% 94%);color:hsl(var(--h) 60% 27%);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.type-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:hsl(var(--h) 55% 45%);}
+:root[data-theme="dark"] .type-chip,
+:root:not([data-theme="light"]) .type-chip{background:hsl(var(--h) 30% 18%);color:hsl(var(--h) 60% 78%);}
+:root[data-theme="dark"] .type-chip::before,
+:root:not([data-theme="light"]) .type-chip::before{background:hsl(var(--h) 55% 62%);}
+
+.card-top .spacer{flex:1;}
+.score-flag{
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--surface-sunk);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:var(--radius-sm);
+  padding:2px 8px;
+}
+.score-flag.high{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 35%,transparent);color:var(--danger);}
+.persona-tag{
+  font-size:10px;font-weight:750;letter-spacing:.08em;
+  color:var(--accent);background:var(--accent-soft);
+  border-radius:5px;padding:3px 7px;
+}
+
+.headline{font-size:15.5px;font-weight:660;line-height:1.32;letter-spacing:-.01em;color:var(--ink);}
+
+.card-section{border-top:1px solid var(--line);padding-top:11px;}
+.sec-label{
+  font-size:10px;font-weight:750;letter-spacing:.11em;
+  color:var(--ink-3);margin-bottom:7px;display:flex;align-items:center;gap:8px;
+}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--line);}
+
+.sowhat{font-size:13.5px;line-height:1.5;color:var(--ink-2);}
+.sowhat .obj{color:var(--ink);font-weight:640;}
+.sowhat .resp{color:var(--ink);}
+.sowhat .arrow{color:var(--accent);font-weight:700;}
+.delta{
+  display:inline-block;font-size:12.5px;font-weight:640;
+  background:var(--good-soft);color:var(--good);
+  border-radius:var(--radius-sm);padding:2px 9px;margin-top:8px;
+}
+
+.quote{
+  font-size:13.5px;line-height:1.45;color:var(--ink);
+  border-left:3px solid var(--line-2); /* short accent on a QUOTE is a blockquote, not a card side-stripe */
+  padding-left:11px;font-style:italic;
+}
+.evidence-meta{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12px;color:var(--ink-3);margin-top:8px;
+}
+.evidence-meta a{font-family:var(--mono);font-size:11.5px;word-break:break-all;}
+.evidence-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--ink-3);}
+
+/* was → now diff (never red/green code diff) */
+.waschange{
+  margin-top:9px;font-size:13px;line-height:1.55;
+  background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:9px 11px;
+}
+.waschange .lab{font-size:10px;font-weight:750;letter-spacing:.08em;color:var(--ink-3);}
+.waschange .was{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--line-2);}
+.waschange .to{color:var(--accent);font-weight:800;padding:0 6px;}
+.waschange .now{color:var(--ink);font-weight:660;}
+
+/* Admiralty grade chip + tooltip */
+.grade{
+  position:relative;font-family:var(--mono);font-size:11px;font-weight:700;
+  background:var(--surface-sunk);border:1px solid var(--line-2);color:var(--ink);
+  border-radius:5px;padding:1px 6px;cursor:help;
+}
+.grade .info{font-size:9px;opacity:.6;margin-left:2px;}
+.grade:hover .tip,.grade:focus .tip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+.grade .tip{
+  position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%) translateY(4px);
+  opacity:0;visibility:hidden;transition:.16s;
+  z-index:var(--z-tooltip);
+  width:210px;background:var(--ink);color:var(--surface);
+  font-family:var(--sans);font-size:11.5px;font-weight:500;line-height:1.4;
+  padding:8px 10px;border-radius:8px;box-shadow:var(--shadow-pop);
+  text-align:left;pointer-events:none;
+}
+.grade .tip::after{
+  content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--ink);
+}
+:root[data-theme="dark"] .grade .tip,
+:root:not([data-theme="light"]) .grade .tip{background:hsl(220 20% 4%);}
+
+/* collapsibles */
+details.reveal{border-top:1px solid var(--line);padding-top:10px;}
+details.reveal > summary{
+  list-style:none;cursor:pointer;font-size:12px;font-weight:640;color:var(--ink-2);
+  display:flex;align-items:center;gap:7px;user-select:none;
+}
+details.reveal > summary::-webkit-details-marker{display:none;}
+details.reveal > summary .caret{transition:transform .18s;color:var(--ink-3);font-size:10px;}
+details.reveal[open] > summary .caret{transform:rotate(90deg);}
+.score-math{
+  margin-top:9px;font-family:var(--mono);font-size:12px;line-height:1.7;
+  background:var(--surface-sunk);border-radius:var(--radius-sm);padding:10px 12px;color:var(--ink-2);
+  overflow-x:auto;
+}
+.score-math .op{color:var(--ink-3);}
+.score-math .val{color:var(--ink);font-weight:700;}
+.score-math .tot{color:var(--accent);font-weight:800;}
+.pipeline{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.pipeline .step{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-2);}
+.pipeline .step .n{
+  width:19px;height:19px;flex-shrink:0;border-radius:50%;
+  background:var(--surface-sunk);border:1px solid var(--line-2);
+  display:grid;place-items:center;font-size:10px;font-weight:700;font-family:var(--mono);color:var(--ink-2);
+}
+.pipeline .step.ok .n{background:var(--good-soft);border-color:transparent;color:var(--good);}
+.pipeline .step b{color:var(--ink);font-weight:640;}
+
+/* analyst actions */
+.actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px;}
+.act{
+  appearance:none;border:1px solid var(--line-2);background:var(--surface);
+  color:var(--ink-2);border-radius:var(--radius-sm);
+  padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:background .14s,border-color .14s,color .14s;
+}
+.act:hover{border-color:var(--accent);color:var(--ink);}
+.act.confirm:hover{background:var(--good-soft);border-color:var(--good);color:var(--good);}
+.act.reject:hover{background:var(--danger-soft);border-color:var(--danger);color:var(--danger);}
+
+/* caution flag on security cards */
+.caution{
+  display:flex;align-items:flex-start;gap:9px;
+  background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
+  border-radius:var(--radius-sm);padding:9px 11px;font-size:12.5px;color:var(--ink);line-height:1.45;
+}
+.caution svg{width:16px;height:16px;flex-shrink:0;color:var(--warn);margin-top:1px;}
+.caution b{font-weight:700;}
+
+/* awareness-only tag */
+.awareness{
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  color:var(--ink-3);background:var(--surface-sunk);border:1px dashed var(--line-2);
+  border-radius:var(--radius-pill);padding:3px 10px;align-self:flex-start;
+}
+
+/* ============================================================
+   INTERRUPT CARD
+   ============================================================ */
+.interrupt{
+  background:var(--surface);
+  border:1.5px solid color-mix(in srgb, hsl(32 80% 50%) 55%, var(--line));
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;margin-bottom:22px;
+}
+.interrupt-bar{
+  background:linear-gradient(90deg,hsl(32 84% 52%),hsl(24 80% 50%));
+  color:hsl(28 70% 10%);
+  font-size:11.5px;font-weight:750;letter-spacing:.06em;
+  padding:6px 16px;display:flex;align-items:center;gap:9px;
+}
+.interrupt-bar .rare{
+  margin-left:auto;font-weight:650;letter-spacing:.02em;
+  background:hsl(28 60% 12% / .16);border-radius:var(--radius-pill);padding:2px 9px;
+}
+.interrupt-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+.interrupt-body .headline{font-size:16.5px;}
+
+/* ============================================================
+   FUNNEL
+   ============================================================ */
+.funnel-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;margin-bottom:22px;
+}
+.funnel-card h3{font-size:13px;font-weight:680;margin-bottom:3px;}
+.funnel-card .sub{font-size:12.5px;color:var(--ink-3);margin-bottom:16px;}
+.funnel{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;}
+.funnel-stage{flex:1;min-width:120px;display:flex;align-items:center;gap:8px;}
+.funnel-stage .bar{
+  flex:1;border-radius:var(--radius-sm);padding:12px 13px;color:var(--surface);
+  display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;
+}
+.funnel-stage .bar .num{font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;line-height:1;}
+.funnel-stage .bar .lab{font-size:11px;font-weight:600;opacity:.92;}
+.funnel-stage .arrow{color:var(--ink-3);font-size:16px;flex-shrink:0;}
+.f1{background:hsl(224 46% 56%);} .f2{background:hsl(224 52% 50%);}
+.f3{background:hsl(224 60% 44%);} .f4{background:hsl(150 46% 38%);}
+:root[data-theme="dark"] .funnel-stage .bar,
+:root:not([data-theme="light"]) .funnel-stage .bar{color:hsl(0 0% 100%);}
+
+/* ============================================================
+   EXECUTIVE — trend items (sparse)
+   ============================================================ */
+.exec-list{display:flex;flex-direction:column;gap:14px;max-width:820px;}
+.trend{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;display:flex;gap:16px;
+}
+.trend .dir{
+  flex-shrink:0;width:52px;height:52px;border-radius:12px;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);
+}
+.trend .dir svg{width:26px;height:26px;}
+.trend .body h3{font-size:16px;font-weight:680;letter-spacing:-.01em;margin-bottom:6px;}
+.trend .body p{font-size:13.5px;color:var(--ink-2);line-height:1.5;max-width:64ch;}
+.trend-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;}
+.tm{
+  font-size:11px;font-weight:640;border-radius:var(--radius-pill);
+  padding:3px 10px;border:1px solid var(--line-2);color:var(--ink-2);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.tm b{color:var(--ink);font-weight:700;}
+.tm.vel{background:var(--accent-soft);border-color:transparent;color:var(--accent);}
+.tm.conf b{color:var(--good);}
+.stability{
+  background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 30%,transparent);
+  border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:14px;
+}
+.stability svg{width:22px;height:22px;color:var(--good);flex-shrink:0;}
+.stability .t{font-size:14.5px;font-weight:660;color:var(--ink);}
+.stability .s{font-size:12.5px;color:var(--ink-2);margin-top:2px;}
+
+/* ============================================================
+   TABLES (comparison, sources, coverage)
+   ============================================================ */
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);}
+table.grid{border-collapse:collapse;width:100%;min-width:640px;font-size:13px;}
+table.grid th{
+  text-align:left;font-size:11px;font-weight:700;letter-spacing:.04em;
+  color:var(--ink-3);text-transform:uppercase;
+  padding:11px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap;
+}
+table.grid td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2);}
+table.grid tr:last-child td{border-bottom:none;}
+table.grid .dim{font-weight:660;color:var(--ink);}
+table.grid .pos{color:var(--ink);}
+.row-expand{cursor:pointer;transition:background .12s;}
+.row-expand:hover{background:var(--surface-2);}
+.flag-changed{color:var(--warn);font-weight:700;margin-left:6px;cursor:help;}
+.detail-row td{background:var(--surface-2);border-top:1px dashed var(--line-2);}
+.detail-row .quote{margin-bottom:0;}
+.detail-row.hidden{display:none;}
+.chev{display:inline-block;transition:transform .18s;color:var(--ink-3);margin-right:6px;font-size:10px;}
+tr.open .chev{transform:rotate(90deg);}
+
+/* coverage matrix */
+.cov-cell{text-align:center;font-family:var(--mono);font-weight:700;font-size:13px;}
+.cov-yy{color:var(--good);} .cov-y{color:var(--ink-2);} .cov-x{color:var(--danger);} .cov-na{color:var(--line-2);}
+.cov-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-2);}
+.cov-legend span{display:inline-flex;align-items:center;gap:6px;}
+.cov-legend .k{font-family:var(--mono);font-weight:700;}
+
+/* ============================================================
+   COMPETITORS -> US timeline
+   ============================================================ */
+.timeline{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 22px;margin-bottom:20px;
+}
+.timeline h3{font-size:14px;font-weight:680;margin-bottom:4px;}
+.timeline .sub{font-size:12.5px;color:var(--ink-3);margin-bottom:22px;}
+.tl-track{position:relative;padding-left:6px;}
+.tl-line{position:absolute;left:6px;right:6px;top:13px;height:2px;background:var(--line);}
+.tl-fill{position:absolute;left:6px;top:13px;height:2px;width:100%;background:linear-gradient(90deg,var(--accent),hsl(32 80% 52%));}
+.tl-nodes{display:flex;justify-content:space-between;position:relative;gap:8px;}
+.tl-node{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;min-width:0;}
+.tl-node .dot{width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);z-index:1;}
+.tl-node.milestone .dot{border-color:hsl(32 80% 52%);width:16px;height:16px;}
+.tl-node .yr{font-size:12px;font-weight:700;margin-top:9px;color:var(--ink);}
+.tl-node .ev{font-size:11px;color:var(--ink-2);margin-top:4px;line-height:1.35;max-width:15ch;}
+.tl-versions{font-size:11.5px;color:var(--ink-3);margin-top:18px;text-align:center;}
+
+/* ============================================================
+   INDUSTRY — blog style
+   ============================================================ */
+.industry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.news{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 17px;display:flex;flex-direction:column;gap:10px;
+}
+.news .news-top{display:flex;align-items:center;gap:8px;}
+.news .std-chip{
+  font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  border-radius:5px;padding:2px 8px;background:hsl(265 40% 94%);color:hsl(265 50% 34%);
+}
+:root[data-theme="dark"] .news .std-chip,
+:root:not([data-theme="light"]) .news .std-chip{background:hsl(265 30% 20%);color:hsl(265 60% 80%);}
+.news h3{font-size:15px;font-weight:660;line-height:1.3;letter-spacing:-.01em;}
+.news p{font-size:13px;color:var(--ink-2);line-height:1.5;}
+.news .news-foot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-3);margin-top:auto;padding-top:6px;border-top:1px solid var(--line);}
+.news .news-foot a{font-family:var(--mono);font-size:11px;}
+
+/* ============================================================
+   ASK
+   ============================================================ */
+.ask-wrap{max-width:840px;}
+.ask-intro{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;font-size:13px;color:var(--ink-2);margin-bottom:20px;line-height:1.5;
+}
+.exchange{margin-bottom:26px;}
+.bubble-q{
+  background:var(--accent);color:var(--accent-ink);
+  padding:11px 15px;border-radius:14px 14px 4px 14px;
+  font-size:14px;font-weight:550;max-width:76%;margin-left:auto;width:fit-content;
+}
+.bubble-a{
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);
+  padding:15px 17px;border-radius:14px 14px 14px 4px;margin-top:10px;max-width:88%;
+}
+.bubble-a .ans{font-size:14px;line-height:1.55;color:var(--ink);}
+.bubble-a .ans b{font-weight:680;}
+.ev-cards{display:flex;flex-direction:column;gap:9px;margin-top:14px;}
+.ev-card{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:10px 12px;display:flex;gap:11px;align-items:flex-start;
+}
+.ev-card .ev-n{
+  flex-shrink:0;width:20px;height:20px;border-radius:5px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;font-size:11px;font-weight:800;font-family:var(--mono);
+}
+.ev-card .ev-q{font-size:12.5px;color:var(--ink);font-style:italic;line-height:1.4;}
+.ev-card .ev-src{font-size:11px;color:var(--ink-3);margin-top:5px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.ev-card .ev-src a{font-family:var(--mono);}
+.refusal{
+  border:1.5px solid color-mix(in srgb,var(--warn) 45%,var(--line));
+  background:var(--warn-soft);
+}
+.refusal .ans{color:var(--ink);}
+.refusal-badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:750;letter-spacing:.03em;
+  color:var(--warn);margin-bottom:9px;text-transform:uppercase;
+}
+.refusal-badge svg{width:14px;height:14px;}
+.nearby{margin-top:13px;border-top:1px solid color-mix(in srgb,var(--warn) 30%,transparent);padding-top:11px;}
+.nearby .nl{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--ink-3);margin-bottom:8px;}
+.nearby ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px;}
+.nearby li{font-size:12.5px;color:var(--ink-2);display:flex;gap:8px;align-items:flex-start;}
+.nearby li::before{content:"→";color:var(--accent);font-weight:700;}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+.settings-section{margin-bottom:32px;}
+.settings-section > h3{font-size:15px;font-weight:680;margin-bottom:4px;letter-spacing:-.01em;}
+.settings-section > .sub{font-size:12.5px;color:var(--ink-2);margin-bottom:14px;max-width:74ch;}
+.src-excluded td{background:var(--surface-sunk);color:var(--ink-3);}
+.pill-ok{color:var(--good);font-weight:700;font-family:var(--mono);}
+.pill-no{color:var(--danger);font-weight:700;font-family:var(--mono);}
+.excl-reason{font-size:11.5px;color:var(--danger);font-style:italic;}
+.mode-chip{font-family:var(--mono);font-size:11px;font-weight:600;background:var(--surface-sunk);border:1px solid var(--line-2);border-radius:5px;padding:1px 7px;color:var(--ink-2);}
+
+.weights{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
+.weight{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);}
+.weight .wtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
+.weight .wname{font-size:13px;font-weight:640;color:var(--ink);}
+.weight .wval{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);}
+.weight input[type=range]{width:100%;accent-color:var(--accent);}
+.weight .wnote{font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.wl-chip{
+  display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:550;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius-pill);
+  padding:5px 6px 5px 12px;color:var(--ink);
+}
+.wl-chip button{
+  appearance:none;border:none;background:var(--surface-sunk);color:var(--ink-3);
+  width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;
+  display:grid;place-items:center;
+}
+.wl-chip button:hover{background:var(--danger-soft);color:var(--danger);}
+.wl-add{border-style:dashed;color:var(--ink-3);cursor:pointer;padding:5px 14px;}
+
+.cov-caption{
+  font-size:12.5px;color:var(--ink-2);line-height:1.5;
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
+  border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:14px;max-width:78ch;
+}
+.cov-caption b{color:var(--ink);}
+
+/* ============================================================
+   EMAIL PREVIEW
+   ============================================================ */
+.email-switch{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.email-switch button{
+  appearance:none;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);
+  border-radius:var(--radius-pill);padding:7px 16px;font-size:13px;font-weight:640;cursor:pointer;transition:.15s;
+}
+.email-switch button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.inbox{
+  max-width:720px;background:var(--surface-sunk);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
+}
+.inbox-chrome{display:flex;align-items:center;gap:8px;padding:0 4px 12px;color:var(--ink-3);font-size:12px;}
+.inbox-chrome .dots{display:flex;gap:5px;}
+.inbox-chrome .dots i{width:10px;height:10px;border-radius:50%;background:var(--line-2);}
+.email{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+.email-head{padding:14px 18px;border-bottom:1px solid var(--line);}
+.email-head .from{display:flex;align-items:center;gap:10px;}
+.email-head .avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(150deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:var(--accent-ink);flex-shrink:0;}
+.email-head .avatar svg{width:17px;height:17px;}
+.email-head .fn{font-size:13px;font-weight:680;color:var(--ink);}
+.email-head .fe{font-size:11.5px;color:var(--ink-3);}
+.email-head .subj{font-size:15px;font-weight:680;margin-top:12px;letter-spacing:-.01em;}
+.email-head .meta{font-size:11.5px;color:var(--ink-3);margin-top:3px;}
+.email-body{padding:16px 18px;}
+.email-lead{font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:16px;}
+.digest-item{display:flex;gap:11px;padding:11px 0;border-top:1px solid var(--line);}
+.digest-item .di-num{flex-shrink:0;width:22px;height:22px;border-radius:6px;background:var(--surface-sunk);color:var(--ink-2);display:grid;place-items:center;font-size:11px;font-weight:700;font-family:var(--mono);}
+.digest-item .di-body{min-width:0;}
+.digest-item .di-type{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);}
+.digest-item .di-head{font-size:13.5px;font-weight:620;color:var(--ink);margin:2px 0 3px;line-height:1.35;}
+.digest-item .di-so{font-size:12.5px;color:var(--ink-2);line-height:1.45;}
+.digest-item a{font-size:12px;font-weight:640;}
+.email-foot{padding:14px 18px;border-top:1px solid var(--line);background:var(--surface-2);font-size:11.5px;color:var(--ink-3);line-height:1.5;}
+.di-flag{font-size:10px;font-weight:700;color:var(--warn);}
+
+/* empty state (teaching) */
+.empty-teach{
+  display:flex;align-items:center;gap:13px;
+  background:var(--surface-2);border:1px dashed var(--line-2);border-radius:var(--radius);
+  padding:14px 16px;margin-top:18px;
+}
+.empty-teach svg{width:22px;height:22px;color:var(--ink-3);flex-shrink:0;}
+.empty-teach .t{font-size:13px;color:var(--ink);font-weight:600;}
+.empty-teach .s{font-size:12px;color:var(--ink-3);margin-top:2px;}
+
+.section-note{font-size:12.5px;color:var(--ink-3);margin:2px 0 16px;max-width:76ch;line-height:1.5;}
+
+/* utility */
+.mt24{margin-top:24px;} .mt16{margin-top:16px;}
+@media (max-width:640px){
+  /* banner wraps to 2 lines on narrow screens; drop the hardcoded sticky offset
+     so the tab bar can't overlap it. The demo banner stays sticky/persistent. */
+  .tabs-wrap{position:static;top:auto;}
+}
+@media (max-width:560px){
+  .app-header{flex-wrap:wrap;}
+  main{padding:16px 14px 70px;}
+  .status-strip{font-size:11.5px;padding:8px 14px;}
+  .status-strip .ss-item{padding:2px 8px;}
+  .status-strip .ss-run{margin-left:0;margin-top:6px;}
+  .card-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ======= PERSISTENT DEMO BANNER ======= -->
+<div class="demo-banner">DEMO — illustrative sample data, not live intelligence <span>· real company names shown against fabricated sample findings</span></div>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+    </div>
+    <div class="brand-text">
+      <h1>Competitive Intelligence</h1>
+      <p>DevSecOps landscape · claim ledger · per-division routing</p>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="theme-toggle" id="themeBtn" aria-label="Toggle light and dark theme">
+    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <span id="themeLabel">Dark</span>
+  </button>
+</header>
+
+<!-- ======= TAB NAV ======= -->
+<nav class="tabs-wrap">
+  <div class="tabs" role="tablist" aria-label="Screens">
+    <button class="tab" role="tab" aria-selected="true"  data-tab="today"><span class="tab-num">1</span>Today</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="sales"><span class="tab-num">2</span>Sales</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="product"><span class="tab-num">3</span>Product</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="exec"><span class="tab-num">4</span>Executive</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="compare"><span class="tab-num">5</span>Comparison</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="cross"><span class="tab-num">6</span>Competitors&nbsp;→&nbsp;Us</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="industry"><span class="tab-num">7</span>Industry</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="ask"><span class="tab-num">8</span>Ask</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="settings"><span class="tab-num">9</span>Settings</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="email"><span class="tab-num">10</span>Email</button>
+  </div>
+</nav>
+
+<!-- ======= STATUS STRIP (persistent, every screen) ======= -->
+<div class="status-strip">
+  <span class="ss-item"><span class="ss-live" aria-hidden="true"></span> Last run <b>06:00 today</b></span>
+  <span class="ss-item"><b>23</b> sources</span>
+  <span class="ss-item"><b>94</b> collected</span>
+  <span class="ss-item"><b>41</b> clustered</span>
+  <span class="ss-item"><b>11</b> material</span>
+  <span class="ss-item">Next run <b>06:00 tomorrow</b></span>
+  <button class="ss-run">▸ Run now</button>
+</div>
+
+<main>
+
+<!-- ============================================================
+     1 · TODAY
+     ============================================================ -->
+<section class="panel active" id="panel-today" role="tabpanel">
+  <div class="page-head">
+    <h2>Today</h2>
+    <p class="explainer">Everything the 06:00 run judged material, mixed across signal types. Most of it is competitor releases, vulnerabilities and industry movement — not what rivals say about us.</p>
+    <div class="since">Since you last looked: <b>12 new signals</b> and <b>2 claim changes</b> since your visit on 24 Aug</div>
+  </div>
+
+  <!-- INTERRUPT (the ONE cross-assertion card in the whole product) -->
+  <div class="interrupt">
+    <div class="interrupt-bar">
+      <span>⚑ INTERRUPT — positioning_messaging (cross-assertion)</span>
+      <span class="rare">fires &lt; 1×/week · the rarest signal type</span>
+    </div>
+    <div class="interrupt-body">
+      <div class="card-top">
+        <span class="entity-chip">SONATYPE</span>
+        <span class="type-chip" style="--h:32">positioning · about JFrog</span>
+        <span class="spacer"></span>
+        <span class="score-flag high">⚑ 95</span>
+        <span class="persona-tag">SALES</span>
+      </div>
+      <div class="headline">Sonatype hardened its comparison-page claim about JFrog malware detection</div>
+
+      <div class="card-section">
+        <div class="sec-label">So what · Sales</div>
+        <div class="sowhat"><span class="obj">If a prospect cites this:</span> the page now reads harsher than a month ago — the wording moved, the underlying capability did not. <span class="arrow">→</span> <span class="resp">Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the "not proactive" claim doesn't hold.</span></div>
+      </div>
+
+      <div class="card-section">
+        <div class="sec-label">Evidence · how do I know</div>
+        <div class="waschange">
+          <div class="lab">STRUCTURAL DIFF · row "Malware detection" · cell "JFrog"</div>
+          <span class="was">Limited</span><span class="to">→</span><span class="now">Very limited, not proactive</span>
+        </div>
+        <div class="evidence-meta">
+          <a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a>
+          <span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span>
+          <span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — completely reliable (competitor's own page). <b>Info 2</b> — probably true (verbatim, primary).</span></span>
+        </div>
+      </div>
+
+      <details class="reveal">
+        <summary><span class="caret">▸</span> How was this produced</summary>
+        <div class="pipeline">
+          <div class="step ok"><span class="n">1</span><span>Sanitise — stripped nav, footer, scripts, hidden elements before hashing</span></div>
+          <div class="step ok"><span class="n">2</span><span>Detect — normalised-hash differed; <b>structural diff</b> isolated one changed cell</span></div>
+          <div class="step ok"><span class="n">3</span><span>Extract — signal_type=positioning · subject=<b>JFrog</b> · asserter=Sonatype</span></div>
+          <div class="step ok"><span class="n">4</span><span>Verify quote ✓ — "Very limited, not proactive" matched capture at offset 4471</span></div>
+          <div class="step ok"><span class="n">5</span><span>Contextualise — sales so-what written against JFrog's ledger position</span></div>
+        </div>
+      </details>
+
+      <details class="reveal">
+        <summary><span class="caret">▸</span> Score 95 — show the arithmetic</summary>
+        <div class="score-math">
+positioning → sales base <span class="val">3 → 30</span><br>
+<span class="op">× subject_is_jfrog</span> <span class="val">×2.0</span> <span class="op">= 60</span><br>
+<span class="op">+ tier_1 entity</span> <span class="val">+15</span><br>
+<span class="op">+ substantive change</span> <span class="val">+20</span><br>
+<span class="op">──────────────</span><br>
+total <span class="tot">= 95</span>  → top of the sales digest
+        </div>
+      </details>
+
+      <div class="actions">
+        <button class="act confirm">✓ Confirm</button>
+        <button class="act reject">✗ Reject</button>
+        <button class="act">✎ Edit</button>
+        <button class="act">🔇 Mute source</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNNEL -->
+  <div class="funnel-card">
+    <h3>Today's run funnel</h3>
+    <p class="sub">The large majority of collected items never reach a model. Scarcity is enforced, not incidental.</p>
+    <div class="funnel">
+      <div class="funnel-stage"><div class="bar f1"><span class="num">94</span><span class="lab">collected</span></div><span class="arrow">→</span></div>
+      <div class="funnel-stage"><div class="bar f2"><span class="num">41</span><span class="lab">clustered</span></div><span class="arrow">→</span></div>
+      <div class="funnel-stage"><div class="bar f3"><span class="num">11</span><span class="lab">material</span></div><span class="arrow">→</span></div>
+      <div class="funnel-stage"><div class="bar f4"><span class="num">14</span><span class="lab">delivered (6 sales · 8 product)</span></div></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- security_trust -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:8">security_trust</span><span class="spacer"></span><span class="score-flag">⚑ 78</span></div>
+      <div class="headline">Advisory affecting Nexus Repository ≤ 3.94 — authentication bypass, CVSS 9.1 (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">A high-severity auth-bypass class issue in the competitor's on-prem line. Relevant to security-posture conversations; frame around capability, not the individual CVE.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95."</div><div class="evidence-meta"><a href="#">osv.dev/vulnerability/GHSA-xxxx-sample</a><span class="dot"></span><span>26 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — completely reliable (OSV.dev, primary structured API). <b>Info 1</b> — confirmed.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 66</span></div>
+      <div class="headline">Nexus Repository 3.95 adds Cargo registry support; deprecates Java 11 runtime (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">Closes a format gap where Rust toolchains are in scope. Bake-off relevant in accounts standardising on Cargo.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Added: hosted, proxy and group repositories for the Cargo (crates.io) format."</div><div class="evidence-meta"><a href="#">github.com/sonatype/nexus-public/releases</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — release Atom feed, primary. <b>Info 2</b> — probably true.</span></span></div></div>
+      <details class="reveal"><summary><span class="caret">▸</span> Score 66 — show the arithmetic</summary><div class="score-math">product_capability → base <span class="val">1 → 10</span><br><span class="op">× subject weight</span> <span class="val">×1.0</span><br><span class="op">+ tier_1</span> <span class="val">+15</span><br><span class="op">+ substantive</span> <span class="val">+20</span><br><span class="op">+ watchlist "cargo"</span> <span class="val">+12</span><br><span class="op">+ source grade A</span> <span class="val">+9</span><br>total <span class="tot">= 66</span></div></details>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">GITLAB</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 58</span></div>
+      <div class="headline">GitLab Package Registry adds SLSA provenance attestation to CI-built artifacts (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">Supply-chain provenance is moving into the default CI path for a shallow-coverage competitor. Awareness item for the product lane.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Pipelines can now emit SLSA-compliant provenance stored alongside the package."</div><div class="evidence-meta"><a href="#">about.gitlab.com/releases</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — usually reliable. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- market_regulatory -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">INDUSTRY</span><span class="type-chip" style="--h:265">market_regulatory</span><span class="spacer"></span><span class="score-flag">⚑ 61</span></div>
+      <div class="headline">EU Cyber Resilience Act: reporting duty for actively exploited vulnerabilities takes effect (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">SBOM and vulnerability reporting become procurement preconditions in scope sectors — a demand-shaping event, not a competitor event.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness."</div><div class="evidence-meta"><a href="#">digital-strategy.ec.europa.eu/cra</a><span class="dot"></span><span>22 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — official regulatory body. <b>Info 1</b> — confirmed.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- customer_evidence -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:330">customer_evidence</span><span class="spacer"></span><span class="score-flag">⚑ 54</span></div>
+      <div class="headline">New financial-services case study appeared on Sonatype's customer page (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">A new logo in a segment where JFrog has named-account overlap. A win signal worth a competitive-desk question.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"A top-20 European bank standardised its open-source governance on Sonatype."</div><div class="evidence-meta"><a href="#">sonatype.com/customers</a><span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor's own page. <b>Info 3</b> — possibly true (self-reported, uncorroborated).</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- partnership_ecosystem -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:175">partnership_ecosystem</span><span class="spacer"></span><span class="score-flag">⚑ 49</span></div>
+      <div class="headline">Sonatype listing appears in a major cloud marketplace with committed-spend eligibility (sample)</div>
+      <div class="card-section"><div class="sec-label">So what</div><div class="sowhat">Changes the procurement path in enterprise deals where cloud-marketplace drawdown is a buying lever. Deal-mechanics signal, not a capability one.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Available in the marketplace; counts toward your committed cloud spend."</div><div class="evidence-meta"><a href="#">aws.amazon.com/marketplace</a><span class="dot"></span><span>23 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — usually reliable third-party listing. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+  </div>
+
+  <div class="empty-teach">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div><div class="t">No pricing changes detected for Sonatype in 30 days.</div><div class="s">Checked 14 times. This is surveillance, not silence — a pricing move would interrupt you.</div></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     2 · SALES
+     ============================================================ -->
+<section class="panel" id="panel-sales" role="tabpanel">
+  <div class="page-head">
+    <h2>Sales</h2>
+    <p class="explainer">Six items you could use in a live conversation without further research. Each one is an <b>objection → response</b> pair with the source attached — not a summary of what happened.</p>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- security_trust with CAUTION -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:8">security_trust</span><span class="spacer"></span><span class="score-flag">⚑ 78</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">High-severity advisory affecting Nexus Repository ≤ 3.94 (sample)</div>
+      <div class="caution">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div><b>Handling caution — lead on posture, not the CVE.</b> A competitor's vulnerabilities are legitimate intelligence but reputationally hazardous to weaponise, especially for a security vendor. Frame around your scanning posture.</div>
+      </div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">If they claim on-prem is safer:</span> <span class="arrow">→</span> <span class="resp">"Both models carry advisories — what matters is time-to-detect. JFrog Xray flags known-affected packages in your graph the moment an advisory lands, with contextual impact analysis." Do not name their specific CVE unprompted.</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95."</div><div class="evidence-meta"><a href="#">osv.dev/vulnerability/GHSA-xxxx-sample</a><span class="dot"></span><span>26 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — OSV.dev, primary. <b>Info 1</b> — confirmed.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 66</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">Nexus 3.95 adds Cargo registry support (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">If they raise "we now support Cargo too":</span> <span class="arrow">→</span> <span class="resp">"Format support is table stakes — ask them about Cargo malware scanning and license curation on those crates. JFrog Curation blocks a malicious crate before it enters your build; a registry that only hosts the format doesn't."</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Added: hosted, proxy and group repositories for the Cargo (crates.io) format."</div><div class="evidence-meta"><a href="#">github.com/sonatype/nexus-public/releases</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — release feed. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- customer_evidence -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:330">customer_evidence</span><span class="spacer"></span><span class="score-flag">⚑ 62</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">New financial-services case study on Sonatype's customer page (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">If they cite this reference in a banking deal:</span> <span class="arrow">→</span> <span class="resp">"Ask what that bank did about binary-level runtime exposure and multi-site replication — governance of open-source metadata is one layer. JFrog offers the artifact store, scanning and distribution as one system." Named-account overlap flagged to the competitive desk.</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"A top-20 European bank standardised its open-source governance on Sonatype."</div><div class="evidence-meta"><a href="#">sonatype.com/customers</a><span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor's own page. <b>Info 3</b> — possibly true (self-reported).</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- partnership_ecosystem -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:175">partnership_ecosystem</span><span class="spacer"></span><span class="score-flag">⚑ 51</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">Sonatype now listed in a major cloud marketplace with committed-spend eligibility (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">If procurement pushes marketplace drawdown:</span> <span class="arrow">→</span> <span class="resp">"JFrog is available through the same marketplace with equivalent committed-spend treatment — the procurement path is not a differentiator here. Bring the conversation back to platform breadth." Confirm current listing status with deal desk before quoting.</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Available in the marketplace; counts toward your committed cloud spend."</div><div class="evidence-meta"><a href="#">aws.amazon.com/marketplace</a><span class="dot"></span><span>23 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — usually reliable. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability deprecation -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 47</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">Nexus 3.95 deprecates Java 11 runtime; end-of-support dated (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">Migration angle for two accounts on Java 11:</span> <span class="arrow">→</span> <span class="resp">"Their upgrade forces a runtime migration anyway — that's the moment to evaluate alternatives rather than re-platform in place. Offer a side-by-side proof-of-concept while they're already touching the deployment."</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Java 11 is deprecated and support will be removed in a future release."</div><div class="evidence-meta"><a href="#">github.com/sonatype/nexus-public/releases</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — release feed. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- market_regulatory -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">INDUSTRY</span><span class="type-chip" style="--h:265">market_regulatory</span><span class="spacer"></span><span class="score-flag">⚑ 44</span><span class="persona-tag">SALES</span></div>
+      <div class="headline">EU CRA vulnerability-reporting obligations now dated (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · objection → response</div><div class="sowhat"><span class="obj">When procurement raises CRA readiness:</span> <span class="arrow">→</span> <span class="resp">"CRA makes SBOM generation and vulnerability reporting a buying requirement, not a nice-to-have. JFrog produces signed SBOMs and full-graph vulnerability context in one place — bring compliance and security into the same conversation."</span></div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness."</div><div class="evidence-meta"><a href="#">digital-strategy.ec.europa.eu/cra</a><span class="dot"></span><span>22 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — official body. <b>Info 1</b> — confirmed.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     3 · PRODUCT
+     ============================================================ -->
+<section class="panel" id="panel-product" role="tabpanel">
+  <div class="page-head">
+    <h2>Product</h2>
+    <p class="explainer">Eight items. Each is a <b>capability delta</b> with the verbatim release-note bullet and a link to the primary source — because paraphrase is exactly what a PM distrusts.</p>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- release-note bullet-level classification -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 66</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">Nexus Repository 3.95 release note — 3 material signals out of 40 bullets (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Cargo format support (parity item) and a new provenance-attestation option. The release also drops Java 11. Classification runs <b>at bullet level</b> — the other 37 bullets were bug fixes and dependency bumps, filtered as <code>no_signal</code>.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence · verbatim bullets</div>
+        <div class="quote">"Added: hosted, proxy and group repositories for the Cargo (crates.io) format."</div>
+        <div class="quote mt16">"New: optional SLSA provenance attestation on published components."</div>
+        <div class="evidence-meta"><a href="#">github.com/sonatype/nexus-public/releases/tag/3.95.0</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — release Atom feed, primary. <b>Info 2</b> — probably true.</span></span></div>
+      </div>
+      <details class="reveal"><summary><span class="caret">▸</span> Bullet classification — 40 elements in, 3 out</summary>
+        <div class="score-math">
+elements parsed <span class="val">40</span> <span class="op">(one list_item each)</span><br>
+→ product_capability <span class="val">3</span> <span class="op">(kept)</span><br>
+→ no_signal <span class="val">37</span> <span class="op">(bug fix ×22 · dep bump ×11 · docs ×4)</span><br>
+<span class="op">a release is not one signal — treating it as atomic is how a tracker becomes noise</span>
+        </div>
+      </details>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability parity -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 59</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">Nexus Firewall extends policy to Hugging Face model artifacts (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Model-artifact scanning appears in a competitor for the first time — coverage claimed for Hugging Face format only. Parity-gap analysis vs JFrog AI Catalog + Xray contextual analysis is warranted this sprint.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Firewall policies can now quarantine Hugging Face model components by license and malware signature."</div><div class="evidence-meta"><a href="#">sonatype.com/blog/model-firewall</a><span class="dot"></span><span>21 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — vendor blog, own capability. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- talent_org 1 -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:145">talent_org</span><span class="spacer"></span><span class="score-flag">⚑ 55</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">Three Sonatype job postings reference model registries and ML artifact scanning (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · leading indicator</div><div class="sowhat">Hiring reveals roadmap intent 6–12 months before anything ships. Three roles clustered on ML-artifact security signals a sustained investment, not a one-off feature — the only predictive signal type in the system.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Senior Engineer, ML Supply Chain — design scanning for model registries and ML artifact formats."</div><div class="evidence-meta"><a href="#">boards.greenhouse.io/sonatype (public JSON)</a><span class="dot"></span><span>20 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — Greenhouse public board API. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- talent_org 2 -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">HARBOR</span><span class="type-chip" style="--h:145">talent_org</span><span class="spacer"></span><span class="score-flag">⚑ 42</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">Harbor community posting seeks a maintainer for OCI-native SBOM storage (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · leading indicator</div><div class="sowhat">A maintainer role framed around OCI-native SBOM suggests the open-source registry is moving toward storing attestations as first-class OCI objects — worth tracking for format-interoperability planning.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Help design OCI-referrers-based storage for SBOMs and signatures in Harbor."</div><div class="evidence-meta"><a href="#">jobs.lever.co/harbor-sample (public JSON)</a><span class="dot"></span><span>18 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B3<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — usually reliable. <b>Info 3</b> — possibly true (intent, not commitment).</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- market_regulatory awareness only -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">INDUSTRY</span><span class="type-chip" style="--h:265">market_regulatory</span><span class="spacer"></span><span class="score-flag">⚑ 38</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">SLSA v1.1 adoption crosses a threshold across major CI providers (sample)</div>
+      <span class="awareness">awareness only — no action</span>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Provenance generation is becoming a default CI expectation rather than an opt-in. No roadmap change implied today; noted so the trend is visible before it forces one.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Build platforms report majority default-on generation of SLSA provenance."</div><div class="evidence-meta"><a href="#">slsa.dev/blog</a><span class="dot"></span><span>19 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — standards project blog. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- security_trust -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE</span><span class="type-chip" style="--h:8">security_trust</span><span class="spacer"></span><span class="score-flag">⚑ 57</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">Advisory affecting Nexus Repository ≤ 3.94 — auth bypass (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Relevant to how competitors handle access-control hardening on-prem. Informs our own threat-model messaging; the fix arrived in the same 3.95 release above.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95."</div><div class="evidence-meta"><a href="#">osv.dev/vulnerability/GHSA-xxxx-sample</a><span class="dot"></span><span>26 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — OSV.dev. <b>Info 1</b> — confirmed.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability awareness only -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">GITHUB</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 35</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">GitHub Packages adds retention policies for container images (sample)</div>
+      <span class="awareness">awareness only — no action</span>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Lifecycle management catching up to established registry norms. A shallow-coverage competitor closing a hygiene gap; no parity concern for the platform roadmap.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Configure retention rules to automatically delete untagged image versions."</div><div class="evidence-meta"><a href="#">github.blog/changelog</a><span class="dot"></span><span>17 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — vendor changelog. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+    <!-- product_capability -->
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">GITLAB</span><span class="type-chip" style="--h:224">product_capability</span><span class="spacer"></span><span class="score-flag">⚑ 48</span><span class="persona-tag">PRODUCT</span></div>
+      <div class="headline">GitLab Package Registry emits SLSA provenance from pipelines (sample)</div>
+      <div class="card-section"><div class="sec-label">So what · capability delta</div><div class="sowhat">Provenance moves into a competitor's default CI path. Parity-relevant for how JFrog positions build-info and evidence collection in AppTrust; assess whether our provenance story is legible to buyers.</div></div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Pipelines can now emit SLSA-compliant provenance stored alongside the package."</div><div class="evidence-meta"><a href="#">about.gitlab.com/releases</a><span class="dot"></span><span>25 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — usually reliable. <b>Info 2</b> — probably true.</span></span></div></div>
+      <div class="actions"><button class="act confirm">✓ Confirm</button><button class="act reject">✗ Reject</button><button class="act">✎ Edit</button><button class="act">🔇 Mute</button></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     4 · EXECUTIVE
+     ============================================================ -->
+<section class="panel" id="panel-exec" role="tabpanel">
+  <div class="page-head">
+    <h2>Executive — weekly roll-up</h2>
+    <p class="explainer">Four items, assembled Friday. Each is a <b>trend</b> with direction, velocity and confidence — not an event. Deliberately sparse: a system willing to report stability is one whose alerts are believed.</p>
+  </div>
+
+  <div class="exec-list">
+
+    <div class="trend">
+      <div class="dir" style="color:var(--good);background:var(--good-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg></div>
+      <div class="body">
+        <h3>The AI-artifact security category is forming, and JFrog is positioned as the incumbent to displace</h3>
+        <p>A third competitor move into model/ML-artifact scanning this quarter (sample). The pattern across releases, hiring and messaging is category formation, not isolated features. Strategic implication: defend the "we were here first" narrative while the category is still being named.</p>
+        <div class="trend-meta"><span class="tm">Direction <b>↑ against us</b></span><span class="tm vel">Velocity <b>accelerating</b></span><span class="tm conf">Confidence <b>A — 3 corroborating signals</b></span></div>
+      </div>
+    </div>
+
+    <div class="trend">
+      <div class="dir" style="color:var(--good);background:var(--good-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg></div>
+      <div class="body">
+        <h3>Regulation is moving demand toward us: SBOM and vulnerability reporting are becoming procurement preconditions</h3>
+        <p>EU CRA reporting duties took effect this week; SBOM mandates are spreading into scope sectors (sample). This is a tailwind — buyers increasingly must have what the platform already produces. Implication: lead regulated-sector GTM with compliance-by-default framing.</p>
+        <div class="trend-meta"><span class="tm">Direction <b>↑ toward us</b></span><span class="tm vel">Velocity <b>steady</b></span><span class="tm conf">Confidence <b>A — official sources</b></span></div>
+      </div>
+    </div>
+
+    <div class="trend">
+      <div class="dir" style="color:var(--warn);background:var(--warn-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
+      <div class="body">
+        <h3>Competitors are shifting the buying conversation from repository to procurement path</h3>
+        <p>A competitor cloud-marketplace listing with committed-spend eligibility appeared this week (sample), following a pattern of moving competition onto deal-mechanics rather than capability. Implication: ensure marketplace and procurement parity is not a silent disadvantage in enterprise cycles.</p>
+        <div class="trend-meta"><span class="tm">Direction <b>→ lateral</b></span><span class="tm vel">Velocity <b>emerging</b></span><span class="tm conf">Confidence <b>B — single signal</b></span></div>
+      </div>
+    </div>
+
+    <div class="stability">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <div><div class="t">No material change in competitor positioning this week.</div><div class="s">Comparison pages, homepages and pricing for all five tracked competitors were captured and diffed. Nothing crossed the materiality threshold. Reporting stability is intelligence, not an empty slot.</div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     5 · COMPARISON
+     ============================================================ -->
+<section class="panel" id="panel-compare" role="tabpanel">
+  <div class="page-head">
+    <h2>Comparison — JFrog vs Sonatype</h2>
+    <p class="explainer">Derived from the claim ledger, not authored by hand. A comparison is a <b>state</b>; the daily feed only carries events. Click any row to see the verbatim quote, source and capture date behind the competitor cell. ⚠ marks a dimension whose claim changed recently.</p>
+  </div>
+
+  <div class="table-scroll">
+    <table class="grid">
+      <thead><tr><th>Dimension</th><th>JFrog position</th><th>Competitor position</th><th>Last changed</th></tr></thead>
+      <tbody id="cmpBody">
+
+        <tr class="row-expand" data-row="c1"><td class="dim"><span class="chev">▸</span>Malware detection <span class="flag-changed" title="Supporting claim changed in the last 30 days">⚠</span></td><td class="pos">Proactive; contextual analysis via Xray + Curation</td><td>Claims JFrog is "very limited, not proactive" <span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor's own comparison page. <b>Info 2</b> — probably true (verbatim).</span></span></td><td>24 Aug 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c1"><td colspan="4"><div class="quote">"80% more accurate data than JFrog … JFrog malware detection is very limited, not proactive."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>captured 24 Aug 2026</span><span class="dot"></span><span>grade A2</span></div><div class="waschange" style="margin-top:11px"><div class="lab">CLAIM CHANGE · was → now</div><span class="was">Limited</span><span class="to">→</span><span class="now">Very limited, not proactive</span></div></td></tr>
+
+        <tr class="row-expand" data-row="c2"><td class="dim"><span class="chev">▸</span>SBOM</td><td class="pos">Generate, sign, distribute; continuous</td><td>Claims JFrog SBOM is "export only" <span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true (contested characterisation).</span></span></td><td>11 Jul 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c2"><td colspan="4"><div class="quote">"JFrog SBOM support is export only."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>captured 11 Jul 2026</span><span class="dot"></span><span>grade A3</span></div></td></tr>
+
+        <tr class="row-expand" data-row="c3"><td class="dim"><span class="chev">▸</span>Pricing model <span class="flag-changed" title="Supporting claim changed in the last 30 days">⚠</span></td><td class="pos">Tiered subscription; published tiers</td><td>Claims JFrog has "hidden costs" <span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true (marketing characterisation).</span></span></td><td>24 Aug 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c3"><td colspan="4"><div class="quote">"Beware hidden costs with JFrog Artifactory."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>captured 24 Aug 2026</span><span class="dot"></span><span>grade A3</span></div></td></tr>
+
+        <tr class="row-expand" data-row="c4"><td class="dim"><span class="chev">▸</span>Package format coverage</td><td class="pos">30+ formats native</td><td>Adding formats iteratively; Cargo added in 3.95 (sample) <span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — release feed. <b>Info 2</b> — probably true.</span></span></td><td>25 Aug 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c4"><td colspan="4"><div class="quote">"Added: hosted, proxy and group repositories for the Cargo (crates.io) format."</div><div class="evidence-meta"><a href="#">github.com/sonatype/nexus-public/releases/tag/3.95.0</a><span class="dot"></span><span>captured 25 Aug 2026</span><span class="dot"></span><span>grade A2</span></div></td></tr>
+
+        <tr class="row-expand" data-row="c5"><td class="dim"><span class="chev">▸</span>AI / model artifacts <span class="flag-changed" title="Supporting claim changed in the last 30 days">⚠</span></td><td class="pos">AI Catalog + Xray contextual analysis</td><td>Hugging Face model scanning in Firewall (format-limited, sample) <span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — vendor blog. <b>Info 2</b> — probably true.</span></span></td><td>21 Aug 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c5"><td colspan="4"><div class="quote">"Firewall policies can now quarantine Hugging Face model components by license and malware signature."</div><div class="evidence-meta"><a href="#">sonatype.com/blog/model-firewall</a><span class="dot"></span><span>captured 21 Aug 2026</span><span class="dot"></span><span>grade A2</span></div></td></tr>
+
+        <tr class="row-expand" data-row="c6"><td class="dim"><span class="chev">▸</span>Runtime security</td><td class="pos">Runtime posture via integrations</td><td>Positions at build/proxy stage; no runtime claim on record <span class="grade" tabindex="0">C4<span class="info">ⓘ</span><span class="tip"><b>Source C</b> — fairly reliable (inferred from absence). <b>Info 4</b> — doubtful (no positive claim).</span></span></td><td>—</td></tr>
+        <tr class="detail-row hidden" id="detail-c6"><td colspan="4"><div class="empty-teach" style="margin-top:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><div><div class="t">No competitor claim on record for this dimension.</div><div class="s">The ledger shows absence, not a rebuttal. Checked across comparison and product pages; no runtime-security assertion found.</div></div></div></td></tr>
+
+        <tr class="row-expand" data-row="c7"><td class="dim"><span class="chev">▸</span>SaaS / self-hosted</td><td class="pos">Both, single platform</td><td>Both; self-hosted heritage, SaaS available <span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor product page. <b>Info 2</b> — probably true.</span></span></td><td>03 Jun 2026</td></tr>
+        <tr class="detail-row hidden" id="detail-c7"><td colspan="4"><div class="quote">"Deploy Nexus Repository self-hosted or as a managed cloud offering."</div><div class="evidence-meta"><a href="#">sonatype.com/products/nexus-repository</a><span class="dot"></span><span>captured 03 Jun 2026</span><span class="dot"></span><span>grade A2</span></div></td></tr>
+
+      </tbody>
+    </table>
+  </div>
+  <p class="section-note">The four Sonatype claims (malware detection, SBOM, pricing, "80% more accurate") are <b>real quotes</b> from Sonatype's public comparison page, shown with attribution. Every other cell is illustrative sample data.</p>
+</section>
+
+<!-- ============================================================
+     6 · COMPETITORS -> US
+     ============================================================ -->
+<section class="panel" id="panel-cross" role="tabpanel">
+  <div class="page-head">
+    <h2>Competitors → Us</h2>
+    <p class="explainer">What competitors publicly claim <b>about JFrog</b>, with history. This is the most differentiated view in the product — and the rarest to change. The asymmetry <code>subject = JFrog, asserter = Sonatype</code> is what makes it possible.</p>
+  </div>
+
+  <div class="timeline">
+    <h3>Sonatype's JFrog comparison page, 2021 → 2026</h3>
+    <p class="sub">19 archived content versions, backfilled from a public web archive at seed time — the page grew from ~20KB to ~38KB as claims accumulated.</p>
+    <div class="tl-track">
+      <div class="tl-line"></div><div class="tl-fill"></div>
+      <div class="tl-nodes">
+        <div class="tl-node milestone"><div class="dot"></div><div class="yr">Feb 2021</div><div class="ev">First archived version — feature checklist only</div></div>
+        <div class="tl-node"><div class="dot"></div><div class="yr">2022</div><div class="ev">4 versions</div></div>
+        <div class="tl-node milestone"><div class="dot"></div><div class="yr">Mar 2023</div><div class="ev">Pricing "hidden costs" language added</div></div>
+        <div class="tl-node"><div class="dot"></div><div class="yr">2024</div><div class="ev">6 versions</div></div>
+        <div class="tl-node milestone"><div class="dot"></div><div class="yr">Nov 2025</div><div class="ev">"80% more accurate data" claim introduced</div></div>
+        <div class="tl-node milestone"><div class="dot"></div><div class="yr">May 2026</div><div class="ev">Malware wording hardened to "not proactive"</div></div>
+      </div>
+    </div>
+    <p class="tl-versions">Wayback CDX (collapse=digest) · 19 distinct versions · sampled, not continuous — some intervals have no capture</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE → JFROG</span><span class="type-chip" style="--h:32">positioning · cross</span><span class="spacer"></span><span class="score-flag high">⚑ 95</span></div>
+      <div class="headline">Malware detection claim about JFrog hardened</div>
+      <div class="card-section"><div class="sec-label">Evidence · was → now</div>
+        <div class="waschange"><div class="lab">row "Malware detection" · cell "JFrog"</div><span class="was">Limited</span><span class="to">→</span><span class="now">Very limited, not proactive</span></div>
+        <div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — completely reliable. <b>Info 2</b> — probably true.</span></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE → JFROG</span><span class="type-chip" style="--h:32">positioning · cross</span><span class="spacer"></span><span class="score-flag">⚑ 71</span></div>
+      <div class="headline">"80% more accurate data than JFrog" — accuracy claim (introduced Nov 2025)</div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"80% more accurate data than JFrog."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true (unverifiable marketing metric).</span></span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE → JFROG</span><span class="type-chip" style="--h:32">positioning · cross</span><span class="spacer"></span><span class="score-flag">⚑ 64</span></div>
+      <div class="headline">"Export only" SBOM characterisation of JFrog</div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"JFrog SBOM support is export only."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>11 Jul 2026</span><span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true (contested).</span></span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top"><span class="entity-chip">SONATYPE → JFROG</span><span class="type-chip" style="--h:32">positioning · cross</span><span class="spacer"></span><span class="score-flag">⚑ 60</span></div>
+      <div class="headline">"Hidden costs" pricing characterisation of JFrog (added Mar 2023)</div>
+      <div class="card-section"><div class="sec-label">Evidence</div><div class="quote">"Beware hidden costs with JFrog Artifactory."</div><div class="evidence-meta"><a href="#">sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory</a><span class="dot"></span><span>24 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true (marketing).</span></span></div></div>
+    </div>
+  </div>
+
+  <div class="empty-teach">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+    <div><div class="t">No competitor except Sonatype currently publishes a page comparing itself to JFrog.</div><div class="s">GitLab, GitHub, Harbor and one other are monitored for this; none has a live comparison claim on record. Checked weekly.</div></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     7 · INDUSTRY
+     ============================================================ -->
+<section class="panel" id="panel-industry" role="tabpanel">
+  <div class="page-head">
+    <h2>Industry</h2>
+    <p class="explainer">DevSecOps field news — the "insights across our industry" half of the brief. <b>Nothing here is about a competitor.</b> This lane answers "is the market moving toward us or away from us?" — a question competitor tracking alone cannot.</p>
+  </div>
+
+  <div class="industry-grid">
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">EU CRA</span><span class="type-chip" style="--h:265">market_regulatory</span></div>
+      <h3>Cyber Resilience Act: 24-hour reporting for exploited vulnerabilities is now live (sample)</h3>
+      <p>Manufacturers placing products on the EU market must report actively exploited vulnerabilities within 24 hours. SBOM generation moves from best practice to a procurement precondition in scope sectors.</p>
+      <div class="news-foot"><a href="#">digital-strategy.ec.europa.eu/cra</a><span class="dot"></span><span>22 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — official body. <b>Info 1</b> — confirmed.</span></span></div>
+    </div>
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">NIS2</span><span class="type-chip" style="--h:265">market_regulatory</span></div>
+      <h3>NIS2 enforcement guidance clarifies software supply chain obligations for essential entities (sample)</h3>
+      <p>New guidance ties supply-chain risk management to concrete evidence requirements. Organisations in essential sectors will need demonstrable provenance and vulnerability handling across their software dependencies.</p>
+      <div class="news-foot"><a href="#">enisa.europa.eu/nis2</a><span class="dot"></span><span>20 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — agency guidance. <b>Info 2</b> — probably true.</span></span></div>
+    </div>
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">SLSA</span><span class="type-chip" style="--h:265">market_regulatory</span></div>
+      <h3>SLSA v1.1 build-provenance adoption crosses majority default-on across CI providers (sample)</h3>
+      <p>Provenance generation is becoming a default rather than an opt-in across major build platforms. The centre of gravity for supply-chain integrity is shifting from scanning after the fact to attesting at build time.</p>
+      <div class="news-foot"><a href="#">slsa.dev/blog</a><span class="dot"></span><span>19 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — standards project blog. <b>Info 2</b> — probably true.</span></span></div>
+    </div>
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">OpenSSF</span><span class="type-chip" style="--h:265">market_regulatory</span></div>
+      <h3>OpenSSF publishes updated baseline for open-source project security posture (sample)</h3>
+      <p>A refreshed security baseline raises expectations for signing, provenance and vulnerability disclosure across widely used open-source projects — nudging the entire ecosystem toward attestable artifacts.</p>
+      <div class="news-foot"><a href="#">openssf.org/blog</a><span class="dot"></span><span>18 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — foundation. <b>Info 2</b> — probably true.</span></span></div>
+    </div>
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">SUPPLY CHAIN</span><span class="type-chip" style="--h:8">security_trust</span></div>
+      <h3>Malicious-package campaign targets popular npm and PyPI namespaces via typosquatting (sample)</h3>
+      <p>A coordinated campaign uploaded lookalike packages to public registries, with install-time payloads. Reinforces the case for curation and malware scanning at the proxy boundary rather than at deploy time.</p>
+      <div class="news-foot"><a href="#">openssf.org/advisory-sample</a><span class="dot"></span><span>21 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">B2<span class="info">ⓘ</span><span class="tip"><b>Source B</b> — security researcher report. <b>Info 2</b> — probably true.</span></span></div>
+    </div>
+
+    <div class="news">
+      <div class="news-top"><span class="std-chip">CNCF</span><span class="type-chip" style="--h:175">partnership_ecosystem</span></div>
+      <h3>A supply-chain security project reaches CNCF graduation (sample)</h3>
+      <p>Graduation signals production maturity and broad adoption for a project in the artifact-signing space. Ecosystem consolidation around a small number of graduated tools shapes what buyers expect as standard.</p>
+      <div class="news-foot"><a href="#">cncf.io/announcements</a><span class="dot"></span><span>17 Aug 2026</span><span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — foundation announcement. <b>Info 2</b> — probably true.</span></span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     8 · ASK
+     ============================================================ -->
+<section class="panel" id="panel-ask" role="tabpanel">
+  <div class="page-head">
+    <h2>Ask</h2>
+    <p class="explainer">Grounded question-answering over the ledger. It answers only from stored evidence, renders the evidence it used, and <b>refuses when the ledger cannot support an answer</b> — the refusal is the point.</p>
+  </div>
+
+  <div class="ask-wrap">
+    <div class="ask-intro">This transcript is hardcoded for the demo. In the running system, every sentence traces to a verbatim quote with character offsets in an immutable capture, and the model is never allowed to answer beyond what the ledger holds.</div>
+
+    <!-- Exchange A: answered well -->
+    <div class="exchange">
+      <div class="bubble-q">What has Sonatype changed about how it describes JFrog's malware detection?</div>
+      <div class="bubble-a">
+        <div class="ans">Sonatype's comparison page <b>hardened its malware-detection claim about JFrog</b> in the most recent capture: the wording moved from "Limited" to "Very limited, not proactive." The change was to the wording on a single comparison-table cell; no evidence indicates an underlying capability change on JFrog's side. Sonatype also asserts "80% more accurate data than JFrog" on the same page.</div>
+        <div class="ev-cards">
+          <div class="ev-card"><div class="ev-n">1</div><div><div class="ev-q">"Very limited, not proactive"</div><div class="ev-src"><a href="#">sonatype.com/compare/…jfrog-artifactory</a><span class="dot"></span>24 Aug 2026<span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 2</b> — probably true.</span></span></div></div></div>
+          <div class="ev-card"><div class="ev-n">2</div><div><div class="ev-q">was "Limited" → now "Very limited, not proactive" (structural diff)</div><div class="ev-src"><a href="#">claim_version #4471</a><span class="dot"></span>captured 24 Aug 2026<span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b>. <b>Info 2</b>.</span></span></div></div></div>
+          <div class="ev-card"><div class="ev-n">3</div><div><div class="ev-q">"80% more accurate data than JFrog"</div><div class="ev-src"><a href="#">sonatype.com/compare/…jfrog-artifactory</a><span class="dot"></span>24 Aug 2026<span class="dot"></span><span class="grade" tabindex="0">A3<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — competitor page. <b>Info 3</b> — possibly true.</span></span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exchange B: comparison from the ledger -->
+    <div class="exchange">
+      <div class="bubble-q">On AI and model artifacts, where does Sonatype stand versus JFrog right now?</div>
+      <div class="bubble-a">
+        <div class="ans">From the ledger: Sonatype added <b>Hugging Face model scanning to Nexus Firewall</b> (format-limited, per its own blog). JFrog's recorded position is <b>AI Catalog plus Xray contextual analysis</b>. The comparison dimension "AI / model artifacts" is flagged as recently changed (21 Aug 2026). The material distinction on record is breadth of model-format coverage — the competitor claim is scoped to one format.</div>
+        <div class="ev-cards">
+          <div class="ev-card"><div class="ev-n">1</div><div><div class="ev-q">"Firewall policies can now quarantine Hugging Face model components by license and malware signature."</div><div class="ev-src"><a href="#">sonatype.com/blog/model-firewall</a><span class="dot"></span>21 Aug 2026<span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — vendor blog. <b>Info 2</b> — probably true.</span></span></div></div></div>
+          <div class="ev-card"><div class="ev-n">2</div><div><div class="ev-q">battlecard_row "AI / model artifacts" · JFrog: AI Catalog + Xray contextual analysis</div><div class="ev-src"><a href="#">ledger · battlecard_row</a><span class="dot"></span>updated 21 Aug 2026<span class="dot"></span><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b>. <b>Info 2</b>.</span></span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exchange C: REFUSAL (most important) -->
+    <div class="exchange">
+      <div class="bubble-q">How many net-new enterprise customers did Sonatype win from JFrog last quarter?</div>
+      <div class="bubble-a refusal">
+        <div class="refusal-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg> No grounded evidence</div>
+        <div class="ans">I don't have grounded evidence for that. Win/loss counts require CRM records and buyer interviews that this system does not collect — and Sonatype is privately held, so no regulated financial disclosure exists to corroborate against. I won't estimate a number I can't source.<br><br>Here's what I <b>do</b> have nearby:</div>
+        <div class="nearby">
+          <div class="nl">NEARBY, GROUNDED EVIDENCE</div>
+          <ul>
+            <li>One new Sonatype financial-services case study appeared on their customer page (24 Aug 2026) — a single self-reported logo, grade A3, not a count.</li>
+            <li>Three Sonatype job postings referencing ML supply-chain roles (20 Aug 2026) — a hiring signal, not a revenue one.</li>
+            <li>Win/loss analysis is named out of scope in the PRD; it needs internal primary sources (Salesforce closed-lost, call transcripts) the system is designed to attach later.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     9 · SETTINGS & TUNING
+     ============================================================ -->
+<section class="panel" id="panel-settings" role="tabpanel">
+  <div class="page-head">
+    <h2>Settings &amp; Tuning</h2>
+    <p class="explainer">The team owns its own coverage. Adding a source, changing a weight or editing the watchlist is configuration, not engineering — and it re-ranks existing history immediately.</p>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="settings-section">
+    <h3>Sources</h3>
+    <p class="sub">Collection is ethical and visibly so. Excluded sources appear <b>as excluded, with the reason</b> — not quietly absent.</p>
+    <div class="table-scroll">
+      <table class="grid">
+        <thead><tr><th>Source</th><th>Entity</th><th>Mode</th><th>Grade</th><th>Cadence</th><th>robots</th><th>Last checked</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">GitHub Releases (nexus-public)</td><td>Sonatype</td><td><span class="mode-chip">feed</span></td><td><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — primary release feed. <b>Info 2</b>.</span></span></td><td>1h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">OSV.dev API</td><td>All competitors</td><td><span class="mode-chip">api</span></td><td><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — structured primary API. <b>Info 1</b>.</span></span></td><td>6h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">GitHub Security Advisories</td><td>All competitors</td><td><span class="mode-chip">api</span></td><td><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b>. <b>Info 1</b>.</span></span></td><td>6h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">Sonatype comparison page</td><td>Sonatype</td><td><span class="mode-chip">snapshot</span></td><td><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — own page. <b>Info 2</b>.</span></span></td><td>24h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">Sonatype pricing page</td><td>Sonatype</td><td><span class="mode-chip">snapshot</span></td><td><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b>. <b>Info 2</b>.</span></span></td><td>24h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">Greenhouse board (Sonatype)</td><td>Sonatype</td><td><span class="mode-chip">api</span></td><td><span class="grade" tabindex="0">A2<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — public JSON board. <b>Info 2</b>.</span></span></td><td>24h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr><td class="dim">EU CRA / ENISA feeds</td><td>Industry</td><td><span class="mode-chip">feed</span></td><td><span class="grade" tabindex="0">A1<span class="info">ⓘ</span><span class="tip"><b>Source A</b> — official body. <b>Info 1</b>.</span></span></td><td>12h</td><td class="pill-ok">✓</td><td>06:00 today</td></tr>
+          <tr class="src-excluded"><td class="dim">Sonatype developer portal (JS-rendered)</td><td>Sonatype</td><td><span class="mode-chip">snapshot</span></td><td>—</td><td>—</td><td class="pill-no">✗</td><td colspan="1"><span class="excl-reason">excluded — blocked by robots.txt</span></td></tr>
+          <tr class="src-excluded"><td class="dim">G2 reviews (Sonatype / JFrog)</td><td>Sonatype</td><td><span class="mode-chip">snapshot</span></td><td>—</td><td>—</td><td class="pill-no">✗</td><td><span class="excl-reason">excluded — ToS prohibits automated collection (G2)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-note">Two rows above are excluded by design: one because <code>robots.txt</code> disallows it, one because the site's terms prohibit automated collection. Review sites are the richest excluded source — held out on ethics grounds, recorded as a decision, not a gap.</p>
+  </div>
+
+  <!-- MATERIALITY WEIGHTS -->
+  <div class="settings-section">
+    <h3>Materiality weights</h3>
+    <p class="sub">The score is visible arithmetic over these weights. Changing one re-ranks the entire ledger in a database update — disagreement becomes a settings change, not a loss of faith. (Illustrative controls; not wired in this demo.)</p>
+    <div class="weights">
+      <div class="weight"><div class="wtop"><span class="wname">JFrog is the subject (multiplier)</span><span class="wval">×2.0</span></div><input type="range" min="1" max="3" step="0.1" value="2" aria-label="subject is JFrog multiplier"><div class="wnote">Prioritisation may be biased — visibly and tunably. Lower to ×1.0 to treat cross-assertions like any other claim.</div></div>
+      <div class="weight"><div class="wtop"><span class="wname">Tier-1 entity bonus</span><span class="wval">+15</span></div><input type="range" min="0" max="40" step="1" value="15" aria-label="tier 1 bonus"><div class="wnote">Deep-coverage competitors (Sonatype) score above shallow-coverage ones.</div></div>
+      <div class="weight"><div class="wtop"><span class="wname">Substantive change bonus</span><span class="wval">+20</span></div><input type="range" min="0" max="40" step="1" value="20" aria-label="substantive change bonus"><div class="wnote">A real claim change outweighs a cosmetic one.</div></div>
+      <div class="weight"><div class="wtop"><span class="wname">Recency half-life (days)</span><span class="wval">14</span></div><input type="range" min="3" max="45" step="1" value="14" aria-label="recency half life"><div class="wnote">How fast a signal's score decays.</div></div>
+      <div class="weight"><div class="wtop"><span class="wname">Sales digest budget (items)</span><span class="wval">6</span></div><input type="range" min="3" max="12" step="1" value="6" aria-label="sales budget"><div class="wnote">A hard cap, applied after ranking. A digest that grows without bound is one nobody finishes.</div></div>
+      <div class="weight"><div class="wtop"><span class="wname">Interrupt CVSS threshold</span><span class="wval">8.0</span></div><input type="range" min="6" max="10" step="0.1" value="8" aria-label="interrupt cvss"><div class="wnote">Security signals at or above this severity break the daily cadence.</div></div>
+    </div>
+  </div>
+
+  <!-- WATCHLIST -->
+  <div class="settings-section">
+    <h3>Watchlist terms</h3>
+    <p class="sub">Free-text terms of current interest. A hit adds to a signal's score. Editable without a code change.</p>
+    <div class="chips">
+      <span class="wl-chip">malware detection <button aria-label="remove">×</button></span>
+      <span class="wl-chip">SBOM <button aria-label="remove">×</button></span>
+      <span class="wl-chip">model registry <button aria-label="remove">×</button></span>
+      <span class="wl-chip">cargo <button aria-label="remove">×</button></span>
+      <span class="wl-chip">SLSA provenance <button aria-label="remove">×</button></span>
+      <span class="wl-chip">hidden costs <button aria-label="remove">×</button></span>
+      <span class="wl-chip">runtime security <button aria-label="remove">×</button></span>
+      <span class="wl-chip">contact sales <button aria-label="remove">×</button></span>
+      <span class="wl-chip wl-add">+ add term</span>
+    </div>
+  </div>
+
+  <!-- COVERAGE MATRIX -->
+  <div class="settings-section">
+    <h3>Collection coverage matrix</h3>
+    <div class="cov-caption">This grid answers the one question a competitor tracker must be able to answer: <b>what are we blind to?</b> Collection must be unbiased even though prioritisation is not — an empty cell is a configured gap, made visible rather than assumed away.</div>
+    <div class="table-scroll">
+      <table class="grid">
+        <thead><tr><th>Entity</th><th>product</th><th>security</th><th>market/reg</th><th>partnership</th><th>talent</th><th>customer</th><th>positioning</th><th>pricing</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">Sonatype <span class="mode-chip">tier 1</span></td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-y">✓</td></tr>
+          <tr><td class="dim">GitLab</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-x">✗</td><td class="cov-cell cov-x">✗</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-y">✓</td></tr>
+          <tr><td class="dim">GitHub</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-x">✗</td><td class="cov-cell cov-x">✗</td><td class="cov-cell cov-x">✗</td><td class="cov-cell cov-na">—</td></tr>
+          <tr><td class="dim">Harbor</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-na">—</td></tr>
+          <tr><td class="dim">Industry (pseudo-entity)</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-yy">✓✓</td><td class="cov-cell cov-y">✓</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-na">—</td><td class="cov-cell cov-na">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cov-legend">
+      <span><span class="k cov-yy">✓✓</span> multiple sources</span>
+      <span><span class="k cov-y">✓</span> one source</span>
+      <span><span class="k cov-x">✗</span> configured gap — no source yet</span>
+      <span><span class="k cov-na">—</span> not applicable for this entity</span>
+    </div>
+    <p class="section-note">Reading example: talent coverage is deep for Sonatype but a <b>gap</b> for GitLab and GitHub (marked ✗). That is a known blind spot, on screen, rather than an unstated assumption — the honest answer to "how do you know what you're not seeing?"</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     10 · EMAIL PREVIEW
+     ============================================================ -->
+<section class="panel" id="panel-email" role="tabpanel">
+  <div class="page-head">
+    <h2>Email preview</h2>
+    <p class="explainer">The daily digest as it lands in an inbox — short, scannable, linking back into the app. Same evidence, <b>parameterised by persona</b>: switch the version to see the routing.</p>
+  </div>
+
+  <div class="email-switch" role="group" aria-label="Persona version">
+    <button data-email="sales" aria-pressed="true">Sales</button>
+    <button data-email="product" aria-pressed="false">Product</button>
+    <button data-email="exec" aria-pressed="false">Executive</button>
+  </div>
+
+  <div class="inbox">
+    <div class="inbox-chrome"><div class="dots"><i></i><i></i><i></i></div><span>Inbox — 1 new</span></div>
+    <div class="email">
+      <div class="email-head">
+        <div class="from">
+          <div class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+          <div><div class="fn">CI System</div><div class="fe">ci-digest@example.internal · to you</div></div>
+        </div>
+        <div class="subj" id="emailSubj">Competitive digest — Sales · Tue 26 Aug</div>
+        <div class="meta" id="emailMeta">6 items · 1 handling caution · budget capped</div>
+      </div>
+      <div class="email-body" id="emailBody">
+        <!-- filled by JS per persona -->
+      </div>
+      <div class="email-foot">Every item links to its evidence in the app. Unsubscribe or change cadence in Settings. Sent by the scheduler at 06:05 · delivery logged.</div>
+    </div>
+  </div>
+  <p class="section-note">The Executive version is deliberately sparser and weekly — and it is permitted to say "nothing material moved," which the daily versions never need to.</p>
+</section>
+
+</main>
+
+<script>
+/* ============================================================
+   JS — tabs, theme, row expand, email persona ONLY.
+   No data fetching, no computation. Every string is hardcoded.
+   ============================================================ */
+(function(){
+  "use strict";
+
+  /* --- Tabs --- */
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+  function selectTab(name){
+    tabs.forEach(function(t){ t.setAttribute('aria-selected', String(t.dataset.tab === name)); });
+    panels.forEach(function(p){ p.classList.toggle('active', p.id === 'panel-' + name); });
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ selectTab(t.dataset.tab); }); });
+
+  /* --- Theme toggle --- */
+  var root = document.documentElement;
+  var btn = document.getElementById('themeBtn');
+  var label = document.getElementById('themeLabel');
+  var icon = document.getElementById('themeIcon');
+  var moon = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  var sun  = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  function apply(theme){
+    root.setAttribute('data-theme', theme);
+    var dark = theme === 'dark';
+    label.textContent = dark ? 'Light' : 'Dark';
+    icon.innerHTML = dark ? sun : moon;
+  }
+  // respect OS preference on first load
+  apply(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  btn.addEventListener('click', function(){
+    apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  /* --- Comparison row expand --- */
+  document.querySelectorAll('.row-expand').forEach(function(row){
+    row.addEventListener('click', function(){
+      var detail = document.getElementById('detail-' + row.dataset.row);
+      if(!detail) return;
+      var open = detail.classList.toggle('hidden');
+      row.classList.toggle('open', !open);
+    });
+  });
+
+  /* --- Email persona switcher (hardcoded content) --- */
+  var emailData = {
+    sales: {
+      subj: 'Competitive digest — Sales · Tue 26 Aug',
+      meta: '6 items · 1 handling caution · budget capped',
+      lead: 'Six things you could use in a live conversation today. Each is an objection you might hear and the response, with the source attached.',
+      items: [
+        {t:'security_trust', h:'Advisory affecting Nexus ≤ 3.94', s:'Handling caution — lead on posture, not the CVE. Response framing supplied.', flag:'⚠ caution'},
+        {t:'product_capability', h:'Nexus 3.95 adds Cargo registry support', s:'Counter: format support is table stakes — pivot to Cargo malware scanning and curation.'},
+        {t:'customer_evidence', h:'New financial-services case study on Sonatype customer page', s:'Named-account overlap flagged to the competitive desk.'},
+        {t:'partnership_ecosystem', h:'Sonatype now in a cloud marketplace', s:'Procurement-path parity: JFrog is available the same way. Don’t concede the point.'},
+        {t:'product_capability', h:'Nexus deprecates Java 11', s:'Migration angle for two accounts — evaluate alternatives while they re-platform.'},
+        {t:'market_regulatory', h:'EU CRA reporting obligations dated', s:'Bring compliance + security into one conversation; JFrog produces signed SBOMs.'}
+      ]
+    },
+    product: {
+      subj: 'Competitive digest — Product · Tue 26 Aug',
+      meta: '8 items · 2 awareness-only · bullet-level',
+      lead: 'Eight capability deltas with the verbatim release-note bullet and a link to the primary source. Two are flagged awareness-only.',
+      items: [
+        {t:'product_capability', h:'Nexus 3.95 — 3 signals from 40 bullets', s:'Cargo support + provenance attestation; 37 bullets filtered as no_signal.'},
+        {t:'product_capability', h:'Nexus Firewall scans Hugging Face model artifacts', s:'Format-limited. Parity-gap analysis vs AI Catalog + Xray warranted this sprint.'},
+        {t:'talent_org', h:'Three Sonatype ML supply-chain roles', s:'Leading indicator — roadmap intent 6–12 months out.'},
+        {t:'talent_org', h:'Harbor seeks OCI-native SBOM maintainer', s:'Format-interoperability signal.'},
+        {t:'market_regulatory', h:'SLSA v1.1 adoption crosses majority', s:'Awareness only — no roadmap change implied today.', flag:'awareness'},
+        {t:'product_capability', h:'GitLab emits SLSA provenance from pipelines', s:'Assess whether our provenance story is legible to buyers.'},
+        {t:'product_capability', h:'GitHub Packages adds image retention policies', s:'Hygiene parity by a shallow-coverage competitor.', flag:'awareness'},
+        {t:'security_trust', h:'Nexus ≤ 3.94 auth-bypass advisory', s:'Informs our own threat-model messaging; fixed in 3.95.'}
+      ]
+    },
+    exec: {
+      subj: 'Executive weekly roll-up · week of 24 Aug',
+      meta: '4 items · weekly · stability reported',
+      lead: 'Four trends with direction, velocity and confidence — not events. Assembled Friday. One is an explicit stability statement.',
+      items: [
+        {t:'trend ↑ against us', h:'AI-artifact security category is forming', s:'Third competitor move this quarter; JFrog positioned as incumbent to displace. Confidence A.'},
+        {t:'trend ↑ toward us', h:'Regulation is moving demand toward us', s:'CRA + SBOM mandates becoming procurement preconditions. Confidence A.'},
+        {t:'trend → lateral', h:'Competition shifting to procurement path', s:'Marketplace / committed-spend moves. Single signal, confidence B.'},
+        {t:'stability', h:'No material change in competitor positioning this week', s:'All five tracked competitors captured and diffed; nothing crossed threshold.', flag:'stable'}
+      ]
+    }
+  };
+
+  var typeHue = {
+    product_capability:224, security_trust:8, market_regulatory:265,
+    partnership_ecosystem:175, talent_org:145, customer_evidence:330
+  };
+
+  function renderEmail(persona){
+    var d = emailData[persona];
+    document.getElementById('emailSubj').textContent = d.subj;
+    document.getElementById('emailMeta').textContent = d.meta;
+    var body = document.getElementById('emailBody');
+    var html = '<p class="email-lead">' + d.lead + '</p>';
+    d.items.forEach(function(it, i){
+      var flag = it.flag ? ' <span class="di-flag">' + it.flag + '</span>' : '';
+      html += '<div class="digest-item">' +
+        '<div class="di-num">' + (i+1) + '</div>' +
+        '<div class="di-body">' +
+          '<div class="di-type">' + it.t + flag + '</div>' +
+          '<div class="di-head">' + it.h + '</div>' +
+          '<div class="di-so">' + it.s + '</div>' +
+          '<a href="#">Open in app →</a>' +
+        '</div></div>';
+    });
+    body.innerHTML = html;
+  }
+
+  document.querySelectorAll('.email-switch button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.email-switch button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      renderEmail(b.dataset.email);
+    });
+  });
+  renderEmail('sales');
+
+  /* make grade chips keyboard-dismissable */
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }});
+})();
+</script>
+</body>
+</html>
