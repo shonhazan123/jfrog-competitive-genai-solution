@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Release notes from nexus-public</title>
+  <entry>
+    <id>tag:github.com,2008:Repository/1234/release-3.95.0</id>
+    <title>release-3.95.0</title>
+    <updated>2026-08-06T22:16:26Z</updated>
+    <link href="https://github.com/sonatype/nexus-public/releases/tag/release-3.95.0"/>
+    <content type="html">&lt;ul&gt;&lt;li&gt;Added Cargo registry support&lt;/li&gt;&lt;li&gt;Fixed a typo in the admin UI&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/1234/release-3.94.1</id>
+    <title>release-3.94.1</title>
+    <updated>2026-07-24T23:20:47Z</updated>
+    <link href="https://github.com/sonatype/nexus-public/releases/tag/release-3.94.1"/>
+    <content type="html">&lt;ul&gt;&lt;li&gt;Security fix for CVE-2026-0001&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+</feed>
