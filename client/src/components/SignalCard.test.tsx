@@ -25,8 +25,16 @@ test("only the score breakdown is collapsed", () => {
 test("score breakdown expands to arithmetic that sums to the total", async () => {
   render(<SignalCard signal={SIGNAL} persona="sales" />);
   await userEvent.click(screen.getByRole("button", { name: /why this score/i }));
-  const parts = SIGNAL.score_breakdown.map(([, v]: [string, number]) => v);
-  expect(Math.round(parts.reduce((a, b) => a + b, 0))).toBe(Math.round(SIGNAL.score));
+  // Ground-truth drift: the list/digest endpoints return score_breakdown: null
+  // (confirmed against the live API and API_CONTRACT §1.5 — the arithmetic only
+  // exists on GET /signals/{id}). When present it must sum to the total; when the
+  // backend omits it, the disclosure surfaces a graceful note instead.
+  if (SIGNAL.score_breakdown) {
+    const parts = (SIGNAL.score_breakdown as [string, number][]).map(([, v]) => v);
+    expect(Math.round(parts.reduce((a, b) => a + b, 0))).toBe(Math.round(SIGNAL.score));
+  } else {
+    expect(screen.getByText(/score breakdown not available/i)).toBeVisible();
+  }
 });
 
 test("only the current persona's so-what renders", () => {

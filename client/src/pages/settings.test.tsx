@@ -21,7 +21,9 @@ test("the coverage matrix has nine columns and flags gaps", () => {
 test("excluded sources state their reason rather than being hidden", () => {
   renderPage(<Settings />);
   expect(screen.getByText(/blocked by robots\.txt/i)).toBeInTheDocument();
-  expect(screen.getByText(/terms of service/i)).toBeInTheDocument();
+  // Ground-truth copy: sources.json states the exclusion as "ToS prohibits
+  // automated collection (G2)" — match the fixture rather than paraphrasing it.
+  expect(screen.getByText(/ToS prohibits automated collection/i)).toBeInTheDocument();
 });
 
 test("the coverage matrix explains what it is for", () => {
