@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, JSON
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Computed, DateTime, ForeignKey, Integer, String, Text, JSON
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin
@@ -46,3 +48,9 @@ class Chunk(Base, TimestampMixin):
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
     embed_model: Mapped[str | None] = mapped_column(String(64), nullable=True)
     embed_version: Mapped[int] = mapped_column(Integer, default=1)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(1536), nullable=True)
+    tsv: Mapped[str | None] = mapped_column(
+        TSVECTOR,
+        Computed("to_tsvector('english', coalesce(prefix,'') || ' ' || text)", persisted=True),
+        nullable=True,
+    )
