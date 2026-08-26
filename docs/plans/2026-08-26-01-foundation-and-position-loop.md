@@ -2013,3 +2013,7 @@ git commit -m "feat: archive backfill producing five years of cited claim histor
 - pgvector is enabled by the image but no vector column exists yet — that arrives with ingestion in Plan 3.
 
 **Type consistency.** `ComparisonRow`, `RowChange`, `Element`, `FetchResult` and `Snapshot` are defined once and used with identical signatures in every later task. `diff_rows` takes and returns the same types in Tasks 9 and 11.
+
+**Implementation deviations (applied during execution):**
+- **Task 7 — smart quotes.** `normalize_text` adds an explicit `_SMART_QUOTES` translation map (`“ ” ‘ ’` → ASCII). Unicode NFKC does not fold curly quotes to ASCII, so NFKC alone could not satisfy `test_decodes_entities_and_normalises_quotes`. The map realises the design's stated smart-quote normalisation.
+- **Task 11 — versions record transitions only.** `backfill._apply` creates a `ClaimVersion` only when `change.old_value is not None` (i.e. a real before→after transition). The literal plan snippet created a version for a claim's first appearance too, which produced two versions for a two-snapshot page and contradicted `test_backfill_records_the_claim_change_between_versions` (`ClaimVersion.one()`). A claim's initial appearance is captured by the `Claim` row's `first_seen_at`; only subsequent changes are versioned.
