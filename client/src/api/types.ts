@@ -1,0 +1,389 @@
+/** Types transcribed from docs/API_CONTRACT.md */
+
+export type SignalType =
+  | "product_capability"
+  | "positioning_messaging"
+  | "pricing_packaging"
+  | "security_trust"
+  | "corporate_financial"
+  | "partnership_ecosystem"
+  | "customer_evidence"
+  | "market_regulatory"
+  | "talent_org";
+
+export type Persona = "sales" | "product" | "exec";
+
+export type ReliabilityGrade = "A" | "B" | "C" | "D" | "E" | "F";
+
+export type CredibilityScore = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type ChangeKind = "new" | "substantive" | "cosmetic" | "removed";
+
+export type CollectionMode = "feed" | "snapshot" | "api";
+
+export type SourceKind = "atom" | "rss" | "html_page" | "api" | "sitemap";
+
+export type ClaimType = "capability" | "pricing" | "positioning" | "security";
+
+export type AnalystAction = "confirm" | "reject" | "edit" | "suppress";
+
+export type Handling = "caution";
+
+export type Provenance = "live" | "archive";
+
+export interface Evidence {
+  quote: string;
+  source_url: string;
+  source_name: string;
+  captured_at: string;
+  reliability_grade: ReliabilityGrade;
+  credibility_score: CredibilityScore;
+  is_primary: boolean;
+}
+
+export interface ScoreBreakdown {
+  total: number;
+  parts: [string, number][];
+}
+
+export interface EntityRef {
+  slug: string;
+  name: string;
+  tier: number | null;
+}
+
+export interface Change {
+  dimension: string;
+  kind: ChangeKind;
+  was: string;
+  now: string;
+}
+
+export interface TraceStep {
+  n: number;
+  node: string;
+  status: "ok" | "fail" | "skipped";
+  detail: string;
+}
+
+export interface Signal {
+  id: string;
+  entity: EntityRef;
+  signal_type: SignalType;
+  signal_flavour: "self" | "cross" | null;
+  subject_entity: string | null;
+  asserting_entity: string;
+  mentions_jfrog: boolean;
+  headline: string;
+  occurred_at: string;
+  persona: Persona | null;
+  so_what: string;
+  score: number;
+  score_breakdown: ScoreBreakdown | null;
+  handling: Handling | null;
+  awareness_only: boolean;
+  change: Change | null;
+  evidence: Evidence[];
+  cluster_id: string | null;
+  corroboration_count: number;
+  interrupt_tier: "critical" | null;
+}
+
+export interface SignalDetail extends Signal {
+  trace: TraceStep[];
+  all_persona_scores: Record<string, ScoreBreakdown>;
+  bullet_classification: Record<string, unknown> | null;
+}
+
+export interface ListResponse<T> {
+  items: T[];
+  total: number;
+  cursor: string | null;
+}
+
+export interface RunStatus {
+  run_id: string;
+  started_at: string;
+  finished_at: string | null;
+  status: "ok" | "running" | "failed";
+  next_run_at: string;
+  live: boolean;
+  sources_count: number;
+  funnel: [string, number][];
+  delivered_breakdown: [string, number][];
+}
+
+export interface SinceLastVisit {
+  last_visit_at: string;
+  new_signals: number;
+  claim_changes: number;
+}
+
+export interface GetSignalsParams {
+  persona?: Persona | null;
+  entity?: string | null;
+  signal_type?: SignalType | null;
+  view?: "today" | null;
+  since?: string | null;
+  until?: string | null;
+  include_interrupts?: boolean;
+  limit?: number;
+  cursor?: string | null;
+}
+
+export interface AnalystActionRequest {
+  action: AnalystAction;
+  actor: string;
+  reason?: string | null;
+  edit?: Record<string, unknown> | null;
+  relevance_adjustment?: number | null;
+}
+
+export interface AnalystActionResponse {
+  id: string;
+  target_type: string;
+  target_id: string;
+  action: AnalystAction;
+  actor: string;
+  at: string;
+}
+
+export interface BattlecardRow {
+  id: string;
+  dimension: string;
+  jfrog_position: string;
+  competitor_position: string;
+  competitor: string;
+  supporting_claim_ids: string[];
+  reliability_grade: ReliabilityGrade | null;
+  credibility_score: CredibilityScore | null;
+  last_changed_at: string | null;
+  changed_recently: boolean;
+  evidence: Evidence[];
+  change: Change | null;
+  no_claim_on_record: boolean;
+}
+
+export interface ClaimVersion {
+  changed_at: string;
+  change_kind: ChangeKind;
+  old_text: string | null;
+  new_text: string;
+  evidence_id: string | null;
+}
+
+export interface Claim {
+  id: string;
+  subject_entity: string;
+  asserting_entity: string;
+  claim_text: string;
+  claim_type: ClaimType;
+  capability_tags: string[];
+  status: "active";
+  reliability_grade: ReliabilityGrade;
+  credibility_score: CredibilityScore;
+  first_seen_at: string;
+  last_confirmed_at: string;
+  score: number;
+  change: Change | null;
+  evidence: Evidence[];
+  versions: ClaimVersion[];
+}
+
+export interface GetClaimsParams {
+  subject?: string;
+  asserter?: string | null;
+  claim_type?: ClaimType | null;
+  include_history?: boolean;
+}
+
+export interface ArchiveVersion {
+  captured_at: string;
+  label: string;
+  is_milestone: boolean;
+  size_bytes: number | null;
+  provenance: Provenance;
+}
+
+export interface ArchiveTimeline {
+  source_id: string;
+  source_url: string;
+  method: string;
+  total_versions: number;
+  sampled: boolean;
+  span_start: string;
+  span_end: string;
+  versions: ArchiveVersion[];
+}
+
+export interface IndustryItem {
+  id: string;
+  standard_chip: string;
+  signal_type: SignalType;
+  headline: string;
+  body: string;
+  occurred_at: string;
+  evidence: Evidence;
+}
+
+export interface GetIndustryParams {
+  signal_type?: SignalType | null;
+  standard?: string | null;
+  limit?: number;
+  cursor?: string | null;
+}
+
+export interface AskEvidence {
+  n: number;
+  quote: string;
+  source_url: string;
+  source_name: string;
+  captured_at: string;
+  reliability_grade: ReliabilityGrade;
+  credibility_score: CredibilityScore;
+}
+
+export interface NearbyItem {
+  text: string;
+}
+
+export interface AskResponse {
+  question: string;
+  grounded: boolean;
+  answer: string;
+  evidence: AskEvidence[];
+  refusal_reason: string | null;
+  nearby_evidence: NearbyItem[];
+}
+
+export interface AskRequest {
+  question: string;
+  persona?: Persona | null;
+}
+
+export interface Source {
+  id: string;
+  name: string;
+  entity: string;
+  kind: SourceKind;
+  mode: CollectionMode;
+  reliability_grade: ReliabilityGrade | null;
+  credibility_score: CredibilityScore | null;
+  check_frequency: string | null;
+  robots_allowed: boolean;
+  requires_js: boolean;
+  last_checked: string | null;
+  enabled: boolean;
+  excluded: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface MaterialityWeight {
+  key: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  note: string;
+  unit: "multiplier" | "points" | "days" | "items" | "cvss";
+}
+
+export interface MaterialityConfig {
+  config_version: number;
+  weights: MaterialityWeight[];
+}
+
+export interface PutMaterialityRequest {
+  weights: { key: string; value: number }[];
+  actor: string;
+}
+
+export interface Watchlist {
+  config_version: number;
+  terms: string[];
+}
+
+export interface PutWatchlistRequest {
+  terms: string[];
+  actor: string;
+}
+
+export interface PatchSourceRequest {
+  enabled?: boolean | null;
+  actor: string;
+  reason?: string | null;
+}
+
+export interface CoverageCell {
+  signal_type: SignalType | "positioning" | "market_regulatory";
+  status: "multiple" | "one" | "gap" | "not_applicable";
+  source_count: number;
+}
+
+export interface CoverageRow {
+  entity: string;
+  tier: number | null;
+  cells: CoverageCell[];
+}
+
+export interface CoverageMatrix {
+  caption: string;
+  columns: string[];
+  rows: CoverageRow[];
+  legend: [string, string][];
+}
+
+export interface EmailDigestItem {
+  signal_type: string;
+  headline: string;
+  so_what: string;
+  flag: string | null;
+  app_link: string;
+}
+
+export interface EmailPreview {
+  persona: Persona;
+  from_name: string;
+  from_email: string;
+  subject: string;
+  meta: string;
+  lead: string;
+  items: EmailDigestItem[];
+  sent_at: string;
+  delivery_logged: boolean;
+  footer: string;
+}
+
+export interface Trend {
+  id: string;
+  title: string;
+  body: string;
+  direction: "toward_us" | "against_us" | "lateral";
+  velocity: "accelerating" | "steady" | "emerging";
+  confidence_grade: ReliabilityGrade;
+  confidence_note: string;
+  contributing_signal_ids: string[];
+}
+
+export interface StabilityStatement {
+  title: string;
+  detail: string;
+  entities_checked: string[];
+}
+
+export interface ExecWeekly {
+  week_of: string;
+  assembled_at: string;
+  subject: string;
+  lead: string;
+  trends: Trend[];
+  stability: StabilityStatement[];
+}
+
+export interface ApiErrorBody {
+  error: {
+    code: string;
+    message: string;
+  };
+}
