@@ -127,11 +127,18 @@ export function SignalCard({ signal, persona, onAction }: SignalCardProps) {
   const cardStyle = { "--signal-hue": hue } as CSSProperties;
 
   return (
-    <article className="signal-card" style={cardStyle} data-testid="signal-card">
+    <article
+      className="signal-card"
+      style={cardStyle}
+      data-testid="signal-card"
+      data-entity={signal.entity?.slug}
+    >
       <header className="signal-card__header">
         <div className="signal-card__header-left">
           <span className="signal-card__entity">{signal.entity.name}</span>
-          <Chip signalType={signal.signal_type} />
+          <span data-testid="signal-type">
+            <Chip signalType={signal.signal_type} />
+          </span>
         </div>
         <div className="signal-card__header-right">
           <ScoreBadge value={signal.score} />
