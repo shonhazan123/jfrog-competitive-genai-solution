@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy.orm import Session
 
 from agent.graphs.interpret.graph import build_interpret_graph
-from agent.llm import get_model, prompt as load_prompt
+from agent.llm import get_checkpointer, get_model, prompt as load_prompt
 from agent.schemas import Contextualisation, build_extraction_model
 from app.config.loader import load_config
 from app.models.capture import RawCapture
@@ -111,8 +111,6 @@ def _persist_signal(session: Session, capture: RawCapture, source: Source, final
     return signal
 
 def _production_deps(session: Session):
-    from langgraph.checkpoint.memory import MemorySaver
-
     config = load_config()
     entities = [entity.slug for entity in config.entities]
     tags = config.signal_types.capability_tags
@@ -152,7 +150,7 @@ def _production_deps(session: Session):
         max_repairs = 2
         verification_config = config.verification
         verify_quote = staticmethod(verify_quote)
-        checkpointer = MemorySaver()
+        checkpointer = get_checkpointer()
         use_interrupt = True
         extract_model = extract_llm
         contextualize_model = ContextualizeAdapter()

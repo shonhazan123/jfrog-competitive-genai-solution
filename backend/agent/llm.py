@@ -2,6 +2,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
 
 PROMPTS = Path(__file__).parent / "prompts"
 _DEFAULT_ROLES = {"extract": "gpt-5-mini", "contextualize": "gpt-5"}
@@ -27,3 +28,8 @@ def get_model(role: str) -> ChatOpenAI:
 @lru_cache(maxsize=16)
 def prompt(name: str) -> str:
     return (PROMPTS / f"{name}.md").read_text(encoding="utf-8")
+
+
+def get_checkpointer():
+    """In-memory checkpointer for the interpret graph. Lives in agent/ so app/ never imports langgraph."""
+    return MemorySaver()
