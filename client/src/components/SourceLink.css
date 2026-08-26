@@ -1,0 +1,18 @@
+.source-link__anchor {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.source-link__anchor:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.source-link--authored {
+  color: var(--ink-secondary);
+  font-size: var(--fs-meta);
+}
+
+.source-link__sep {
+  color: var(--ink-muted);
+}

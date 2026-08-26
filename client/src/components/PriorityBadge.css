@@ -1,0 +1,9 @@
+.priority-badge {
+  display: inline-block;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  color: var(--mat-peak-fg);
+  background: var(--mat-peak-bg);
+}

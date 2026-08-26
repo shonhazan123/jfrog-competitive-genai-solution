@@ -27,6 +27,15 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   Diffs render as `was → now`, never a code diff.
 - Responsive: AppShell switches sidebar (≥900px) ↔ bottom bar of `primary` items
   (<900px) in JS by `window.innerWidth`.
+- **Human vocabulary layer:** `client/src/config/labels.ts` mirrors
+  `config/labels.yaml` — `signalTypeLabel`, `priorityLabel`, `stateLabel`,
+  `personaLabel`, `originLabel`, and `signalHue` so consumer screens never
+  hardcode machine values. Pages import from here; Settings is the carve-out.
+- **Mandatory citations (two demo promises):** Every assertion must pass through
+  `<Cited citation={…}>` (renders nothing without a citation) and cite its
+  origin via `<SourceLink citation={…}>` (clickable link, or "Authored by the
+  CI team" for authored positions). `PriorityBadge` shows the band word, never
+  the raw score. `citation.test.tsx` enforces both promises structurally.
 
 ## Contract drift found at live wiring (fix in the backend / Plan 3, not the client)
 - **`score_breakdown` is `null`** on every `/signals` and `/digests/{persona}` list

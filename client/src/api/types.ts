@@ -387,3 +387,42 @@ export interface ApiErrorBody {
     message: string;
   };
 }
+
+export interface Citation {
+  source_name: string;
+  source_url: string;
+  captured_at: string;
+  origin: "extracted" | "authored" | "archive";
+  archived_url: string | null;
+  grade: ReliabilityGrade | null;
+}
+
+export interface KitSnippet {
+  headline: string;
+  quote: string;
+  implication: string;
+  citation: Citation;
+}
+
+export interface Kit {
+  key: string;
+  label: string;
+  question: string;
+  category: string;
+  order: number;
+  status: "active" | "no_change";
+  count: number;
+  priority_label: string | null;
+  snippet: KitSnippet | null;
+  signal_ids: string[];
+  withheld: number;
+}
+
+export interface RunProgress {
+  run_id: string;
+  status: "running" | "done" | "failed";
+  stage_label: string;
+  progress: { current: number; total: number };
+  new_items: number;
+  message: string;
+}
