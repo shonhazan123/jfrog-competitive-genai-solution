@@ -22,6 +22,13 @@ dependencies = [
   "rapidfuzz>=3.14,<4",
   "pyyaml>=6.0.3,<7",
   "structlog>=26.1,<27",
+  "langgraph>=1.2,<2",
+  "langgraph-checkpoint-postgres>=3.1,<4",
+  "langchain-openai>=1.6,<2",
+  "openai>=3.3,<4",
+  "tiktoken>=0.14,<0.15",
+  "nh3>=0.3,<0.4",
+  "apscheduler>=3.11,<4",
 ]
 [project.optional-dependencies]
 dev = [
