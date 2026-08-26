@@ -35,3 +35,10 @@ def sample_claim(session):
     )
     session.add(claim); session.flush()
     return claim
+
+@pytest.fixture
+def seeded_source(session):
+    from app.services.seeding import seed
+    from app.models.registry import Source
+    seed(session)
+    return session.query(Source).filter_by(key="sonatype_compare_jfrog").one()
