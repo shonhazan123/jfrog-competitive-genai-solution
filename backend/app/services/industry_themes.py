@@ -22,9 +22,11 @@ _STANDARD_CHIPS = {
 _OTHER_THEME = {"key": "other", "label": "Other", "jfrog_relevance": ""}
 
 
-def _load_themes() -> list[dict]:
-    data = yaml.safe_load((Path(settings.config_dir) / "themes.yaml").read_text(encoding="utf-8"))
-    return data["themes"]
+def _load_buckets() -> list[dict]:
+    data = yaml.safe_load(
+        (Path(settings.config_dir) / "industry_buckets.yaml").read_text(encoding="utf-8")
+    )
+    return data["buckets"]
 
 
 def _fallback_evidence(signal: Signal) -> dict:
@@ -82,75 +84,37 @@ def build_industry_item(session: Session, signal: Signal) -> dict:
     }
 
 
-def _source_covers(session: Session, signal: Signal) -> list[str]:
-    """The source's `covers` hint, used only for theme routing — kept out of the
-    public industry item so the API response shape stays stable."""
-    source = session.query(Source).filter_by(id=signal.source_id).one_or_none()
-    return list(source.covers) if source and source.covers else []
-
-
-def _routing_item(session: Session, signal: Signal, item: dict) -> dict:
-    """Augment an item with the source `covers` hint for `assign_theme` only."""
-    return {**item, "covers": _source_covers(session, signal)}
-
-
-def assign_theme(item: dict, themes: list[dict]) -> str | None:
-    signal_type = item.get("signal_type")
-    headline = item.get("headline") or ""
-    body = item.get("body") or ""
-    text = f"{headline} {body}".lower()
-
-    for theme in themes:
-        match = theme.get("match") or {}
-        signal_types = match.get("signal_types") or []
-        if signal_type not in signal_types:
-            continue
-
-        keywords = match.get("keywords") or []
-        if not keywords:
-            return theme["key"]
-
-        if any(keyword.lower() in text for keyword in keywords):
-            return theme["key"]
-
-        covers = item.get("covers") or []
-        if any(cover in signal_types for cover in covers):
-            return theme["key"]
-
-    return None
-
-
-def _theme_by_key(themes: list[dict], key: str) -> dict | None:
+def _bucket_by_key(buckets: list[dict], key: str) -> dict | None:
     if key == _OTHER_THEME["key"]:
         return _OTHER_THEME
-    return next((theme for theme in themes if theme["key"] == key), None)
+    return next((b for b in buckets if b["key"] == key), None)
 
 
 def list_themes(session: Session) -> list[dict]:
-    themes = _load_themes()
+    buckets = _load_buckets()
     signals = fetch_active_industry_signals(session)
-    buckets: dict[str, list[dict]] = {theme["key"]: [] for theme in themes}
+    grouped: dict[str, list[dict]] = {b["key"]: [] for b in buckets}
     other_items: list[dict] = []
 
     for signal in signals:
         item = build_industry_item(session, signal)
-        key = assign_theme(_routing_item(session, signal, item), themes)
-        if key is None:
+        key = signal.theme_key
+        if key is None or key not in grouped:
             other_items.append(item)
         else:
-            buckets[key].append(item)
+            grouped[key].append(item)
 
     result: list[dict] = []
-    for theme in themes:
-        count = len(buckets[theme["key"]])
-        label = theme["label"]
+    for bucket in buckets:
+        count = len(grouped[bucket["key"]])
+        label = bucket["label"]
         result.append(
             {
-                "key": theme["key"],
+                "key": bucket["key"],
                 "label": label,
                 "count": count,
                 "state_of_play": f"{count} items — {label}",
-                "jfrog_relevance": theme.get("jfrog_relevance", ""),
+                "jfrog_relevance": bucket.get("jfrog_relevance", ""),
             }
         )
 
@@ -171,26 +135,25 @@ def list_themes(session: Session) -> list[dict]:
 
 
 def theme_detail(session: Session, key: str) -> dict:
-    themes = _load_themes()
-    theme = _theme_by_key(themes, key)
-    if theme is None:
+    buckets = _load_buckets()
+    bucket = _bucket_by_key(buckets, key)
+    if bucket is None:
         raise KeyError(key)
 
     signals = fetch_active_industry_signals(session)
     items: list[dict] = []
     for signal in signals:
         item = build_industry_item(session, signal)
-        assigned = assign_theme(_routing_item(session, signal, item), themes)
         if key == _OTHER_THEME["key"]:
-            if assigned is None:
+            if signal.theme_key is None or signal.theme_key not in {b["key"] for b in buckets}:
                 items.append(item)
-        elif assigned == key:
+        elif signal.theme_key == key:
             items.append(item)
 
-    label = theme["label"]
+    label = bucket["label"]
     return {
         "label": label,
         "synthesis": f"{len(items)} items grouped under {label}.",
-        "jfrog_relevance": theme.get("jfrog_relevance", ""),
+        "jfrog_relevance": bucket.get("jfrog_relevance", ""),
         "items": items,
     }

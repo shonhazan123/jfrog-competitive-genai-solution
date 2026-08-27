@@ -3,183 +3,36 @@ from pathlib import Path
 
 import pytest
 
-from app.services.industry_themes import assign_theme, list_themes
-
-THEMES = [
-    {
-        "key": "supply_chain_attacks",
-        "label": "Supply-chain attacks & CVEs",
-        "match": {
-            "signal_types": ["security_trust"],
-            "keywords": ["cve", "malware", "compromise", "exploit"],
-        },
-        "jfrog_relevance": "Raises demand for provenance and blocking at the gate — Curation and Xray.",
-    },
-    {
-        "key": "regulation",
-        "label": "Regulation & compliance",
-        "match": {
-            "signal_types": ["market_regulatory"],
-            "keywords": ["cra", "sbom", "mandate", "executive order"],
-        },
-        "jfrog_relevance": "SBOM mandates map directly to AppTrust's evidence story.",
-    },
-    {
-        "key": "funding_ma",
-        "label": "Funding & acquisitions",
-        "match": {
-            "signal_types": ["corporate_financial"],
-            "keywords": ["acquires", "funding", "raises", "series"],
-        },
-        "jfrog_relevance": "Consolidation reshapes the competitive set.",
-    },
-    {
-        "key": "ai_mlops",
-        "label": "AI / MLOps & model registries",
-        "match": {
-            "signal_types": ["product_capability"],
-            "keywords": ["model", "mlops", "registry", "llm"],
-        },
-        "jfrog_relevance": "Validates JFrog ML / AI Catalog as the next artifact frontier.",
-    },
-]
-
-EXPECTED_KEYS = [theme["key"] for theme in THEMES]
+from app.services.industry_themes import list_themes, theme_detail
 
 
 @pytest.fixture(autouse=True)
-def _themes_config_dir(monkeypatch):
+def _industry_buckets_config_dir(monkeypatch):
     repo_config = Path(__file__).resolve().parents[1] / "config"
     app_config = Path("/app/config")
-    if (repo_config / "themes.yaml").exists():
+    if (repo_config / "industry_buckets.yaml").exists():
         config_dir = repo_config
-    elif (app_config / "themes.yaml").exists():
+    elif (app_config / "industry_buckets.yaml").exists():
         config_dir = app_config
     else:
-        pytest.fail("themes.yaml not found under repo config or /app/config")
+        pytest.fail("industry_buckets.yaml not found under repo config or /app/config")
     monkeypatch.setattr("app.settings.settings.config_dir", str(config_dir))
 
 
-def test_assign_theme_maps_regulatory_sbom_to_regulation():
-    item = {
-        "signal_type": "market_regulatory",
-        "headline": "New SBOM reporting rule proposed",
-        "body": "Industry body copy.",
-    }
-    assert assign_theme(item, THEMES) == "regulation"
-
-
-def test_assign_theme_returns_none_when_unmatched():
-    item = {
-        "signal_type": "partnership_ecosystem",
-        "headline": "Cloud marketplace listing",
-        "body": "Partnership framing.",
-    }
-    assert assign_theme(item, THEMES) is None
-
-
-def test_assign_theme_covers_fallback_funding_ma():
-    item = {
-        "signal_type": "corporate_financial",
-        "headline": "Quarterly revenue outlook revised",
-        "body": "Earnings guidance update.",
-        "covers": ["corporate_financial"],
-    }
-    assert assign_theme(item, THEMES) == "funding_ma"
-
-
-def test_assign_theme_covers_fallback_ai_mlops():
-    item = {
-        "signal_type": "product_capability",
-        "headline": "Platform release expands integrations",
-        "body": "New connector and workflow support.",
-        "covers": ["product_capability"],
-    }
-    assert assign_theme(item, THEMES) == "ai_mlops"
-
-
-def test_assign_theme_returns_none_for_unknown_signal_type_with_empty_covers():
-    item = {
-        "signal_type": "talent_org",
-        "headline": "Leadership transition announced",
-        "body": "Executive hire details.",
-        "covers": [],
-    }
-    assert assign_theme(item, THEMES) is None
-
-
-def test_source_covers_route_signal_without_keyword(session):
-    """A source `covers` hint routes an item whose text misses every keyword —
-    and `covers` stays internal (out of the public industry item)."""
+def test_list_themes_groups_by_theme_key(session):
     from app.models.registry import Entity, Source
     from app.models.signal import Signal
-    from app.services.industry_themes import build_industry_item
-
-    now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
-    industry_entity = Entity(
-        slug="industry",
-        name="Industry",
-        kind="industry",
-        tier=1,
-        aliases=[],
-    )
-    session.add(industry_entity)
-    session.flush()
-
-    source = Source(
-        key="industry_covers_fixture",
-        entity_id=industry_entity.id,
-        url="https://example.com/industry-covers",
-        kind="atom",
-        mode="feed",
-        reliability_grade="A",
-        is_primary=True,
-        check_frequency_minutes=60,
-        last_checked_at=now,
-        covers=["corporate_financial"],
-    )
-    session.add(source)
-    session.flush()
-
-    signal = Signal(
-        source_id=source.id,
-        entity_id=industry_entity.id,
-        signal_type="corporate_financial",
-        headline="Revenue guidance update",
-        occurred_at=now,
-        cluster_key="industry-covers",
-        score_sales=50.0,
-        score_product=50.0,
-        score_exec=50.0,
-        so_what_product="Financial framing.",
-    )
-    session.add(signal)
-    session.flush()
-
-    # covers must NOT leak into the public item shape
-    item = build_industry_item(session, signal)
-    assert "covers" not in item
-
-    # but the covers hint must still route the item to funding_ma
-    themes = list_themes(session)
-    by_key = {theme["key"]: theme for theme in themes}
-    assert by_key["funding_ma"]["count"] == 1
-
-
-def test_list_themes_returns_stable_yaml_order_with_counts(session):
-    from app.models.registry import Entity, Source
     from app.services.seeding import seed
 
     seed(session)
-    entities = {entity.slug: entity for entity in session.query(Entity).all()}
-    industry_entity = entities["industry"]
+    industry = session.query(Entity).filter_by(slug="industry").one()
     now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
 
-    source = session.query(Source).filter_by(entity_id=industry_entity.id).first()
+    source = session.query(Source).filter_by(entity_id=industry.id).first()
     if source is None:
         source = Source(
             key="industry_fixture",
-            entity_id=industry_entity.id,
+            entity_id=industry.id,
             url="https://example.com/industry",
             kind="atom",
             mode="feed",
@@ -191,15 +44,27 @@ def test_list_themes_returns_stable_yaml_order_with_counts(session):
         session.add(source)
         session.flush()
 
-    from app.models.signal import Signal
-
     session.add_all(
         [
             Signal(
                 source_id=source.id,
-                entity_id=industry_entity.id,
+                entity_id=industry.id,
+                signal_type="security_trust",
+                theme_key="supply_chain_vulns",
+                headline="Malicious npm package",
+                occurred_at=now,
+                cluster_key="industry-supply-chain",
+                score_sales=50.0,
+                score_product=50.0,
+                score_exec=50.0,
+                so_what_product="Supply chain framing.",
+            ),
+            Signal(
+                source_id=source.id,
+                entity_id=industry.id,
                 signal_type="market_regulatory",
-                headline="EU CRA SBOM mandate update",
+                theme_key="regulation_compliance",
+                headline="EU CRA SBOM mandate",
                 occurred_at=now,
                 cluster_key="industry-regulation",
                 score_sales=50.0,
@@ -209,20 +74,9 @@ def test_list_themes_returns_stable_yaml_order_with_counts(session):
             ),
             Signal(
                 source_id=source.id,
-                entity_id=industry_entity.id,
-                signal_type="security_trust",
-                headline="Critical CVE in build tooling",
-                occurred_at=now,
-                cluster_key="industry-security",
-                score_sales=50.0,
-                score_product=50.0,
-                score_exec=50.0,
-                so_what_product="Security framing.",
-            ),
-            Signal(
-                source_id=source.id,
-                entity_id=industry_entity.id,
+                entity_id=industry.id,
                 signal_type="partnership_ecosystem",
+                theme_key=None,
                 headline="CNCF sandbox project",
                 occurred_at=now,
                 cluster_key="industry-other",
@@ -236,17 +90,68 @@ def test_list_themes_returns_stable_yaml_order_with_counts(session):
     session.flush()
 
     themes = list_themes(session)
-    assert [theme["key"] for theme in themes[: len(EXPECTED_KEYS)]] == EXPECTED_KEYS
-    assert themes[0] == {
-        "key": "supply_chain_attacks",
-        "label": "Supply-chain attacks & CVEs",
-        "count": 1,
-        "state_of_play": "1 items — Supply-chain attacks & CVEs",
-        "jfrog_relevance": THEMES[0]["jfrog_relevance"],
-    }
-    assert themes[1]["count"] == 1
-    assert themes[1]["state_of_play"] == "1 items — Regulation & compliance"
-    assert themes[2]["count"] == 0
-    assert themes[3]["count"] == 0
+    keys = [t["key"] for t in themes]
+    assert keys[:4] == [
+        "supply_chain_vulns",
+        "ai_secops",
+        "pipeline_devsecops",
+        "regulation_compliance",
+    ]
+    by_key = {t["key"]: t for t in themes}
+    assert by_key["supply_chain_vulns"]["count"] == 1
+    assert by_key["supply_chain_vulns"]["label"] == (
+        "Software Supply-Chain Vulnerabilities & Exploits"
+    )
+    assert by_key["regulation_compliance"]["count"] == 1
+    assert by_key["ai_secops"]["count"] == 0
+    assert by_key["pipeline_devsecops"]["count"] == 0
     assert themes[-1]["key"] == "other"
     assert themes[-1]["count"] == 1
+
+
+def test_theme_detail_returns_bucket_items(session):
+    from app.models.registry import Entity, Source
+    from app.models.signal import Signal
+    from app.services.seeding import seed
+
+    seed(session)
+    industry = session.query(Entity).filter_by(slug="industry").one()
+    now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
+
+    source = Source(
+        key="industry_detail_fixture",
+        entity_id=industry.id,
+        url="https://example.com/industry-detail",
+        kind="atom",
+        mode="feed",
+        reliability_grade="A",
+        is_primary=True,
+        check_frequency_minutes=60,
+        last_checked_at=now,
+    )
+    session.add(source)
+    session.flush()
+
+    session.add(
+        Signal(
+            source_id=source.id,
+            entity_id=industry.id,
+            signal_type="security_trust",
+            theme_key="ai_secops",
+            headline="Poisoned model on HF",
+            occurred_at=now,
+            cluster_key="industry-ai",
+            score_sales=50.0,
+            score_product=50.0,
+            score_exec=50.0,
+            so_what_product="AI security framing.",
+            why_it_matters="Registry demand.",
+        )
+    )
+    session.flush()
+
+    detail = theme_detail(session, "ai_secops")
+    assert detail["label"] == "AI Code-Gen & ML Security"
+    assert len(detail["items"]) == 1
+    assert detail["items"][0]["headline"] == "Poisoned model on HF"
+    assert "jfrog_relevance" in detail
