@@ -16,6 +16,12 @@ test("the verbatim quote and its source line are visible without interaction", (
   expect(screen.getByText(new RegExp(SIGNAL.evidence[0].source_name))).toBeVisible();
 });
 
+test("renders the evidence source as a link to source_url", () => {
+  render(<SignalCard signal={SIGNAL} persona="sales" />);
+  const link = screen.getByRole("link", { name: SIGNAL.evidence[0].source_name });
+  expect(link).toHaveAttribute("href", SIGNAL.evidence[0].source_url);
+});
+
 test("only the score breakdown is collapsed", () => {
   render(<SignalCard signal={SIGNAL} persona="sales" />);
   expect(screen.queryByText(/source grade/i)).toBeNull();

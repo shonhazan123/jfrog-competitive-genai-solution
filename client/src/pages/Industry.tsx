@@ -124,7 +124,13 @@ function IndustryCard({ item }: { item: IndustryItem }) {
             color: "var(--ink-secondary)",
           }}
         >
-          <span>{item.evidence.source_name}</span>
+          <a
+            href={item.evidence.source_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {item.evidence.source_name}
+          </a>
           {" · "}
           <time dateTime={item.evidence.captured_at}>
             {formatDate(item.evidence.captured_at)}

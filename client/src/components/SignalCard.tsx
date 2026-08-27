@@ -2,7 +2,6 @@ import type { CSSProperties } from "react";
 import type { Persona, ScoreBreakdown, Signal, TraceStep } from "../api/types";
 import { Chip } from "./primitives/Chip";
 import { Disclosure } from "./primitives/Disclosure";
-import { GradeChip } from "./primitives/GradeChip";
 import { Quote } from "./primitives/Quote";
 import { ScoreBadge } from "./primitives/ScoreBadge";
 import { SectionLabel } from "./primitives/SectionLabel";
@@ -166,11 +165,11 @@ export function SignalCard({ signal, persona, onAction }: SignalCardProps) {
           <SectionLabel>EVIDENCE</SectionLabel>
           <Quote>{evidence.quote}</Quote>
           <p className="signal-card__source-line">
-            <span>{evidence.source_name}</span>
+            <a href={evidence.source_url} target="_blank" rel="noreferrer">
+              {evidence.source_name}
+            </a>
             <span aria-hidden="true"> · </span>
             <span>{formatDate(evidence.captured_at)}</span>
-            <span aria-hidden="true"> · </span>
-            <GradeChip grade={evidence.reliability_grade} />
           </p>
           {signal.change ? (
             <WasNow was={signal.change.was} now={signal.change.now} />
