@@ -17,7 +17,7 @@ class Source(Base, TimestampMixin):
     __tablename__ = "source"
     id: Mapped[int] = mapped_column(primary_key=True)
     key: Mapped[str] = mapped_column(String(64), unique=True)
-    entity_id: Mapped[int] = mapped_column(ForeignKey("entity.id"))
+    entity_id: Mapped[int | None] = mapped_column(ForeignKey("entity.id"), nullable=True)
     url: Mapped[str] = mapped_column(String(1024))
     kind: Mapped[str] = mapped_column(String(16))
     mode: Mapped[str] = mapped_column(String(16))
