@@ -28,6 +28,7 @@ from app.services.scoring.materiality import score
 from app.services.seeding import seed
 from app.services.signals.novelty import is_new
 from app.settings import settings
+from app.services.research.industry_agent import run_industry  # noqa: F401
 
 _ADAPTERS = {
     "osv": OsvAdapter(),
