@@ -11,8 +11,7 @@ from app.config.loader import load_config
 from app.db.session import SessionLocal
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
-from app.models.signal import Signal, SignalEvidence
-from app.services.agent_service import interpret_capture
+from app.models.signal import Signal
 from app.services.backfill import backfill_source, collect_snapshot_source
 from agent.log import get_logger, step
 from app.services.collection.apis.greenhouse import GreenhouseAdapter
@@ -37,7 +36,6 @@ _ADAPTERS = {
     "hn": HackerNewsAdapter(),
 }
 _WEEKDAYS = frozenset({"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
-PER_SOURCE_INTERPRET_CAP = 3
 MANUAL_WINDOW_DAYS = 30
 logger = get_logger("worker.jobs")
 
@@ -263,138 +261,6 @@ def run_collection(
         _collect_source(session, source, fetcher, robots, now, force, report)
 
     step(logger, "collection.done", **report)
-    return report
-
-
-def _diversify_by_source(captures: list[RawCapture], signaled_source_ids: set[int]) -> list[RawCapture]:
-    """Round-robin pending captures across their sources so one backlogged source can't
-    starve every other screen. Captures arrive in id order; within a source that order is
-    preserved (oldest first). Sources that have not produced any signal yet are drained
-    first, so a fresh manual run lights up new screens instead of re-chewing the same page."""
-    groups: dict[int, list[RawCapture]] = {}
-    for capture in captures:
-        groups.setdefault(capture.source_id, []).append(capture)
-    # Unsignaled sources first; ties broken by each group's oldest capture id for stability.
-    ordered_source_ids = sorted(
-        groups,
-        key=lambda sid: (sid in signaled_source_ids, groups[sid][0].id),
-    )
-    diversified: list[RawCapture] = []
-    while any(groups[sid] for sid in ordered_source_ids):
-        for sid in ordered_source_ids:
-            if groups[sid]:
-                diversified.append(groups[sid].pop(0))
-    return diversified
-
-
-def _interpret_one(capture_id: int) -> str:
-    with SessionLocal() as s:
-        try:
-            result = interpret_capture(capture_id, session=s)
-            s.commit()
-            return result.status
-        except Exception:
-            logger.exception("interpret.batch.failed capture_id=%s", capture_id)
-            return "failed"
-
-
-def run_interpret(
-    session: Session | None = None,
-    limit: int | None = None,
-    max_workers: int = 3,
-) -> dict:
-    own_session = session is None
-    if own_session:
-        session = SessionLocal()
-    interpreted = 0
-    quarantined = 0
-    failed = 0
-    skipped_empty = 0
-    interpreted_ids = {
-        row[0] for row in session.query(SignalEvidence.capture_id).distinct().all()
-    }
-    if interpreted_ids:
-        query = (
-            session.query(RawCapture)
-            .join(Source, RawCapture.source_id == Source.id)
-            .filter(RawCapture.id.notin_(interpreted_ids))
-            .filter(Source.mode != "snapshot")
-            .order_by(RawCapture.id)
-        )
-    else:
-        query = (
-            session.query(RawCapture)
-            .join(Source, RawCapture.source_id == Source.id)
-            .filter(Source.mode != "snapshot")
-            .order_by(RawCapture.id)
-        )
-    captures = query.all()
-    signaled_source_ids = {row[0] for row in session.query(Signal.source_id).distinct().all()}
-    captures = _diversify_by_source(captures, signaled_source_ids)
-    interpreted_hashes = {
-        row[0]
-        for row in session.query(RawCapture.content_hash)
-        .join(SignalEvidence, SignalEvidence.capture_id == RawCapture.id)
-        .distinct()
-    }
-    seen_hashes = set(interpreted_hashes)
-    skipped_duplicate = 0
-    deduped: list[RawCapture] = []
-    for capture in captures:
-        if capture.content_hash in seen_hashes:
-            skipped_duplicate += 1
-            continue
-        seen_hashes.add(capture.content_hash)
-        deduped.append(capture)
-    captures = deduped
-    source_counts: dict[int, int] = {}
-    capped: list[RawCapture] = []
-    for capture in captures:
-        count = source_counts.get(capture.source_id, 0)
-        if count < PER_SOURCE_INTERPRET_CAP:
-            capped.append(capture)
-            source_counts[capture.source_id] = count + 1
-    captures = capped
-    if limit is not None:
-        captures = captures[:limit]
-    capture_ids = [c.id for c in captures]
-    step(logger, "interpret.batch.start", pending=len(capture_ids), limit=limit)
-
-    def _tally(status: str) -> None:
-        nonlocal interpreted, quarantined, failed, skipped_empty
-        if status == "ok":
-            interpreted += 1
-        elif status == "quarantined":
-            quarantined += 1
-        elif status == "empty":
-            skipped_empty += 1
-        elif status == "failed":
-            failed += 1
-
-    if own_session and max_workers > 1:
-        with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            for status in pool.map(_interpret_one, capture_ids):
-                _tally(status)
-    else:
-        for capture_id in capture_ids:
-            try:
-                result = interpret_capture(capture_id, session=session)
-                _tally(result.status)
-            except Exception:
-                logger.exception("interpret.batch.failed capture_id=%s", capture_id)
-                failed += 1
-
-    if own_session and max_workers <= 1:
-        session.commit()
-        session.close()
-    report = {
-        "interpreted": interpreted,
-        "quarantined": quarantined,
-        "failed": failed,
-        "skipped_empty": skipped_empty,
-        "skipped_duplicate": skipped_duplicate,
-    }
-    step(logger, "interpret.batch.done", **report)
     return report
 
 

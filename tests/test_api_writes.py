@@ -71,16 +71,11 @@ def spy_jobs(monkeypatch):
         spy.called = "run_collection"
         return {}
 
-    def stub_run_interpret(*args, **kwargs):
-        spy.called = "run_interpret"
-        return {}
-
     def stub_run_scoring(*args, **kwargs):
         spy.called = "run_scoring"
         return {}
 
     monkeypatch.setattr(jobs, "run_collection", stub_run_collection)
-    monkeypatch.setattr(jobs, "run_interpret", stub_run_interpret)
     monkeypatch.setattr(jobs, "run_scoring", stub_run_scoring)
     return spy
 
