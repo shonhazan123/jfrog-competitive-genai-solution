@@ -1,68 +1,60 @@
 # Comparison — verdict-first competitor matrix
 
 The primary Competitors surface is a **transposed capability matrix**: competitors
-(rows) × JFrog capability dimensions (columns), each cell a plain stance backed by a
+(rows) × buyer-facing capability dimensions (columns), each cell a stance backed by a
 source. Click a competitor row to open the full per-dimension assessment detail page.
 No numbers, no `was → now` diffing.
+
+## Research agent
+
+- Worker entry: `run_comparison()` in `app/services/research/comparison_agent.py`
+- Graph deps: `agent/graphs/research/comparison/deps.py` — per-cell search + stance gate
+- Config: `config/comparison_dimensions.yaml` (five dimensions with `jfrog_position` yardsticks)
+- Competitor allowlist: `config/competitors.yaml` (github, sonatype, snyk, aqua, checkmarx)
+- Persist: upsert `Claim` (subject=jfrog, asserting=competitor, `dimension`, `stance`, `claim_text`) + `Evidence` + `index_finding`; skip `stance == "none"`
+- Registry-less rivals correctly resolve to `none` for dimensions they do not publicly claim
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/comparison/matrix` | Component × competitor stance grid (primary surface) |
+| GET | `/comparison/matrix` | Dimension × competitor stance grid (primary surface) |
 | GET | `/comparison?competitor={slug}` | Legacy claim-by-claim list (benched `about-us`/`trajectory` only) |
 
 ## Matrix build (`app.services.comparison_matrix.build_comparison_matrix`)
 
-- **Rows** come from `config/jfrog_components.yaml` — each component has `key`,
-  `name`, and `dimensions` (the claim dimensions it covers). This config is the
-  source of truth for which JFrog capabilities the grid compares.
-- **Columns** are every `Entity` with `kind == "competitor"`, ordered by `slug`
-  (`competitors: [{ slug, name }]`).
-- For each component × competitor, `_claim_for_component` finds the competitor's
-  first claim on any of the component's dimensions. The JFrog side is the
-  authored `jfrog_position` text for the component's primary dimension (from
-  `config/jfrog_positions.yaml`), so JFrog cells are never graded.
-- `evidence_for_claim` attaches the first linked evidence (quote + source) so the
-  cell's claim is clickable.
+- **Columns** come from `config/comparison_dimensions.yaml` — five buyer-facing dimensions
+  (`artifact_management`, `sca_sbom`, `container_security`, `cicd_integration`,
+  `developer_experience`) each with `label`, `probe_keywords`, and `jfrog_position`.
+- **Rows** are the allowlisted competitors from `load_competitors()` (five rivals).
+- For each dimension × competitor, lookup `Claim` by `(asserting_entity_id=competitor,
+  subject_entity_id=jfrog, dimension=dim.key)`.
+- `evidence_for_claim` attaches the first linked evidence (quote + source) when a claim exists.
+
+Return shape: `{ "dimensions": [{ key, name, cells: [Cell] }], "competitors": [{ slug, name }] }`.
+
+Legacy `config/jfrog_components.yaml` was removed; the grid no longer uses JFrog product rows.
 
 ## Client presentation (transposed view)
 
-The API returns **JFrog-component × competitor**. The client transposes this to
-**competitor × capability-dimension** for the Figma-aligned UI:
+The API returns **dimension × competitor**. The client transposes this to
+**competitor × capability-dimension** for the Figma-aligned UI.
 
-- **Columns** = each `components[]` entry from the matrix, labelled via
-  `client/src/utils/comparisonPresentation.ts` `DIMENSION_LABELS` (Figma-aligned
-  names where possible, e.g. `artifactory` → "Artifact Management").
-- **Rows** = each `competitors[]` entry; row click sets `selectedCompetitor` and
-  renders `CompetitorDetail` (in-component state, no route change).
-- **Stance → strength** (grid dot/bar + detail cards):
-  - `ahead` → Strong (`--brand-jfrog`)
-  - `comparable` → Moderate (`--tier-worth`)
-  - `behind` → Weak (`--tier-act`)
-  - `no_claim` → None (`--tier-bg`)
-- **Threat chip** — not in the API. When the competitor has at least one public
-  claim, a deterministic **derived** threat is shown from stance counts (`ahead`
-  and `comparable` cells with evidence). Label includes "· derived". Omitted when
-  no claims exist (e.g. Harbor in the fixture).
-- **Category** — not in the API; omitted on the detail page.
+- **Type:** `ComparisonMatrix` uses `dimensions` (not legacy `components`) plus
+  `competitors`.
+- **Stance values** from the API: `strong | moderate | weak | none`
+- `none` means no public claim — cell renders neutral/empty; `summary` reads
+  "No public claim on record."
+- `comparisonPresentation.ts` maps dimension keys to labels; `stance` is used
+  directly as the strength indicator (no ahead/comparable/behind mapping).
+- Fixture: `client/src/fixtures/comparison_matrix.json` — 5 dimensions × 5
+  competitors with a mix of stance values.
 
-## Cell shape (no grade, no diff)
+## Cell shape
 
 ```json
 { "competitor", "competitor_name", "stance", "summary", "jfrog_position", "evidence": [Evidence] }
 ```
-
-`stance` is one of:
-
-| stance | meaning |
-|---|---|
-| `ahead` | Competitor claims advantage vs JFrog on this component |
-| `behind` | Competitor claims disadvantage vs JFrog |
-| `comparable` | The competitor has a public claim on this component (shown with its evidence) |
-| `no_claim` | No public claim found — `summary` reads "No public claim on record." |
-
-Return shape: `{ "components": [{ key, name, cells: [Cell] }], "competitors": [{ slug, name }] }`.
 
 Change-detection fields (`change`, `changed_recently`, `last_changed_at`) were
 removed from `/comparison` in the verdict-first redesign and must not reappear on
@@ -74,7 +66,7 @@ any consumer surface.
 |---|---|
 | `table-scroll` | horizontal scroll container |
 | `competitor-row-{slug}` | clickable competitor row |
-| `matrix-cell-{slug}-{componentKey}` | transposed grid cell |
+| `matrix-cell-{slug}-{componentKey}` | transposed grid cell (`componentKey` = dimension key, e.g. `sca_sbom`) |
 | `competitor-detail` | detail page root |
 | `dimension-card-{componentKey}` | per-dimension assessment card on detail |
 | `evidence-link-{componentKey}` | sourced evidence link on detail |

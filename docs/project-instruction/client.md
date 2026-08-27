@@ -36,7 +36,8 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   (`so_what`, `why_it_matters` tier reason, audience tag, evidence quote +
   clickable source). Framed as *intent* ("what this reveals"), never "what
   changed". No persona tabs (that is Divisions). `SignalCard` (actions + trace)
-  is not used on this surface.
+  is not used on this surface. **Run this page** calls `api.runSurface("signals")`
+  and invalidates `["signals"]` on completion.
 - **Divisions (`/divisions`, reference):** the same intel read through a persona
   lens. Three `role="tab"` buttons (Sales / Product / Executive) switch the
   source list; Sales/Product mirror the **Signals design** — a `FilterChips` type
@@ -76,12 +77,14 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   `["today"]`, `["run-status"]` (eyebrow date + sources tally).
 - **Competitors (`/comparison`):** a **competitor × capability-dimension matrix**
   (`ComparisonGrid`) from `GET /comparison/matrix`, transposed client-side over
-  the API's JFrog-component rows. Each cell shows stance-derived strength
-  (Strong/Moderate/Weak/None) plus summary; row click opens `CompetitorDetail`
-  with per-dimension cards and sourced evidence links — never a numeric grade and
-  never a `was → now` diff (see [comparison.md](./comparison.md)). The legacy
-  claim-by-claim `/comparison` list still exists for the benched `about-us`/`trajectory`
-  pages but is off the primary surface.
+  the API's **dimension** rows (five buyer-facing columns). Each cell shows
+  `stance` as strength (Strong/Moderate/Weak/None — `none` is empty/neutral)
+  plus summary; row click opens `CompetitorDetail` with per-dimension cards and
+  sourced evidence links — never a numeric grade and never a `was → now` diff
+  (see [comparison.md](./comparison.md)). **Run this page** triggers
+  `api.runSurface("comparison")` and refreshes `["comparison-matrix"]`. The
+  legacy claim-by-claim `/comparison` list still exists for the benched
+  `about-us`/`trajectory` pages but is off the primary surface.
 - Responsive: AppShell switches sidebar (≥900px) ↔ bottom bar of five `primary`
   daily items (<900px) in JS by `window.innerWidth`.
 - **Human vocabulary layer:** `client/src/config/labels.ts` mirrors
@@ -119,10 +122,14 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   across route changes) exposes **Run now** → `POST /runs` → poll `GET /runs/{id}`
   every 1.5s. `RunProgress` shows the human `stage_label` and a `current/total`
   counter — never a modal or full-page spinner. On `done`, the client invalidates
-  the daily query keys `["today"]`, `["signals"]`, `["run-status"]` (the retired
-  `["kits"]` key is no longer used), then surfaces `N new items`. On `failed`, it
-  shows the plain-language `message`.
+  the daily query keys `["today"]`, `["signals"]`, `["run-status"]`, `["industry"]`,
+  `["comparison"]` (the retired `["kits"]` key is no longer used), then surfaces
+  `N new items`. On `failed`, it shows the plain-language `message`.
   Fixture mode returns an immediate `done` progress so the UI does not hang.
+  **`api.runSurface(kind)`** (`industry` | `signals` | `comparison`) POSTs the
+  surface kind, polls to completion (reusing `RUN_POLL_INTERVAL_MS`), and is
+  wired to **Run this page** on Industry, Signals, and Comparison — each page
+  invalidates its own query keys on success.
 - `GET /email/preview?persona=…` ignores the `persona` query param and returns all
   three personas keyed (`sales`/`product`/`exec`) — the client fixture is keyed the
   same way, so the client works; the server-side param is a no-op.

@@ -8,8 +8,10 @@ touching code.
 
 | Call | Where it runs | Purpose |
 |---|---|---|
-| `extract` | reserved — no live consumer in Phase 0 | Role retained in `config/llm.yaml` for future per-surface agents; no code binds it yet. |
-| `contextualize` | reserved — no live consumer in Phase 0 | Role retained in `config/llm.yaml` for future per-surface agents; no code binds it yet. |
+| `extract` | reserved — no live consumer | Role retained for legacy interpret path removal; no code binds it yet. |
+| `contextualize` | reserved — no live consumer | Role retained for legacy interpret path removal; no code binds it yet. |
+| `gate` | Industry / Signals / Comparison research graphs | Per-box relevance or usability gate; cheap structured verdict (`gpt-5-mini`, low reasoning). |
+| `synthesize` | reserved for richer card synthesis | Optional heavier synthesis pass; not wired in initial agent landing. |
 | `ask` | Ask endpoint — `app/services/ask_service.py` | Answers analyst questions strictly from retrieved ledger evidence and refuses when unsupported. Read-only. |
 
 Each call is bound to its output contract by the caller (`.with_structured_output(...)`),
@@ -48,3 +50,10 @@ Only the model name is overridable this way; all other knobs come from config.
 
 `get_model` is cached per call, and `load_config` is cached per process, so
 changes to `config/llm.yaml` take effect on the next process start.
+
+## Embeddings
+
+`agent/llm.get_embedder()` returns an object with `.embed(list[str]) -> list[list[float]]`,
+matching `index_chunks`' contract. Used by `app/services/research/provenance.index_finding`.
+The OpenAI client is created lazily on first embed (so import/get_embedder works without
+`OPENAI_API_KEY`; live indexing still needs credentials).

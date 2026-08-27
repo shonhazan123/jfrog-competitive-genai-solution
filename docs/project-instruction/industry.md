@@ -1,18 +1,27 @@
-# Industry lane — stable themes
+# Industry lane — DevSecOps buckets via research agent
+
+## Research agent
+
+- Worker entry: `run_industry()` in `app/services/research/industry_agent.py`
+- Graph deps: `agent/graphs/research/industry/deps.py` — search-first, LLM relevance gate per bucket
+- Config: `config/industry_buckets.yaml` (four fixed buckets with `include`/`exclude` lists)
+- Persist: `Signal` on the `industry` entity with `theme_key` = bucket key, `why_it_matters`, capture stub + `SignalEvidence(match_method="synthesis")`, indexed via `index_finding`
+- Empty bucket is valid — gate may keep nothing for a bucket
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/industry` | Paginated industry signal feed (`items` / `total` / `cursor`) |
-| GET | `/industry/themes` | Stable theme tiles ordered by `config/themes.yaml` |
+| GET | `/industry/themes` | Stable theme tiles ordered by `config/industry_buckets.yaml` |
 | GET | `/industry/themes/{key}` | Theme detail with synthesis, JFrog relevance, and grouped items |
 
-## Theme assignment
+## Theme grouping
 
-- Config: `config/themes.yaml` (loaded directly by `app.services.industry_themes`, not via `AppConfig`).
-- `assign_theme(item, themes)` is deterministic: first theme whose `signal_type` is in `match.signal_types` and (no keywords, or a keyword substring hits headline/body case-insensitively).
-- Unmatched active industry signals bucket under `other` (only present in list when count > 0).
+- Config: `config/industry_buckets.yaml` (loaded by `app.services.industry_themes` and the agent).
+- Active industry signals are grouped by `Signal.theme_key` (set by the agent at persist time).
+- Signals with `theme_key` null or unknown bucket under `other` (only present in list when count > 0).
+- Legacy `themes.yaml` keyword routing (`assign_theme`) was removed.
 
 ## Response shapes
 

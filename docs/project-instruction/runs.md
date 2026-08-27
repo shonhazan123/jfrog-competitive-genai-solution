@@ -7,30 +7,41 @@ change-detection is benched). When backfill is enabled with `BACKFILL_SOURCE=fix
 source with no committed Wayback fixture is skipped with a warning — it does not fail the worker or
 `POST /runs`.
 
-Manual and scheduled runs share the same worker jobs (`worker.jobs`). The demo keeps
-**only the current run** in memory — there is no run history or persistence of past
-progress beyond what `GET /runs/latest` reports from the last completed collection.
+Manual and scheduled runs share the same worker jobs (`worker.jobs`). The in-memory
+run store holds **multiple concurrent runs** (each with a unique
+`run_{timestamp}_{uuid}` id). There is no persisted run history beyond what
+`GET /runs/latest` reports from the last completed collection.
 
 ## `POST /runs`
 
 Starts a background run and returns immediately:
 
 - Status **202**
-- Body: `{ "run_id": "run_2026-08-26T06:00Z" }`
+- Body: `{ "run_id": "run_2026-08-27T17:55:00Z_a1b2c3" }` (surface kinds also return `"kind"`)
 
-`kind` selects which job runs at its mapped stage:
+`kind` selects which job runs:
 
-| `kind` | Job (at stage) |
+| `kind` | Job |
 |---|---|
-| `manual` | **Run now** — forced collect + score |
+| `industry` | `run_industry` — Industry research agent (four DevSecOps buckets) |
+| `signals` | `run_signals` — Signals research agent (competitor sub-types + OSV) |
+| `comparison` | `run_comparison` — Comparison grid agent (25 cells, Claim+stance) |
+| `manual` | forced collect + score (legacy path) |
 | `collect` | `run_collection` at **Checking sources** |
-| `scoring` | `run_scoring` at **Scoring and routing** |
+| `scoring` | `run_scoring` at legacy score stage |
 
-Dispatch uses FastAPI `BackgroundTasks` so Starlette's `TestClient` runs the job
-synchronously before the response returns (spy tests), while uvicorn serves the 202
-immediately and runs the job in a thread pool.
+## `POST /runs/all`
 
-Human stage labels come from `config/run_stages.yaml` (not loaded via `schema.py`).
+Fans out three surface runs concurrently — one `run_id` per surface:
+
+```json
+{ "run_ids": { "industry": "...", "signals": "...", "comparison": "..." } }
+```
+
+Each surface run is tracked independently; one failure does not fail the others.
+
+Human stage labels come from `config/run_stages.yaml` (research-oriented stages:
+collect → research → synthesize → done).
 
 ## Worker jobs — collection and scoring
 
@@ -65,8 +76,8 @@ Poll progress for the current run:
 {
   "run_id": "run_2026-08-26T06:00Z",
   "status": "running",
-  "stage_label": "Reading new documents",
-  "progress": { "current": 1, "total": 5 },
+  "stage_label": "Researching",
+  "progress": { "current": 1, "total": 4 },
   "new_items": 0,
   "message": ""
 }
