@@ -10,6 +10,7 @@ import { Trajectory } from "../pages/Trajectory";
 import { Ask } from "../pages/Ask";
 import { Settings } from "../pages/Settings";
 import { Digest } from "../pages/Digest";
+import { Signals } from "../pages/Signals";
 import { StyleGuide } from "../pages/StyleGuide";
 
 export function AppRoutes() {
@@ -22,6 +23,7 @@ export function AppRoutes() {
         <Route path="/industry/:key" element={<ThemePage />} />
         <Route path="/trajectory" element={<Trajectory />} />
         <Route path="/comparison" element={<Comparison />} />
+        <Route path="/signals" element={<Signals />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/ask" element={<Ask />} />
         <Route path="/settings" element={<Settings />} />
