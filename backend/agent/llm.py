@@ -58,6 +58,21 @@ def get_model(role: str) -> ChatOpenAI:
     )
     return ChatOpenAI(**kwargs)
 
+@lru_cache(maxsize=1)
+def get_embedder(model: str = "text-embedding-3-small"):
+    """Embedding client for the retrieval index. Returns an object exposing
+    `.embed(list[str]) -> list[list[float]]`, matching index_chunks' contract."""
+    from langchain_openai import OpenAIEmbeddings
+
+    class _Embedder:
+        def __init__(self):
+            self._client = OpenAIEmbeddings(model=model)
+
+        def embed(self, texts):
+            return self._client.embed_documents(list(texts))
+
+    return _Embedder()
+
 @lru_cache(maxsize=16)
 def prompt(name: str) -> str:
     return (PROMPTS / f"{name}.md").read_text(encoding="utf-8")
