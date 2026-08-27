@@ -1,0 +1,17 @@
+themes:
+  - key: supply_chain_attacks
+    label: Supply-chain attacks & CVEs
+    match: { signal_types: [security_trust], keywords: [cve, malware, compromise, exploit] }
+    jfrog_relevance: "Raises demand for provenance and blocking at the gate — Curation and Xray."
+  - key: regulation
+    label: Regulation & compliance
+    match: { signal_types: [market_regulatory], keywords: [cra, sbom, mandate, executive order] }
+    jfrog_relevance: "SBOM mandates map directly to AppTrust's evidence story."
+  - key: funding_ma
+    label: Funding & acquisitions
+    match: { signal_types: [corporate_financial], keywords: [acquires, funding, raises, series] }
+    jfrog_relevance: "Consolidation reshapes the competitive set."
+  - key: ai_mlops
+    label: AI / MLOps & model registries
+    match: { signal_types: [product_capability], keywords: [model, mlops, registry, llm] }
+    jfrog_relevance: "Validates JFrog ML / AI Catalog as the next artifact frontier."
