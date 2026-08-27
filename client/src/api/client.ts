@@ -4,6 +4,8 @@ import claimsAboutJfrogFixture from "../fixtures/claims_about_jfrog.json";
 import claimsHistoryTimelineFixture from "../fixtures/claims_history_timeline.json";
 import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
 import comparisonSonatypeFixture from "../fixtures/comparison_sonatype.json";
+import configCompetitorsFixture from "../fixtures/config_competitors.json";
+import configInstructionsFixture from "../fixtures/config_instructions.json";
 import coverageMatrixFixture from "../fixtures/coverage_matrix.json";
 import digestExecWeeklyFixture from "../fixtures/digest_exec_weekly.json";
 import emailPreviewFixture from "../fixtures/email_preview.json";
@@ -32,7 +34,9 @@ import type {
   BattlecardRow,
   Claim,
   ComparisonMatrix,
+  CompetitorsConfig,
   CoverageMatrix,
+  InstructionsConfig,
   EmailPreview,
   ExecWeekly,
   GetClaimsParams,
@@ -177,6 +181,10 @@ export const FIXTURES = {
   putMateriality: materialityWeightsFixture,
   getWatchlist: watchlistFixture,
   putWatchlist: watchlistFixture,
+  getInstructions: configInstructionsFixture,
+  putInstructions: configInstructionsFixture,
+  getCompetitors: configCompetitorsFixture,
+  putCompetitors: configCompetitorsFixture,
   getCoverage: coverageMatrixFixture,
   getEmailPreview: (emailPreviewFixture as Record<Persona, EmailPreview>).sales,
   getExecWeekly: digestExecWeeklyFixture,
@@ -358,6 +366,50 @@ export const api = {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
+      },
+    );
+  },
+
+  getInstructions(): Promise<InstructionsConfig> {
+    return fixtureOrLive(
+      configInstructionsFixture as InstructionsConfig,
+      "/config/instructions",
+    );
+  },
+
+  putInstructions(
+    instructions: string[],
+    actor?: string,
+  ): Promise<InstructionsConfig> {
+    return fixtureOrLive(
+      configInstructionsFixture as InstructionsConfig,
+      "/config/instructions",
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ instructions, actor }),
+      },
+    );
+  },
+
+  getCompetitors(): Promise<CompetitorsConfig> {
+    return fixtureOrLive(
+      configCompetitorsFixture as CompetitorsConfig,
+      "/config/competitors",
+    );
+  },
+
+  putCompetitors(
+    competitors: CompetitorsConfig["competitors"],
+    actor?: string,
+  ): Promise<CompetitorsConfig> {
+    return fixtureOrLive(
+      configCompetitorsFixture as CompetitorsConfig,
+      "/config/competitors",
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ competitors, actor }),
       },
     );
   },

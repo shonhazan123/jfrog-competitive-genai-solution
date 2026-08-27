@@ -30,3 +30,19 @@ test("the coverage matrix explains what it is for", () => {
   renderPage(<Settings />);
   expect(screen.getByText(/what are we blind to/i)).toBeInTheDocument();
 });
+
+test("renders intention-based config editors without numeric weight controls", () => {
+  renderPage(<Settings />);
+
+  expect(screen.getByRole("heading", { name: "Competitors" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "Analyst instructions" }),
+  ).toBeInTheDocument();
+  expect(screen.getByLabelText("New competitor name")).toBeInTheDocument();
+  expect(screen.getByLabelText("New instruction")).toBeInTheDocument();
+  expect(screen.getByText(/flag anything mentioning SLSA/i)).toBeInTheDocument();
+
+  expect(screen.queryByRole("heading", { name: "Materiality weights" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("slider")).not.toBeInTheDocument();
+  expect(screen.queryByText(/save weights/i)).not.toBeInTheDocument();
+});

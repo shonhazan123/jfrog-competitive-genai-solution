@@ -356,6 +356,31 @@ export interface PutWatchlistRequest {
   actor: string;
 }
 
+export interface Competitor {
+  slug: string;
+  name: string;
+}
+
+export interface CompetitorsConfig {
+  config_version: number;
+  competitors: Competitor[];
+}
+
+export interface PutCompetitorsRequest {
+  competitors: Competitor[];
+  actor?: string;
+}
+
+export interface InstructionsConfig {
+  config_version: number;
+  instructions: string[];
+}
+
+export interface PutInstructionsRequest {
+  instructions: string[];
+  actor?: string;
+}
+
 export interface PatchSourceRequest {
   enabled?: boolean | null;
   actor: string;

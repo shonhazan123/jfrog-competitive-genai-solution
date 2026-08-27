@@ -1,19 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type {
+  CompetitorsConfig,
   CoverageMatrix as CoverageMatrixData,
+  InstructionsConfig,
   ListResponse,
-  MaterialityConfig,
   Source,
   Watchlist,
 } from "../api/types";
+import { CompetitorEditor } from "../components/CompetitorEditor";
 import { CoverageMatrix } from "../components/CoverageMatrix";
+import { InstructionsEditor } from "../components/InstructionsEditor";
 import { Panel } from "../components/primitives/Panel";
 import { SourceTable } from "../components/SourceTable";
 import { WatchlistEditor } from "../components/WatchlistEditor";
-import { WeightEditor } from "../components/WeightEditor";
+import competitorsFixture from "../fixtures/config_competitors.json";
+import instructionsFixture from "../fixtures/config_instructions.json";
 import coverageFixture from "../fixtures/coverage_matrix.json";
-import materialityFixture from "../fixtures/materiality_weights.json";
 import sourcesFixture from "../fixtures/sources.json";
 import watchlistFixture from "../fixtures/watchlist.json";
 
@@ -30,10 +33,16 @@ export function Settings() {
     initialData: sourcesFixture as ListResponse<Source>,
   });
 
-  const { data: materiality } = useQuery({
-    queryKey: ["materiality"],
-    queryFn: () => api.getMateriality(),
-    initialData: materialityFixture as MaterialityConfig,
+  const { data: competitors } = useQuery({
+    queryKey: ["competitors"],
+    queryFn: () => api.getCompetitors(),
+    initialData: competitorsFixture as CompetitorsConfig,
+  });
+
+  const { data: instructions } = useQuery({
+    queryKey: ["instructions"],
+    queryFn: () => api.getInstructions(),
+    initialData: instructionsFixture as InstructionsConfig,
   });
 
   const { data: watchlist } = useQuery({
@@ -61,7 +70,8 @@ export function Settings() {
             color: "var(--ink-secondary)",
           }}
         >
-          Sources, coverage gaps, materiality weights, and watchlist terms.
+          Sources, coverage gaps, competitors, analyst instructions, and
+          watchlist terms.
         </p>
       </header>
 
@@ -73,8 +83,12 @@ export function Settings() {
         <SourceTable sources={sources.items} />
       </Panel>
 
-      <Panel title="Materiality weights">
-        <WeightEditor config={materiality} />
+      <Panel title="Competitors">
+        <CompetitorEditor config={competitors} />
+      </Panel>
+
+      <Panel title="Analyst instructions">
+        <InstructionsEditor config={instructions} />
       </Panel>
 
       <Panel title="Watchlist">
