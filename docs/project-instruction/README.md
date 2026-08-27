@@ -24,12 +24,20 @@ shapes live in [API_CONTRACT.md](../API_CONTRACT.md). Implementation plans in
 [plans/](../plans/) are historical; do not rewrite them when code diverges — update
 this folder instead.
 
+The system is **verdict-first**: consumer screens show a tier word + one-line
+reason backed by a clickable source, with no numbers and no historical diffing.
+Numeric scoring and change-detection (backfill / `ClaimVersion` / Trajectory /
+`ClaimTimeline`) still exist internally but are off every primary surface.
+
 | File | Covers |
 |---|---|
-| [digests.md](./digests.md) | `GET /digests/{persona}` vs `GET /digests/exec/weekly` |
+| [digests.md](./digests.md) | `GET /digests/{persona}` vs `GET /digests/exec/weekly`; tier-based ranking |
+| [comparison.md](./comparison.md) | `GET /comparison/matrix` component × competitor stance grid (no numbers, no diff) |
+| [config.md](./config.md) | Intention-based Settings (`/config/competitors`, `/config/instructions`), tier thresholds |
 | [runs.md](./runs.md) | `POST /runs` async progress, `GET /runs/{id}`, human stages |
-| [kits.md](./kits.md) | `GET /kits`, KIT rollup, citations, display labels |
+| [kits.md](./kits.md) | `GET /kits`, KIT rollup, citations, display labels (backend only; grid retired) |
 | [ask.md](./ask.md) | Ask graph routing, hit accumulation, `POST /ask` bridge |
 | [agent.md](./agent.md) | Interpret/Ask graph step logging and failure signals |
 | [llm.md](./llm.md) | Per-call LLM tuning via `config/llm.yaml`, `get_model` wiring, env overrides |
-| [client.md](./client.md) | React client: fixture/live switch, IA-as-data, tokens, SignalCard rule, live-wiring contract drift |
+| [client.md](./client.md) | React client: verdict-first IA, fixture/live switch, tokens, SignalCard rule, live-wiring contract drift |
+| [industry.md](./industry.md) | Industry feed + stable themes (`/industry/themes`), JFrog-relevance lines |
