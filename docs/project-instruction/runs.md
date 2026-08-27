@@ -1,5 +1,8 @@
 # Runs — async pipeline progress
 
+**Startup:** `api` and `worker` containers run `alembic upgrade head` on boot (see
+`backend/docker-entrypoint.sh`) so schema matches models before any run job touches Postgres.
+
 Manual and scheduled runs share the same worker jobs (`worker.jobs`). The demo keeps
 **only the current run** in memory — there is no run history or persistence of past
 progress beyond what `GET /runs/latest` reports from the last completed collection.

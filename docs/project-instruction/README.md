@@ -13,6 +13,9 @@ docker compose up --build
 
 Starts **db + api + worker + client**. UI at http://localhost:5173, API at http://localhost:8000.
 
+On startup, **api** and **worker** each run `alembic upgrade head` (via `backend/docker-entrypoint.sh`)
+before uvicorn or the worker process starts, so the Postgres volume always matches the code.
+
 - `docker compose down` — stop everything
 - `docker compose logs -f` — follow logs
 
