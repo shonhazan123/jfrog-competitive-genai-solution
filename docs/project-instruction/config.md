@@ -16,6 +16,15 @@ Handled in `app.controllers.config` + `app.routers.config`. Overrides are held i
 process (`_instructions_override`, watchlist override) and bump a config version;
 `clear_config_extensions()` resets them (used by tests).
 
+## Active competitor set
+
+`config/competitors.yaml` lists the slugs on the Signals/Comparison grid (currently
+github, sonatype, snyk, aqua, checkmarx). Other competitor entities (gitlab, harbor,
+azure_artifacts) remain in `config/entities.yaml` but are off the grid.
+
+`app.services.research.competitors.load_competitors()` joins the allowlist with
+entity names and aliases from `entities.yaml`.
+
 ## Instructions
 
 `current_instructions()` loads `config/instructions.yaml` (or the in-process override
