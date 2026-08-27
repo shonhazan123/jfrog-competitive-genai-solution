@@ -98,6 +98,11 @@ export interface SignalDetail extends Signal {
   bullet_classification: Record<string, unknown> | null;
 }
 
+export interface TodayBrief {
+  headline: string;
+  cards: Signal[];
+}
+
 export interface ListResponse<T> {
   items: T[];
   total: number;

@@ -15,6 +15,7 @@ import signalTraceFixture from "../fixtures/signal_trace.json";
 import signalsProductFixture from "../fixtures/signals_product.json";
 import signalsSalesFixture from "../fixtures/signals_sales.json";
 import signalsTodayFixture from "../fixtures/signals_today.json";
+import todayFixture from "../fixtures/today.json";
 import sinceLastVisitFixture from "../fixtures/since_last_visit.json";
 import sourcesFixture from "../fixtures/sources.json";
 import watchlistFixture from "../fixtures/watchlist.json";
@@ -49,6 +50,7 @@ import type {
   SignalDetail,
   SinceLastVisit,
   Source,
+  TodayBrief,
   Watchlist,
 } from "./types";
 
@@ -173,6 +175,7 @@ export const FIXTURES = {
   getEmailPreview: (emailPreviewFixture as Record<Persona, EmailPreview>).sales,
   getExecWeekly: digestExecWeeklyFixture,
   getKits: kitsFixture,
+  getToday: todayFixture,
   startRun: { run_id: FIXTURE_RUN_ID },
   getRun: FIXTURE_RUN_PROGRESS,
 } as const;
@@ -369,6 +372,13 @@ export const api = {
       paths.kitsPath(),
     ).then((data) =>
       Array.isArray(data) ? data : (data as ListResponse<Kit>).items,
+    );
+  },
+
+  getToday(): Promise<TodayBrief> {
+    return fixtureOrLive(
+      todayFixture as TodayBrief,
+      "/today",
     );
   },
 

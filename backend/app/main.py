@@ -20,6 +20,7 @@ from app.routers import (
     runs,
     signals,
     sources,
+    today,
 )
 
 
@@ -46,6 +47,7 @@ app.include_router(health.router)
 app.include_router(runs.router)
 app.include_router(activity.router)
 app.include_router(signals.router)
+app.include_router(today.router)
 app.include_router(kits.router)
 app.include_router(digests.router)
 app.include_router(comparison.router)
