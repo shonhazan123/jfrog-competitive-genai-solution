@@ -36,3 +36,87 @@ sources:
     is_primary: true
     check_frequency_minutes: 720
     adapter: osv
+
+  # --- Self-positioning (snapshot + diff over time) ---------------------------------------
+  # Collected symmetrically: the competitor AND JFrog, same instrument. A homepage headline
+  # moving from "repository manager" to "supply-chain platform" is a bigger strategic signal
+  # than any anti-JFrog bullet. Live changes extend the Wayback-backfilled history.
+  - key: sonatype_homepage
+    entity: sonatype
+    url: https://www.sonatype.com/
+    kind: html_page
+    mode: snapshot
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 1440
+    covers: [positioning_messaging]
+
+  - key: jfrog_homepage
+    entity: jfrog
+    url: https://jfrog.com/
+    kind: html_page
+    mode: snapshot
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 1440
+    covers: [positioning_messaging]
+
+  # --- Developer sentiment via the free Hacker News (Algolia) API -------------------------
+  # The ToS-clean substitute for scraping review sites. The query encodes the subject, so the
+  # same adapter collects "what developers say" symmetrically about each product.
+  - key: hn_jfrog
+    entity: industry
+    url: https://hn.algolia.com/api/v1/search_by_date?query=JFrog%20Artifactory&tags=story
+    kind: api
+    mode: api
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+    adapter: hn
+    covers: [customer_evidence]
+
+  - key: hn_sonatype
+    entity: industry
+    url: https://hn.algolia.com/api/v1/search_by_date?query=Sonatype%20Nexus&tags=story
+    kind: api
+    mode: api
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+    adapter: hn
+    covers: [customer_evidence]
+
+  # --- Tech press (secondary, industry lane) ----------------------------------------------
+  - key: thenewstack_rss
+    entity: industry
+    url: https://thenewstack.io/feed/
+    kind: rss
+    mode: feed
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+
+  - key: infoq_rss
+    entity: industry
+    url: https://feed.infoq.com/
+    kind: rss
+    mode: feed
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+
+  # --- Talent / roadmap leading indicator (public job board JSON) -------------------------
+  # `talent_org` is the only predictive signal type — a hiring surge is roadmap intelligence
+  # 6-12 months early. Sonatype uses Lever (verified 2026-08-26: api.lever.co returns 6+
+  # postings with id/text/createdAt/hostedUrl/categories). The Greenhouse adapter is also
+  # wired for competitors on that ATS — add a row with adapter: greenhouse and a verified token.
+  - key: sonatype_jobs
+    entity: sonatype
+    url: https://api.lever.co/v0/postings/sonatype?mode=json
+    kind: api
+    mode: api
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 1440
+    adapter: lever
+    covers: [talent_org]

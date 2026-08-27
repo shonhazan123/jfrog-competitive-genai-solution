@@ -8,5 +8,6 @@ class Settings(BaseSettings):
     backfill_source: str = "live"
     fixtures_dir: str = "/app/fixtures/wayback"
     user_agent: str = "jfrog-ci-bot/0.1 (+contact: shonhazan19955@gmail.com)"
+    log_level: str = "INFO"
 
 settings = Settings()

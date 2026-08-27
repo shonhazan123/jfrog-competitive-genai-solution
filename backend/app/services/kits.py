@@ -18,6 +18,7 @@ from app.services.citation import (
     citation_to_dict,
     deliverable,
 )
+from app.services.scoring.materiality import tier_for
 
 
 @dataclass
@@ -46,10 +47,8 @@ class KitRollup:
 def _priority_label(score: float, cfg: AppConfig) -> str | None:
     if score <= 0:
         return None
-    for band in cfg.labels.priority_bands:
-        if score <= band.max:
-            return band.label
-    return cfg.labels.priority_bands[-1].label
+    tier = tier_for(score, cfg)
+    return cfg.labels.tiers[tier]
 
 
 def _signal_max_score(signal: Signal) -> float:

@@ -1,0 +1,55 @@
+# Every LLM call the system makes, one block per call, so each can be tuned
+# independently. Values under `defaults` apply to every call unless the call
+# overrides them. A model name can also be overridden at runtime with the
+# ROLES_<CALL> environment variable (e.g. ROLES_EXTRACT=gpt-5).
+#
+# Fields (all optional except `model`):
+#   model             OpenAI model name.
+#   temperature       Sampling temperature. Set to null to use the model
+#                     default — reasoning models such as gpt-5 only accept
+#                     their default temperature.
+#   timeout_seconds   Per-request timeout, in seconds.
+#   max_retries       Automatic retries on transient errors.
+#   max_tokens        Cap on generated tokens (null = model default).
+#   reasoning_effort  minimal | low | medium | high, for reasoning models only
+#                     (null leaves it unset).
+
+defaults:
+  provider: openai
+  temperature: 0
+  timeout_seconds: 60
+  max_retries: 2
+  max_tokens: null
+  reasoning_effort: null
+
+calls:
+  # Interpret graph — reads untrusted scraped page text and emits ONLY the
+  # fixed extraction schema. No tools are ever bound to this model.
+  extract:
+    description: >-
+      Extracts structured claims from a sanitized capture. Runs against
+      untrusted content, so it stays cheap, deterministic and schema-locked.
+    model: gpt-5-mini
+    temperature: 0
+    timeout_seconds: 180
+    reasoning_effort: null
+
+  # Interpret graph — turns verified claims and JFrog positions into the
+  # per-persona "so what" framing shown on signal cards.
+  contextualize:
+    description: >-
+      Writes the sales/product/exec "so what" lines from verified evidence.
+      Higher-capability model because this is the reader-facing framing.
+    model: gpt-5
+    temperature: 0
+    reasoning_effort: null
+
+  # Ask endpoint — answers analyst questions strictly from retrieved ledger
+  # evidence and refuses when the answer is not supported. Read-only.
+  ask:
+    description: >-
+      Answers grounded questions over retrieved evidence and refuses when the
+      evidence does not support an answer.
+    model: gpt-5
+    temperature: 0
+    reasoning_effort: null

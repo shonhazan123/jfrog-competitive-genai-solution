@@ -28,9 +28,9 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
 - **All styling is tokens:** `client/src/styles/tokens.css` is the entire visual
   language (colour, type scale, spacing, radius, elevation, dark override). No
   component hardcodes a hex — a test scans every `.tsx` for `#rrggbb`.
-- **SignalCard rule (non-negotiable):** entity, type, score, headline, the full
+- **SignalCard rule (non-negotiable):** entity, type, tier (`tier_label`), headline, the full
   `so_what`, and the verbatim first `evidence` quote + source line are ALWAYS
-  visible; only `WHY THIS SCORE` and `HOW THIS WAS PRODUCED` collapse.
+  visible; only `WHY THIS MATTERS` and `HOW THIS WAS PRODUCED` collapse.
 - **Comparison:** JFrog cells are `authored` and carry no grade; competitor cells
   carry a grade + evidence; an absent claim reads "No public claim" with no grade.
   Diffs render as `was → now`, never a code diff.

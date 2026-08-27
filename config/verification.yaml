@@ -1,5 +1,5 @@
 quote_matching:
   fuzzy:
     enabled: true
-    accept_threshold: 98
+    accept_threshold: 90
     min_quote_chars: 25

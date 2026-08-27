@@ -32,6 +32,8 @@ function invalidateDailyQueries(
 export function StatusStrip({ data }: StatusStripProps) {
   const queryClient = useQueryClient();
   const [activeRun, setActiveRun] = useState<RunProgressData | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeRunIdRef = useRef<string | null>(null);
 
@@ -46,24 +48,50 @@ export function StatusStrip({ data }: StatusStripProps) {
 
   const pollRun = useCallback(
     async (runId: string) => {
-      const progress = await api.getRun(runId);
+      let progress: RunProgressData;
+      try {
+        progress = await api.getRun(runId);
+      } catch {
+        stopPolling();
+        activeRunIdRef.current = null;
+        setIsRunning(false);
+        setActiveRun(null);
+        setError("Lost contact with the server while the run was in progress.");
+        return;
+      }
       setActiveRun(progress);
 
       if (progress.status === "done") {
         stopPolling();
         activeRunIdRef.current = null;
+        setIsRunning(false);
         invalidateDailyQueries(queryClient);
       } else if (progress.status === "failed") {
         stopPolling();
         activeRunIdRef.current = null;
+        setIsRunning(false);
       }
     },
     [queryClient, stopPolling],
   );
 
   const handleRunNow = async () => {
+    if (isRunning) {
+      return;
+    }
     stopPolling();
-    const { run_id } = await api.startRun();
+    setError(null);
+    setActiveRun(null);
+    setIsRunning(true);
+
+    let run_id: string;
+    try {
+      ({ run_id } = await api.startRun());
+    } catch {
+      setIsRunning(false);
+      setError("Couldn't start the run — is the API reachable?");
+      return;
+    }
     activeRunIdRef.current = run_id;
 
     const poll = () => {
@@ -101,22 +129,39 @@ export function StatusStrip({ data }: StatusStripProps) {
           <span>Next run: {formatTimestamp(data.next_run_at)}</span>
         </>
       ) : null}
+      {isRunning && !activeRun ? (
+        <span data-testid="run-progress" role="status" aria-live="polite">
+          Starting…
+        </span>
+      ) : null}
       {activeRun ? <RunProgress progress={activeRun} /> : null}
+      {error ? (
+        <span
+          data-testid="run-error"
+          role="alert"
+          style={{ color: "var(--interrupt)" }}
+        >
+          {error}
+        </span>
+      ) : null}
       <button
         type="button"
         onClick={() => void handleRunNow()}
+        disabled={isRunning}
+        aria-busy={isRunning}
         style={{
           padding: "var(--sp-1) var(--sp-3)",
           fontSize: "var(--fs-meta)",
           fontWeight: 500,
-          color: "var(--accent)",
-          background: "var(--accent-wash)",
+          color: isRunning ? "var(--ink-muted)" : "var(--accent)",
+          background: isRunning ? "var(--surface-sunk)" : "var(--accent-wash)",
           border: "1px solid var(--border)",
           borderRadius: "var(--r-sm)",
-          cursor: "pointer",
+          cursor: isRunning ? "not-allowed" : "pointer",
+          opacity: isRunning ? 0.7 : 1,
         }}
       >
-        Run now
+        {isRunning ? "Running…" : "Run now"}
       </button>
     </div>
   );

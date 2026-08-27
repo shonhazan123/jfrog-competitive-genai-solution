@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,11 @@ from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
 from app.models.signal import Signal, SignalEvidence
 from app.services.agent_service import interpret_capture
-from app.services.backfill import backfill_source
+from app.services.backfill import backfill_source, collect_snapshot_source
+from agent.log import get_logger, step
+from app.services.collection.apis.greenhouse import GreenhouseAdapter
+from app.services.collection.apis.hackernews import HackerNewsAdapter
+from app.services.collection.apis.lever import LeverAdapter
 from app.services.collection.apis.osv import OsvAdapter
 from app.services.collection.fetcher import Fetcher, StaticFetcher
 from app.services.collection.fixture_fetcher import FixtureFetcher
@@ -24,8 +28,22 @@ from app.services.seeding import seed
 from app.services.signals.novelty import is_new
 from app.settings import settings
 
-_ADAPTERS = {"osv": OsvAdapter()}
+_ADAPTERS = {
+    "osv": OsvAdapter(),
+    "greenhouse": GreenhouseAdapter(),
+    "lever": LeverAdapter(),
+    "hn": HackerNewsAdapter(),
+}
 _WEEKDAYS = frozenset({"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
+logger = get_logger("worker.jobs")
+
+
+def _due(source: Source, now: datetime) -> bool:
+    """A source is due when it has never been checked or its per-source interval has
+    elapsed. Turns check_frequency_minutes from stored-but-ignored config into behaviour."""
+    if source.last_checked_at is None:
+        return True
+    return now >= source.last_checked_at + timedelta(minutes=source.check_frequency_minutes)
 
 
 def run_seed() -> None:
@@ -79,6 +97,8 @@ def run_collection(
     session: Session | None = None,
     fetcher: Fetcher | None = None,
     robots: RobotsCache | None = None,
+    *,
+    force: bool = False,
 ) -> dict:
     own_session = session is None
     if own_session:
@@ -88,40 +108,62 @@ def run_collection(
     if robots is None:
         robots = RobotsCache()
 
-    report = {"captures": 0, "skipped_robots": 0, "sources": 0}
-    sources = session.query(Source).filter(Source.enabled.is_(True), Source.mode.in_(["feed", "api"])).all()
+    report = {
+        "captures": 0, "skipped_robots": 0, "skipped_not_due": 0, "errors": 0, "sources": 0,
+    }
+    sources = session.query(Source).filter(
+        Source.enabled.is_(True), Source.mode.in_(["feed", "api", "snapshot"])
+    ).all()
     report["sources"] = len(sources)
+    now = datetime.now(UTC)
 
     for source in sources:
+        if not force and not _due(source, now):
+            report["skipped_not_due"] += 1
+            continue
         allowed = robots.allowed(source.url)
         source.robots_allowed = allowed
+        source.last_checked_at = now
+        source.check_count += 1
         if not allowed:
             report["skipped_robots"] += 1
             continue
 
-        if source.mode == "feed":
-            result = fetcher.fetch(source.url, source.etag)
-            if result.not_modified or not result.body:
-                continue
-            for entry in parse_feed(result.body, source.url):
-                if not is_new(session, source.id, entry.external_id):
+        # One malformed or unreachable source must never abort the whole daily run.
+        try:
+            if source.mode == "feed":
+                result = fetcher.fetch(source.url, source.etag)
+                if result.not_modified or not result.body:
                     continue
-                text = entry.content_html or entry.summary_html or entry.title
-                _store_capture(session, source, entry.external_id, text, entry.link)
-                report["captures"] += 1
-        elif source.mode == "api":
-            adapter = _ADAPTERS.get(source.adapter or "")
-            if adapter is None:
-                continue
-            for record in adapter.collect(source, fetcher):
-                if not is_new(session, source.id, record.external_id):
+                if result.etag:
+                    source.etag = result.etag
+                for entry in parse_feed(result.body, source.url):
+                    if not is_new(session, source.id, entry.external_id):
+                        continue
+                    text = entry.content_html or entry.summary_html or entry.title
+                    _store_capture(session, source, entry.external_id, text, entry.link)
+                    report["captures"] += 1
+            elif source.mode == "api":
+                adapter = _ADAPTERS.get(source.adapter or "")
+                if adapter is None:
                     continue
-                _store_capture(session, source, record.external_id, record.body, record.url)
-                report["captures"] += 1
+                for record in adapter.collect(source, fetcher):
+                    if not is_new(session, source.id, record.external_id):
+                        continue
+                    _store_capture(session, source, record.external_id, record.body, record.url)
+                    report["captures"] += 1
+            elif source.mode == "snapshot":
+                if source.requires_js:
+                    continue
+                report["captures"] += collect_snapshot_source(session, source, fetcher)
+        except Exception:
+            report["errors"] += 1
+            continue
 
     if own_session:
         session.commit()
         session.close()
+    step(logger, "collection.done", **report)
     return report
 
 
@@ -131,18 +173,41 @@ def run_interpret(session: Session | None = None, limit: int | None = None) -> d
         session = SessionLocal()
     interpreted = 0
     quarantined = 0
+    failed = 0
     interpreted_ids = {
         row[0] for row in session.query(SignalEvidence.capture_id).distinct().all()
     }
     if interpreted_ids:
-        query = session.query(RawCapture).filter(RawCapture.id.notin_(interpreted_ids))
+        query = (
+            session.query(RawCapture)
+            .filter(RawCapture.id.notin_(interpreted_ids))
+            .order_by(RawCapture.id)
+        )
     else:
-        query = session.query(RawCapture)
+        query = session.query(RawCapture).order_by(RawCapture.id)
     captures = query.all()
     if limit is not None:
         captures = captures[:limit]
+    step(logger, "interpret.batch.start", pending=len(captures), limit=limit)
     for capture in captures:
-        result = interpret_capture(capture.id, session=session)
+        step(logger, "interpret.batch.capture", capture_id=capture.id)
+        try:
+            result = interpret_capture(capture.id, session=session)
+        except Exception:
+            logger.exception(
+                "interpret.batch.failed capture_id=%s",
+                capture.id,
+            )
+            failed += 1
+            continue
+        step(
+            logger,
+            "interpret.batch.result",
+            capture_id=capture.id,
+            status=result.status,
+            signal_id=result.signal_id,
+            thread_id=result.thread_id,
+        )
         if result.status == "ok":
             interpreted += 1
         elif result.status == "quarantined":
@@ -150,7 +215,9 @@ def run_interpret(session: Session | None = None, limit: int | None = None) -> d
     if own_session:
         session.commit()
         session.close()
-    return {"interpreted": interpreted, "quarantined": quarantined}
+    report = {"interpreted": interpreted, "quarantined": quarantined, "failed": failed}
+    step(logger, "interpret.batch.done", **report)
+    return report
 
 
 def run_scoring(session: Session | None = None) -> dict:

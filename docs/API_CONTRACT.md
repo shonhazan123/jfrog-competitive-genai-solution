@@ -228,7 +228,11 @@ count, handling-caution count) comes from a distinct endpoint that mirrors the e
 ### 2.1 `GET /digests/{persona}` — assembled per-persona digest
 - **Purpose:** the digest as an assembled, budget-capped unit — the header counts (*"Six items…"*,
   *"8 items · 2 awareness-only"*) and the email body. Serves R6.3; assembly per ARCH §9.
-- **Path:** `persona` ∈ {`sales`, `product`}. (`exec` is weekly — see §3.)
+- **Path:** `persona` ∈ {`sales`, `product`}. (`exec` is weekly — see §3.) Do not serve this
+  payload from `/digests/exec/weekly`.
+- **Implemented:** `backend/app/routers/digests.py` (`GET /{persona}`) →
+  `backend/app/controllers/digests.py` (`persona_digest`). Operational note:
+  [project-instruction/digests.md](./project-instruction/digests.md).
 - **Query:** `date` (ISO date | null, default latest run).
 - **Response:**
 
@@ -551,7 +555,13 @@ class AskResponse(TypedDict):
 ```
 - **Consumed by:** Ask transcript (answered, comparison, and refusal exchanges).
 - **Note:** the retriever returns empty rather than widening (R5.7); empty retrieval triggers the
-  refusal edge (`grounded: false`).
+  refusal edge (`grounded: false`) **without calling the model**. Hits accumulate on the deps
+  object (`deps.accumulated_hits`), not in checkpointed LangGraph state. The grounding gate
+  routes on `AskState.refused` (not a `_route` key). Graph:
+  `classify_intent → tool_loop (max 4) → grounding_gate → answer | refuse`.
+  `POST /ask` bridges via `app/services/ask_service.py` → `agent.graphs.ask.graph`; `app/`
+  never imports langgraph/openai literals. Operational note:
+  [project-instruction/ask.md](./project-instruction/ask.md).
 
 ---
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from agent.graphs.ask.graph import build_ask_graph
 from agent.llm import get_checkpointer, prompt as load_prompt
+from agent.log import get_logger, step
 from app.models.registry import Entity, Source
 from app.serializers.common import fmt_ts
 from app.services.citation import DeliveryRecord, build_citation, citation_to_dict
@@ -20,11 +21,13 @@ class _AskAnswer(BaseModel):
     answer: str
     citations: list[str] = Field(default_factory=list)
 
+logger = get_logger("app.ask_service")
+
 
 def _lazy_model():
     from agent.llm import get_model
 
-    llm = get_model("contextualize").with_structured_output(_AskAnswer, strict=True)
+    llm = get_model("ask").with_structured_output(_AskAnswer, strict=True)
 
     class Adapter:
         def answer(self, question: str, hits: list) -> dict[str, Any]:
@@ -33,12 +36,22 @@ def _lazy_model():
                 hit_id = hit["id"] if isinstance(hit, dict) else hit.id
                 text = hit["text"] if isinstance(hit, dict) else hit.text
                 evidence.append({"id": str(hit_id), "text": text})
+            step(
+                logger,
+                "ask.llm.invoke",
+                question=question,
+                evidence_chunks=len(evidence),
+            )
             prompt_text = (
                 load_prompt("ask")
                 + "\n\nDATA:\n"
                 + json.dumps({"question": question, "evidence": evidence}, default=str)
             )
-            result = llm.invoke(prompt_text)
+            try:
+                result = llm.invoke(prompt_text)
+            except Exception:
+                logger.exception("ask.llm.failed question=%r", question)
+                raise
             return {"answer": result.answer, "citations": result.citations}
 
     return Adapter()
@@ -122,12 +135,17 @@ def _format_evidence(session: Session, hits: list[dict], citations: list[str]) -
 
 def answer_question(session: Session, question: str, persona: str | None = None) -> dict:
     """Bridge POST /ask to the agent graph without importing langgraph in app/."""
+    step(logger, "ask.request.start", question=question, persona=persona)
     deps = _build_deps(session)
     graph = build_ask_graph(deps)
-    result = graph.invoke(
-        {"question": question},
-        config={"configurable": {"thread_id": f"ask:{hash(question) & 0xffff}"}},
-    )
+    try:
+        result = graph.invoke(
+            {"question": question},
+            config={"configurable": {"thread_id": f"ask:{hash(question) & 0xffff}"}},
+        )
+    except Exception:
+        logger.exception("ask.request.failed question=%r", question)
+        raise
     refused = bool(result.get("refused"))
     hits = list(getattr(deps, "accumulated_hits", []))
     hit_dicts = [
@@ -144,6 +162,14 @@ def answer_question(session: Session, question: str, persona: str | None = None)
     nearby: list[dict] = []
     if refused and hit_dicts:
         nearby = [{"text": h["text"]} for h in hit_dicts[:3]]
+    step(
+        logger,
+        "ask.request.done",
+        question=question,
+        grounded=not refused,
+        evidence=len(evidence),
+        refusal_reason=result.get("reason") if refused else None,
+    )
     return {
         "question": question,
         "persona": persona,

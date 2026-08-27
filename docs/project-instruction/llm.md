@@ -1,0 +1,50 @@
+# LLM calls and per-call tuning
+
+Every LLM call the system makes is declared and tuned in [`config/llm.yaml`](../../config/llm.yaml).
+There is one block per call so each model can be adjusted independently without
+touching code.
+
+## The calls
+
+| Call | Where it runs | Purpose |
+|---|---|---|
+| `extract` | interpret graph — `agent/nodes/extract.py`, `agent/nodes/repair.py` | Reads untrusted, sanitized capture text and emits ONLY the fixed extraction schema. No tools are ever bound to it. |
+| `contextualize` | interpret graph — `agent/nodes/contextualize.py` | Writes the per-persona sales/product/exec "so what" framing from verified evidence. |
+| `ask` | Ask endpoint — `app/services/ask_service.py` | Answers analyst questions strictly from retrieved ledger evidence and refuses when unsupported. Read-only. |
+
+Each call is bound to its output contract by the caller (`.with_structured_output(...)`),
+not by config — config only controls the tunable model parameters below.
+
+## Tunable fields
+
+Under `defaults` (applied to every call) or per call under `calls.<name>`:
+
+- `model` — OpenAI model name (only required field).
+- `temperature` — sampling temperature; set to `null` to omit it and use the
+  model default. Reasoning models such as `gpt-5` only accept their default
+  temperature, so use `null` there if you switch models.
+- `timeout_seconds` — per-request timeout.
+- `max_retries` — automatic retries on transient errors.
+- `max_tokens` — cap on generated tokens (`null` = model default).
+- `reasoning_effort` — `minimal | low | medium | high` for reasoning models
+  (`null` leaves it unset).
+
+A value set on a call always wins over `defaults`, even when set to `null`.
+
+## How it is wired
+
+`config/llm.yaml` → `AppConfig.llm` (validated by `LlmConfig` / `LlmCallConfig`
+in `app/config/schema.py`, which merges `defaults` into each call) →
+`agent/llm.get_model(role)` builds a `ChatOpenAI` from the call's settings.
+
+`ChatOpenAI` stays in `agent/`; `app/` never imports LLM libraries
+(enforced by `tests/test_boundaries.py`).
+
+## Runtime model override
+
+A model name can be overridden without editing config via the `ROLES_<CALL>`
+environment variable, e.g. `ROLES_EXTRACT=gpt-5` or `ROLES_ASK=gpt-5-mini`.
+Only the model name is overridable this way; all other knobs come from config.
+
+`get_model` is cached per call, and `load_config` is cached per process, so
+changes to `config/llm.yaml` take effect on the next process start.

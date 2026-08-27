@@ -2,6 +2,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from agent.graphs.ask.state import AskState
+from agent.log import get_logger, step
+
+logger = get_logger("agent.ask")
 
 
 def _hit_id(hit) -> str:
@@ -19,17 +22,16 @@ def _is_grounded(result: dict, hits: list) -> bool:
 
 
 def classify_intent(state: AskState, deps) -> dict:
-    question = state["question"].lower()
+    question = state["question"]
+    step(logger, "ask.classify.start", question=question)
+    lowered = question.lower()
     filters: dict = {}
-    if "sonatype" in question:
+    if "sonatype" in lowered:
         filters["entity"] = "sonatype"
-    elif "jfrog" in question:
+    elif "jfrog" in lowered:
         filters["entity"] = "jfrog"
-    # Raw hit objects live on deps, never in the checkpointed state — the
-    # MemorySaver serializes state with msgpack, which cannot encode arbitrary
-    # retrieval objects. deps is already mutated for tool_calls, so this is the
-    # established place for per-invocation scratch that must not be serialized.
     deps.accumulated_hits = []
+    step(logger, "ask.classify.done", filters=filters)
     return {
         "filters": filters,
         "tool_iterations": 0,
@@ -41,6 +43,14 @@ def classify_intent(state: AskState, deps) -> dict:
 
 
 def tool_loop(state: AskState, deps) -> dict:
+    iteration = state.get("tool_iterations", 0) + 1
+    step(
+        logger,
+        "ask.retrieve.start",
+        iteration=iteration,
+        question=state["question"],
+        filters=state.get("filters", {}),
+    )
     new_hits = deps.retrieve(state["question"], state.get("filters", {}))
     deps.tool_calls += 1
     existing = list(getattr(deps, "accumulated_hits", []))
@@ -51,28 +61,53 @@ def tool_loop(state: AskState, deps) -> dict:
             seen.add(hit_id)
             existing.append(hit)
     deps.accumulated_hits = existing
+    step(
+        logger,
+        "ask.retrieve.done",
+        iteration=iteration,
+        new_hits=len(new_hits),
+        total_hits=len(existing),
+    )
     return {
-        "tool_iterations": state.get("tool_iterations", 0) + 1,
+        "tool_iterations": iteration,
     }
 
 
 def grounding_gate(state: AskState, deps) -> dict:
     hits = list(getattr(deps, "accumulated_hits", []))
+    step(logger, "ask.grounding.start", hits=len(hits))
     if not hits:
+        step(logger, "ask.grounding.refuse", reason="no_hits")
         return {
             "refused": True,
             "reason": "No grounded evidence to support an answer.",
             "citations": [],
             "answer": "",
         }
-    result = deps.model.answer(state["question"], hits)
+    try:
+        result = deps.model.answer(state["question"], hits)
+    except Exception:
+        logger.exception("ask.answer.failed question=%r", state["question"])
+        raise
     if _is_grounded(result, hits):
+        step(
+            logger,
+            "ask.grounding.done",
+            citations=len(result.get("citations", [])),
+            answer_chars=len(result.get("answer", "")),
+        )
         return {
             "answer": result["answer"],
             "citations": result["citations"],
             "refused": False,
             "reason": "",
         }
+    step(
+        logger,
+        "ask.grounding.refuse",
+        reason="citations_not_in_hits",
+        citations=result.get("citations", []),
+    )
     return {
         "refused": True,
         "reason": "Answer is not supported by grounded evidence.",
@@ -82,6 +117,7 @@ def grounding_gate(state: AskState, deps) -> dict:
 
 
 def answer(state: AskState, deps) -> dict:
+    step(logger, "ask.answer.done", refused=False)
     return {"refused": False}
 
 
@@ -89,6 +125,7 @@ def refuse(state: AskState, deps) -> dict:
     reason = state.get("reason", "")
     if "grounded evidence" not in reason.lower():
         reason = "No grounded evidence to support an answer."
+    step(logger, "ask.answer.refused", reason=reason)
     return {
         "refused": True,
         "citations": [],

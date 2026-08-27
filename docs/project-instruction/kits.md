@@ -12,7 +12,8 @@ Each item includes:
 - `status`: `active` when the KIT has deliverable signals, otherwise `no_change`
 - `count`: deliverable signals in this KIT for the latest run
 - `withheld`: signals assigned to the KIT but excluded because they fail citation rules
-- `priority_label`: human band from `config/labels.yaml` based on the highest score in the KIT
+- `priority_label`: tier label from `config/labels.yaml` (`Act on it` / `Worth knowing` /
+  `Background`) based on `tier_for()` applied to the highest persona score in the KIT
 - `snippet`: headline, quote, implication, and `citation` for the lead signal (or `null` when quiet)
 - `signal_ids`: `sig_{id}` references for deliverable members
 

@@ -28,6 +28,44 @@ def _store_blob(digest: str, body: bytes) -> str:
 def _rows_from(body: bytes) -> list[ComparisonRow]:
     return extract_comparison_rows(parse_html(body.decode("utf-8", errors="replace")))
 
+def _ingest_page(
+    session: Session,
+    source: Source,
+    jfrog: Entity,
+    body: bytes,
+    fetched_at: datetime,
+    http_status: int,
+    provenance: str,
+    previous: list[ComparisonRow],
+    report: BackfillReport,
+) -> list[ComparisonRow]:
+    """Store one page version and diff it against the previous one. This is the whole
+    snapshot pipeline for a single capture; backfill calls it per archived version, live
+    collection calls it once. Same code path, different fetcher — see OFFLINE_BACKFILL.md."""
+    digest = content_hash(body)
+    text = body.decode("utf-8", errors="replace")
+    capture = RawCapture(
+        source_id=source.id, fetched_at=fetched_at, http_status=http_status,
+        content_hash=digest, blob_path=_store_blob(digest, body),
+        extracted_text=text, provenance=provenance,
+    )
+    session.add(capture)
+    session.flush()
+    report.captures += 1
+
+    rows = _rows_from(body)
+    session.add(PageSnapshot(
+        source_id=source.id, capture_id=capture.id, captured_at=fetched_at,
+        text_hash=normalized_hash(text),
+        rows=[{"dimension": r.dimension, "cells": r.cells} for r in rows],
+    ))
+
+    for change in diff_rows(previous, rows):
+        if change.kind == "cosmetic":
+            continue
+        _apply(session, source, jfrog, fetched_at, change, capture, report)
+    return rows
+
 def backfill_source(session: Session, source: Source, fetcher: Fetcher) -> BackfillReport:
     """Replay every archived version of a tracked page through the live pipeline."""
     report = BackfillReport()
@@ -38,35 +76,50 @@ def backfill_source(session: Session, source: Source, fetcher: Fetcher) -> Backf
         result = fetcher.fetch(snapshot.raw_url)
         if not result.body:
             continue
-
-        digest = content_hash(result.body)
-        text = result.body.decode("utf-8", errors="replace")
-        capture = RawCapture(
-            source_id=source.id, fetched_at=snapshot.timestamp, http_status=result.status,
-            content_hash=digest, blob_path=_store_blob(digest, result.body),
-            extracted_text=text, provenance="archive",
+        previous = _ingest_page(
+            session, source, jfrog, result.body, snapshot.timestamp,
+            result.status, "archive", previous, report,
         )
-        session.add(capture)
-        session.flush()
-        report.captures += 1
-
-        rows = _rows_from(result.body)
-        session.add(PageSnapshot(
-            source_id=source.id, capture_id=capture.id, captured_at=snapshot.timestamp,
-            text_hash=normalized_hash(text),
-            rows=[{"dimension": r.dimension, "cells": r.cells} for r in rows],
-        ))
-
-        for change in diff_rows(previous, rows):
-            if change.kind == "cosmetic":
-                continue
-            report.claims_created, report.versions_created = _apply(
-                session, source, jfrog, snapshot.timestamp, change, capture, report
-            )
-        previous = rows
 
     session.commit()
     return report
+
+def _last_snapshot(session: Session, source_id: int) -> PageSnapshot | None:
+    return (
+        session.query(PageSnapshot)
+        .filter_by(source_id=source_id)
+        .order_by(PageSnapshot.captured_at.desc())
+        .first()
+    )
+
+def collect_snapshot_source(session: Session, source: Source, fetcher: Fetcher) -> int:
+    """Live counterpart to backfill_source: fetch the tracked page once, now, and run the
+    identical extraction/diff pipeline against the most recent stored version. A live change
+    to a comparison page therefore extends the same claim history the backfill built.
+    Returns the number of captures created (0 if the page is unchanged)."""
+    result = fetcher.fetch(source.url, source.etag)
+    if result.not_modified or not result.body:
+        return 0
+
+    last = _last_snapshot(session, source.id)
+    if last is not None and last.text_hash == normalized_hash(
+        result.body.decode("utf-8", errors="replace")
+    ):
+        return 0  # identical to the last stored version — nothing changed
+
+    jfrog = session.query(Entity).filter_by(slug="jfrog").one()
+    previous = (
+        [ComparisonRow(dimension=r["dimension"], cells=r["cells"]) for r in last.rows]
+        if last is not None else []
+    )
+    report = BackfillReport()
+    _ingest_page(
+        session, source, jfrog, result.body, datetime.now(UTC),
+        result.status, "live", previous, report,
+    )
+    if result.etag:
+        source.etag = result.etag
+    return report.captures
 
 def _apply(session, source, jfrog, at, change, capture, report):
     """Create or update the claim this change refers to, and record its version."""

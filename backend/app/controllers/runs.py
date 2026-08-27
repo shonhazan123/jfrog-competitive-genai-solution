@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+import logging
 import time
 
 import worker.jobs as jobs
@@ -16,19 +17,27 @@ from app.serializers.common import fmt_ts
 _last_run_at: datetime | None = None
 _next_run_at: datetime | None = None
 _last_report: dict = {}
+logger = logging.getLogger(__name__)
 
 _JOB_BY_KIND = {
     "collect": "run_collection",
     "interpret": "run_interpret",
     "scoring": "run_scoring",
+    "manual": "manual",
 }
 
-_STAGE_FOR_KIND = {
-    "collect": "collect",
-    "interpret": "extract",
-    "scoring": "score",
+# stage_key → (job function name, kwargs). Used by _execute_run.
+_RUN_STAGE_JOBS: dict[str, list[tuple[str, str, dict]]] = {
+    "collect": [("collect", "run_collection", {})],
+    "interpret": [("extract", "run_interpret", {})],
+    "scoring": [("score", "run_scoring", {})],
+    "manual": [
+        ("collect", "run_collection", {"force": True}),
+        # Cap backlog drain so Run now stays interactive; failures are per-capture.
+        ("extract", "run_interpret", {"limit": 3}),
+        ("score", "run_scoring", {}),
+    ],
 }
-
 
 def trigger_collection() -> dict:
     global _last_run_at, _last_report, _next_run_at
@@ -53,10 +62,18 @@ def trigger_scoring() -> dict:
 
 
 def _new_items_from_report(report: dict) -> int:
+    total = 0
     for key in ("captures", "interpreted", "scored"):
         if key in report:
-            return int(report[key])
-    return 0
+            total += int(report[key])
+    return total
+
+
+def _stage_jobs_for_kind(kind: str) -> dict[str, tuple[str, dict]]:
+    return {
+        stage_key: (job_name, kwargs)
+        for stage_key, job_name, kwargs in _RUN_STAGE_JOBS[kind]
+    }
 
 
 def _readable_error(exc: BaseException) -> str:
@@ -69,23 +86,34 @@ def _readable_error(exc: BaseException) -> str:
 def _execute_run(run_id: str, kind: str) -> None:
     global _last_run_at, _last_report, _next_run_at
     stages = load_run_stages()
-    job_name = _JOB_BY_KIND.get(kind)
-    job_stage = _STAGE_FOR_KIND.get(kind)
+    stage_jobs = _stage_jobs_for_kind(kind)
     new_items = 0
+    logger.info("run.start run_id=%s kind=%s stages=%s", run_id, kind, list(stage_jobs))
 
     try:
         for index, stage in enumerate(stages):
             key = stage["key"]
+            label = stage["label"]
             update_run(run_id, stage_key=key, current=index, total=len(stages))
+            logger.info(
+                "run.stage run_id=%s stage=%s label=%r current=%s total=%s",
+                run_id,
+                key,
+                label,
+                index,
+                len(stages),
+            )
 
-            if key == job_stage and job_name:
+            if key in stage_jobs:
+                job_name, job_kwargs = stage_jobs[key]
                 _last_run_at = datetime.now(UTC)
-                report = getattr(jobs, job_name)()
+                report = getattr(jobs, job_name)(**job_kwargs)
                 _last_report = report
+                new_items += _new_items_from_report(report)
+                logger.info("run.job.done run_id=%s job=%s report=%s", run_id, job_name, report)
                 _next_run_at = CronTrigger(hour=6, minute=0, timezone="UTC").get_next_fire_time(
                     None, datetime.now(UTC)
                 )
-                new_items = _new_items_from_report(report)
             elif key != "done":
                 time.sleep(0.01)
 
@@ -97,7 +125,9 @@ def _execute_run(run_id: str, kind: str) -> None:
             new_items=new_items,
             finished_at=datetime.now(UTC),
         )
+        logger.info("run.done run_id=%s kind=%s new_items=%s", run_id, kind, new_items)
     except Exception as exc:
+        logger.exception("run.failed run_id=%s kind=%s", run_id, kind)
         update_run(
             run_id,
             status="failed",
@@ -114,6 +144,7 @@ def start_run(
     if _JOB_BY_KIND.get(kind) is None:
         raise ValueError(f"Unknown run kind: {kind}")
     run = create_run()
+    logger.info("run.accepted run_id=%s kind=%s reason=%s", run.id, kind, reason)
     if background_tasks is not None:
         background_tasks.add_task(_execute_run, run.id, kind)
     else:

@@ -444,7 +444,9 @@ analyst queue, flagged. This is testable, and the failing test is more persuasiv
 than any prompt.
 
 The Ask surface follows the same rule: it answers only from the ledger, renders the evidence
-it used, and **refuses when the ledger cannot support an answer** (R6.5).
+it used, and **refuses when the ledger cannot support an answer** (R6.5). Empty retrieval
+refuses without calling the model. Graph routing and the `POST /ask` package boundary are in
+[project-instruction/ask.md](./project-instruction/ask.md).
 
 ---
 

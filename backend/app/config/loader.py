@@ -24,4 +24,5 @@ def load_config() -> AppConfig:
         retrieval=_read("retrieval.yaml"),
         kits=_read("kits.yaml"),
         labels=_read("labels.yaml"),
+        llm=_read("llm.yaml"),
     )

@@ -15,6 +15,7 @@ Starts a background run and returns immediately:
 
 | `kind` | Job (at stage) |
 |---|---|
+| `manual` | **Run now** — forced collect + interpret (up to 3 pending captures) + score |
 | `collect` | `run_collection` at **Checking sources** |
 | `interpret` | `run_interpret` at **Extracting claims** |
 | `scoring` | `run_scoring` at **Scoring and routing** |
@@ -44,6 +45,21 @@ Poll progress for the current run:
 - `status`: `running` | `done` | `failed`
 - On `done`, `new_items` reflects captures / interpreted / scored counts from the job report.
 - On `failed`, `message` is plain language (no tracebacks).
+
+## Debugging with logs
+
+Background runs and agent steps log to stdout. Tail them with:
+
+```bash
+docker compose logs -f api worker
+```
+
+Key lines: `run.start`, `run.stage`, `run.job.done`, `run.failed` (API);
+`interpret.capture.*`, `interpret.batch.failed`, `sanitize.*`, `extract.*`, `verify.*`
+(agent/worker). A single capture timing out on `extract` logs `extract.failed` and
+`interpret.batch.failed` but no longer aborts the whole run — check `failed` in the
+interpret job report. Set `LOG_LEVEL=DEBUG` in `.env` for model-selection detail.
+See [agent.md](./agent.md) and [llm.md](./llm.md) for timeout tuning.
 
 ## Unchanged endpoints
 

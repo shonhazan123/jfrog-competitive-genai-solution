@@ -369,7 +369,7 @@ export const api = {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind: kind ?? "collect" }),
+        body: JSON.stringify({ kind: kind ?? "manual" }),
       },
     );
   },

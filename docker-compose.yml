@@ -1,3 +1,17 @@
+# JFrog Competitive Intelligence — local demo
+#
+# Start everything (db + api + worker + client):
+#   docker compose up --build
+#
+# Stop:
+#   docker compose down        (or Ctrl+C if running in the foreground)
+#
+# UI:  http://localhost:5173
+# API: http://localhost:8000/health
+#
+# Do not run `npm run dev` inside client/ separately — the client container
+# above is the only UI you need. A local Vite on :5173 will shadow Docker.
+
 services:
   db:
     image: pgvector/pgvector:pg17

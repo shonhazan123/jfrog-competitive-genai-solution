@@ -35,10 +35,11 @@ jfrog-ci/
 │   ├── verification.yaml         quote-matching thresholds
 │   ├── chunking.yaml             element grouping budgets
 │   └── retrieval.yaml            RRF, rerank boosts, diversity, expansion
-├── docs/                         PRD.md · DESIGN.md · ARCHITECTURE.md
+├── docs/                         PRD.md · DESIGN.md · ARCHITECTURE.md · API_CONTRACT.md
+│   └── project-instruction/      ◀ operational flow (update when code changes)
 │
 ├── backend/
-│   ├── app/                      ◀ MVC. Never imports langchain / openai.
+│   ├── app/                      ◀ MVC. Never imports langgraph / openai literals.
 │   │   ├── main.py · settings.py
 │   │   ├── models/               SQLAlchemy ORM
 │   │   ├── schemas/              Pydantic request/response DTOs
@@ -52,7 +53,8 @@ jfrog-ci/
 │   │       ├── ingestion/        chunk · embed · index          (RAG write path)
 │   │       ├── retrieval/        hybrid RRF query               (RAG read path)
 │   │       ├── delivery/         digest · email · templates
-│   │       └── agent_service.py  ◀ the ONLY caller of agent/
+│   │       ├── agent_service.py  ◀ Interpret graph (worker jobs)
+│   │       └── ask_service.py    ◀ POST /ask bridge → agent.graphs.ask.graph
 │   │
 │   ├── agent/                    ◀ the only package importing LLM libraries
 │   │   ├── graphs/               interpret/ · ask/
@@ -88,7 +90,7 @@ Three consequences worth stating:
 1. The agent is testable with fakes and **zero database**.
 2. The port surface is small enough to read in full, so "no network, no tools" is verifiable
    rather than asserted.
-3. `grep -r "openai\|langchain" backend/app/` returning nothing is a **five-second check that
+3. `grep -r "openai\|langchain\|langgraph" backend/app/` returning nothing is a **five-second check that
    anyone can run** — the privilege-isolation boundary from [DESIGN §8](./DESIGN.md#8-security)
    made mechanically true rather than documented.
 
@@ -664,6 +666,17 @@ Three properties worth noting:
   change for Harbor this week — checked 14 times."* Negative reporting is what makes the
   positive reports believable.
 
+HTTP surface (do not collapse these):
+
+- **`GET /digests/{persona}`** — sales and product. Paths `/digests/sales`, `/digests/product`.
+  Assembled, budget-capped, ranked by persona score. Response per
+  [API_CONTRACT §2.1](./API_CONTRACT.md#21-get-digestspersona--assembled-per-persona-digest).
+  Implemented in `backend/app/routers/digests.py` (`GET /{persona}`) and
+  `backend/app/controllers/digests.py` (`persona_digest`). Operational note:
+  [project-instruction/digests.md](./project-instruction/digests.md).
+- **`GET /digests/exec/weekly`** — separate weekly executive roll-up (trends + stability),
+  not a persona of the daily digest.
+
 ### Interrupt tier
 
 Exactly three conditions break the daily cadence, evaluated deterministically:
@@ -722,11 +735,32 @@ SQLite suite would prove nothing about the deployed database.
 
 ---
 
-## 11. Still to be designed
+## 11. The Ask graph
 
-- **The Ask graph** — intent routing, the bounded tool loop, the grounding gate, citation
-  rendering, streaming, and refusal UX.
-- **API contract and client data flow.**
+Shipped. Operational detail:
+[project-instruction/ask.md](./project-instruction/ask.md).
+
+```
+classify_intent → tool_loop (max 4) → grounding_gate → answer | refuse
+```
+
+`backend/agent/graphs/ask/`. `POST /ask` never imports the graph from a router or
+controller: `app/routers/ask.py` → `app/controllers/ask.py` →
+`app/services/ask_service.py` → `agent.graphs.ask.graph`. `app/` does not import
+`langgraph` or `openai` literals.
+
+**Hits accumulate on `deps.accumulated_hits`, not in checkpointed state.**
+`MemorySaver` serializes `AskState` with msgpack and cannot encode custom hit
+objects. Putting retrieval hits on state is a serialization bug, not an
+optimization.
+
+**The grounding gate routes on `AskState.refused`.** A transient `_route` key is
+stripped (not in the TypedDict) and the graph always refuses. Empty retrieval
+sets `refused=True` and **does not call the model**.
+
+## 12. Still to be designed
+
+- **Ask citation rendering, streaming, and refusal UX** on the client.
 - **Testing strategy** beyond the fixtures described in §5, and where evaluation hooks attach.
 - **Observability and cost control** — prompt/response logging, token accounting per stage,
   funnel-efficiency metrics.
