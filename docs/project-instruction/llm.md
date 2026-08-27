@@ -8,8 +8,8 @@ touching code.
 
 | Call | Where it runs | Purpose |
 |---|---|---|
-| `extract` | interpret graph — `agent/nodes/extract.py`, `agent/nodes/repair.py` | Reads untrusted, sanitized capture text and emits ONLY the fixed extraction schema. No tools are ever bound to it. |
-| `contextualize` | interpret graph — `agent/nodes/contextualize.py` | Writes the per-persona sales/product/exec "so what" framing from verified evidence. |
+| `extract` | reserved — no live consumer in Phase 0 | Role retained in `config/llm.yaml` for future per-surface agents; no code binds it yet. |
+| `contextualize` | reserved — no live consumer in Phase 0 | Role retained in `config/llm.yaml` for future per-surface agents; no code binds it yet. |
 | `ask` | Ask endpoint — `app/services/ask_service.py` | Answers analyst questions strictly from retrieved ledger evidence and refuses when unsupported. Read-only. |
 
 Each call is bound to its output contract by the caller (`.with_structured_output(...)`),

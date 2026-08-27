@@ -27,4 +27,4 @@ It does **not** delete:
 Returns a `dict[str, int]` mapping each cleared table name to the number of rows
 deleted. The CLI entrypoint commits after running.
 
-Use before re-running interpret on a clean slate after pipeline or schema changes.
+Use before re-running per-surface agents on a clean slate after pipeline or schema changes.

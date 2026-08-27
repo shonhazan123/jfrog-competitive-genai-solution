@@ -7,8 +7,8 @@ Create Date: 2026-08-27 16:00:00.000000
 One-time data cleanup. JFrog's own positioning is authored config, never a card
 (see jfrog_positions.yaml). Signals about a `kind='self'` entity were created by
 the now-removed jfrog_homepage scrape before the self-suppression guard landed;
-this deactivates them so they stop appearing as competitive cards. The guard in
-agent_service.interpret_capture prevents any new ones.
+this deactivates them so they stop appearing as competitive cards. The removed
+interpret pipeline no longer creates new self signals.
 """
 from typing import Sequence, Union
 

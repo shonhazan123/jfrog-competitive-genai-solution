@@ -64,5 +64,5 @@ def prompt(name: str) -> str:
 
 
 def get_checkpointer():
-    """In-memory checkpointer for the interpret graph. Lives in agent/ so app/ never imports langgraph."""
+    """In-memory checkpointer for the Ask graph. Lives in agent/ so app/ never imports langgraph."""
     return MemorySaver()
