@@ -1,10 +1,9 @@
 import type { SignalDetail } from "../api/types";
+import { TierBadge } from "./TierBadge";
 import { Chip } from "./primitives/Chip";
 import { Disclosure } from "./primitives/Disclosure";
 import { Quote } from "./primitives/Quote";
-import { ScoreBadge } from "./primitives/ScoreBadge";
 import { SectionLabel } from "./primitives/SectionLabel";
-import { WasNow } from "./primitives/WasNow";
 
 interface InterruptCardProps {
   signal: SignalDetail;
@@ -57,7 +56,7 @@ export function InterruptCard({ signal }: InterruptCardProps) {
           </span>
           <Chip signalType={signal.signal_type} />
         </div>
-        <ScoreBadge value={signal.score} />
+        <TierBadge tier={signal.tier} label={signal.tier_label} />
       </header>
 
       <h2
@@ -71,6 +70,19 @@ export function InterruptCard({ signal }: InterruptCardProps) {
       >
         {signal.headline}
       </h2>
+
+      {signal.why_it_matters ? (
+        <p
+          style={{
+            fontSize: "var(--fs-body)",
+            lineHeight: "var(--lh-body)",
+            color: "var(--ink-secondary)",
+            marginBottom: "var(--sp-3)",
+          }}
+        >
+          {signal.why_it_matters}
+        </p>
+      ) : null}
 
       <section style={{ marginBottom: "var(--sp-3)" }}>
         <SectionLabel>SO WHAT</SectionLabel>
@@ -90,40 +102,8 @@ export function InterruptCard({ signal }: InterruptCardProps) {
         <section style={{ marginBottom: "var(--sp-3)" }}>
           <SectionLabel>EVIDENCE</SectionLabel>
           <Quote>{evidence.quote}</Quote>
-          {signal.change ? (
-            <WasNow was={signal.change.was} now={signal.change.now} />
-          ) : null}
         </section>
       ) : null}
-
-      <Disclosure label="Why this score">
-        {signal.score_breakdown?.parts.map(([label, value]) => (
-          <div
-            key={label}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "var(--fs-mono)",
-              padding: "var(--sp-1) 0",
-            }}
-          >
-            <span>{label}</span>
-            <span>{value >= 0 ? `+${value}` : value}</span>
-          </div>
-        ))}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontWeight: 600,
-            fontSize: "var(--fs-mono)",
-            marginTop: "var(--sp-2)",
-          }}
-        >
-          <span>=</span>
-          <span>{Math.round(signal.score)}</span>
-        </div>
-      </Disclosure>
 
       <Disclosure label="How this was produced">
         <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>

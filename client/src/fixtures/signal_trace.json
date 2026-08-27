@@ -14,36 +14,8 @@
   "occurred_at": "2026-08-24T00:00:00+00:00",
   "persona": "sales",
   "so_what": "If a prospect cites this: the page now reads harsher than a month ago — the wording moved, the underlying capability did not. Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the \"not proactive\" claim doesn't hold.",
-  "score": 95.0,
-  "score_breakdown": {
-    "total": 95.0,
-    "parts": [
-      [
-        "positioning → sales base 3 → 30",
-        30.0
-      ],
-      [
-        "× subject_is_jfrog ×2.0",
-        30.0
-      ],
-      [
-        "+ tier_1 entity",
-        15.0
-      ],
-      [
-        "+ substantive change",
-        20.0
-      ]
-    ]
-  },
   "handling": null,
   "awareness_only": false,
-  "change": {
-    "dimension": "row \"Malware detection\" · cell \"JFrog\"",
-    "kind": "substantive",
-    "was": "Limited",
-    "now": "Very limited, not proactive"
-  },
   "evidence": [
     {
       "quote": "Very limited, not proactive",
@@ -157,5 +129,9 @@
   },
   "bullet_classification": null,
   "signal_type_label": "Positioning",
-  "handling_label": null
+  "handling_label": null,
+  "tier": "act_on_it",
+  "tier_label": "Act on it",
+  "primary_stakeholder": "sales",
+  "why_it_matters": "Sonatype sharpened its JFrog malware claim on a tier-one comparison page — prospects may cite it in active deals."
 }

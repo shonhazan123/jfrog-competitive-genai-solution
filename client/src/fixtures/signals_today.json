@@ -16,36 +16,8 @@
       "occurred_at": "2026-08-24T00:00:00+00:00",
       "persona": "sales",
       "so_what": "If a prospect cites this: the page now reads harsher than a month ago — the wording moved, the underlying capability did not. Anchor on JFrog Xray contextual analysis and AI Catalog scanning; ask which package ecosystems they actually pull, where the \"not proactive\" claim doesn't hold.",
-      "score": 95.0,
-      "score_breakdown": {
-        "total": 95.0,
-        "parts": [
-          [
-            "positioning → sales base 3 → 30",
-            30.0
-          ],
-          [
-            "× subject_is_jfrog ×2.0",
-            30.0
-          ],
-          [
-            "+ tier_1 entity",
-            15.0
-          ],
-          [
-            "+ substantive change",
-            20.0
-          ]
-        ]
-      },
       "handling": null,
       "awareness_only": false,
-      "change": {
-        "dimension": "row \"Malware detection\" · cell \"JFrog\"",
-        "kind": "substantive",
-        "was": "Limited",
-        "now": "Very limited, not proactive"
-      },
       "evidence": [
         {
           "quote": "Very limited, not proactive",
@@ -69,7 +41,11 @@
       "corroboration_count": 1,
       "interrupt_tier": "critical",
       "signal_type_label": "Positioning",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "Sonatype sharpened its JFrog malware claim on a tier-one comparison page — prospects may cite it in active deals."
     },
     {
       "id": "sig_secadv_nexus_394",
@@ -87,11 +63,8 @@
       "occurred_at": "2026-08-26T00:00:00+00:00",
       "persona": null,
       "so_what": "A high-severity auth-bypass class issue in the competitor's on-prem line. Relevant to security-posture conversations; frame around capability, not the individual CVE.",
-      "score": 78.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
@@ -115,7 +88,11 @@
       "corroboration_count": 2,
       "interrupt_tier": null,
       "signal_type_label": "Security advisory",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "A severe auth-bypass advisory on a tier-one competitor shapes security-posture conversations this week."
     },
     {
       "id": "sig_cap_cargo_395",
@@ -133,39 +110,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": null,
       "so_what": "Closes a format gap where Rust toolchains are in scope. Bake-off relevant in accounts standardising on Cargo.",
-      "score": 66.0,
-      "score_breakdown": {
-        "total": 66.0,
-        "parts": [
-          [
-            "product_capability → base 1 → 10",
-            10.0
-          ],
-          [
-            "× subject weight ×1.0",
-            0.0
-          ],
-          [
-            "+ tier_1",
-            15.0
-          ],
-          [
-            "+ substantive",
-            20.0
-          ],
-          [
-            "+ watchlist \"cargo\"",
-            12.0
-          ],
-          [
-            "+ source grade A",
-            9.0
-          ]
-        ]
-      },
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
@@ -189,7 +135,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Cargo registry support closes a format gap where Rust toolchains matter in competitive bake-offs."
     },
     {
       "id": "sig_cap_gitlab_slsa",
@@ -207,11 +157,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": null,
       "so_what": "Supply-chain provenance is moving into the default CI path for a shallow-coverage competitor. Awareness item for the product lane.",
-      "score": 58.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Pipelines can now emit SLSA-compliant provenance stored alongside the package.",
@@ -235,7 +182,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "SLSA provenance in default CI raises the bar for supply-chain stories from shallow-coverage competitors."
     },
     {
       "id": "sig_reg_cra",
@@ -253,11 +204,8 @@
       "occurred_at": "2026-08-22T00:00:00+00:00",
       "persona": null,
       "so_what": "SBOM and vulnerability reporting become procurement preconditions in scope sectors — a demand-shaping event, not a competitor event.",
-      "score": 61.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
@@ -281,7 +229,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Industry & regulation",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "exec",
+      "why_it_matters": "CRA reporting duties make SBOM and vulnerability disclosure procurement preconditions in scope sectors."
     },
     {
       "id": "sig_cust_bank_casestudy",
@@ -299,11 +251,8 @@
       "occurred_at": "2026-08-24T00:00:00+00:00",
       "persona": null,
       "so_what": "A new logo in a segment where JFrog has named-account overlap. A win signal worth a competitive-desk question.",
-      "score": 54.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "A top-20 European bank standardised its open-source governance on Sonatype.",
@@ -327,7 +276,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Customer evidence",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "A new financial-services logo on Sonatype's site flags named-account overlap worth a competitive-desk ping."
     },
     {
       "id": "sig_partner_marketplace",
@@ -345,11 +298,8 @@
       "occurred_at": "2026-08-23T00:00:00+00:00",
       "persona": null,
       "so_what": "Changes the procurement path in enterprise deals where cloud-marketplace drawdown is a buying lever. Deal-mechanics signal, not a capability one.",
-      "score": 49.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Available in the marketplace; counts toward your committed cloud spend.",
@@ -373,7 +323,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Partnership",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "Marketplace committed-spend eligibility shifts procurement mechanics in enterprise deals."
     }
   ],
   "total": 7,

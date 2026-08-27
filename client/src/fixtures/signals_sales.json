@@ -16,11 +16,8 @@
       "occurred_at": "2026-08-26T00:00:00+00:00",
       "persona": "sales",
       "so_what": "If they claim on-prem is safer: \"Both models carry advisories — what matters is time-to-detect. JFrog Xray flags known-affected packages in your graph the moment an advisory lands, with contextual impact analysis.\" Do not name their specific CVE unprompted.",
-      "score": 78.0,
-      "score_breakdown": null,
       "handling": "caution",
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
@@ -44,7 +41,11 @@
       "corroboration_count": 2,
       "interrupt_tier": null,
       "signal_type_label": "Security advisory",
-      "handling_label": "Handle with care - lead on posture, not the advisory"
+      "handling_label": "Handle with care - lead on posture, not the advisory",
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "A severe auth-bypass advisory on a tier-one competitor shapes security-posture conversations this week."
     },
     {
       "id": "sig_cap_cargo_395_sales",
@@ -62,11 +63,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": "sales",
       "so_what": "If they raise \"we now support Cargo too\": \"Format support is table stakes — ask them about Cargo malware scanning and license curation on those crates. JFrog Curation blocks a malicious crate before it enters your build; a registry that only hosts the format doesn't.\"",
-      "score": 66.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
@@ -90,7 +88,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "If prospects raise Cargo parity, steer the conversation toward malware scanning and curation depth."
     },
     {
       "id": "sig_cust_bank_casestudy_sales",
@@ -108,11 +110,8 @@
       "occurred_at": "2026-08-24T00:00:00+00:00",
       "persona": "sales",
       "so_what": "If they cite this reference in a banking deal: \"Ask what that bank did about binary-level runtime exposure and multi-site replication — governance of open-source metadata is one layer. JFrog offers the artifact store, scanning and distribution as one system.\" Named-account overlap flagged to the competitive desk.",
-      "score": 62.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "A top-20 European bank standardised its open-source governance on Sonatype.",
@@ -136,7 +135,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Customer evidence",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "A fresh banking reference may surface in deals with named-account overlap — prepare a platform-breadth response."
     },
     {
       "id": "sig_partner_marketplace_sales",
@@ -154,11 +157,8 @@
       "occurred_at": "2026-08-23T00:00:00+00:00",
       "persona": "sales",
       "so_what": "If procurement pushes marketplace drawdown: \"JFrog is available through the same marketplace with equivalent committed-spend treatment — the procurement path is not a differentiator here. Bring the conversation back to platform breadth.\" Confirm current listing status with deal desk before quoting.",
-      "score": 51.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Available in the marketplace; counts toward your committed cloud spend.",
@@ -182,7 +182,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Partnership",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "Marketplace drawdown is a procurement lever — confirm JFrog listing parity before the next enterprise cycle."
     },
     {
       "id": "sig_cap_java11_deprecation",
@@ -200,11 +204,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": "sales",
       "so_what": "Migration angle for two accounts on Java 11: \"Their upgrade forces a runtime migration anyway — that's the moment to evaluate alternatives rather than re-platform in place. Offer a side-by-side proof-of-concept while they're already touching the deployment.\"",
-      "score": 47.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Java 11 is deprecated and support will be removed in a future release.",
@@ -228,7 +229,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "Java runtime deprecation forces migration windows — a natural moment to evaluate alternatives."
     },
     {
       "id": "sig_reg_cra_sales",
@@ -246,11 +251,8 @@
       "occurred_at": "2026-08-22T00:00:00+00:00",
       "persona": "sales",
       "so_what": "When procurement raises CRA readiness: \"CRA makes SBOM generation and vulnerability reporting a buying requirement, not a nice-to-have. JFrog produces signed SBOMs and full-graph vulnerability context in one place — bring compliance and security into the same conversation.\"",
-      "score": 44.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
@@ -274,7 +276,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Industry & regulation",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "sales",
+      "why_it_matters": "CRA readiness questions are becoming deal prerequisites — tie SBOM and graph context into the same answer."
     }
   ],
   "total": 6,

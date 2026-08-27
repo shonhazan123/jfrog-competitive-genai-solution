@@ -16,11 +16,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": "product",
       "so_what": "Cargo format support (parity item) and a new provenance-attestation option. The release also drops Java 11. Classification runs at bullet level — the other 37 bullets were bug fixes and dependency bumps, filtered as no_signal.",
-      "score": 66.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
@@ -61,7 +58,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "act_on_it",
+      "tier_label": "Act on it",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Three material bullets in a major release note signal format and provenance moves worth a parity check."
     },
     {
       "id": "sig_cap_hf_firewall",
@@ -79,11 +80,8 @@
       "occurred_at": "2026-08-21T00:00:00+00:00",
       "persona": "product",
       "so_what": "Model-artifact scanning appears in a competitor for the first time — coverage claimed for Hugging Face format only. Parity-gap analysis vs JFrog AI Catalog + Xray contextual analysis is warranted this sprint.",
-      "score": 59.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Firewall policies can now quarantine Hugging Face model components by license and malware signature.",
@@ -107,7 +105,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Model-artifact scanning in a competitor firewall warrants a parity review against AI Catalog and Xray."
     },
     {
       "id": "sig_talent_sonatype_ml",
@@ -125,11 +127,8 @@
       "occurred_at": "2026-08-20T00:00:00+00:00",
       "persona": "product",
       "so_what": "Hiring reveals roadmap intent 6–12 months before anything ships. Three roles clustered on ML-artifact security signals a sustained investment, not a one-off feature — the only predictive signal type in the system.",
-      "score": 55.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Senior Engineer, ML Supply Chain — design scanning for model registries and ML artifact formats.",
@@ -153,7 +152,11 @@
       "corroboration_count": 3,
       "interrupt_tier": null,
       "signal_type_label": "Hiring signal",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Clustered ML supply-chain hiring reveals sustained investment months before features ship."
     },
     {
       "id": "sig_talent_harbor_oci",
@@ -171,11 +174,8 @@
       "occurred_at": "2026-08-18T00:00:00+00:00",
       "persona": "product",
       "so_what": "A maintainer role framed around OCI-native SBOM suggests the open-source registry is moving toward storing attestations as first-class OCI objects — worth tracking for format-interoperability planning.",
-      "score": 42.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Help design OCI-referrers-based storage for SBOMs and signatures in Harbor.",
@@ -199,7 +199,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Hiring signal",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "OCI-native SBOM maintainer hiring hints at attestation storage becoming a registry default."
     },
     {
       "id": "sig_reg_slsa_adoption",
@@ -217,11 +221,8 @@
       "occurred_at": "2026-08-19T00:00:00+00:00",
       "persona": "product",
       "so_what": "Provenance generation is becoming a default CI expectation rather than an opt-in. No roadmap change implied today; noted so the trend is visible before it forces one.",
-      "score": 38.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": true,
-      "change": null,
       "evidence": [
         {
           "quote": "Build platforms report majority default-on generation of SLSA provenance.",
@@ -245,7 +246,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Industry & regulation",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Default-on provenance across CI providers is shifting buyer expectations before it forces roadmap change."
     },
     {
       "id": "sig_secadv_nexus_394_product",
@@ -263,11 +268,8 @@
       "occurred_at": "2026-08-26T00:00:00+00:00",
       "persona": "product",
       "so_what": "Relevant to how competitors handle access-control hardening on-prem. Informs our own threat-model messaging; the fix arrived in the same 3.95 release above.",
-      "score": 57.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Improper authentication in Nexus Repository allows bypass of access controls prior to 3.95.",
@@ -291,7 +293,11 @@
       "corroboration_count": 2,
       "interrupt_tier": null,
       "signal_type_label": "Security advisory",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Competitor access-control hardening on-prem informs our own threat-model and messaging posture."
     },
     {
       "id": "sig_cap_github_retention",
@@ -309,11 +315,8 @@
       "occurred_at": "2026-08-17T00:00:00+00:00",
       "persona": "product",
       "so_what": "Lifecycle management catching up to established registry norms. A shallow-coverage competitor closing a hygiene gap; no parity concern for the platform roadmap.",
-      "score": 35.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": true,
-      "change": null,
       "evidence": [
         {
           "quote": "Configure retention rules to automatically delete untagged image versions.",
@@ -337,7 +340,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "A shallow-coverage competitor closing a hygiene gap — awareness only, no parity concern today."
     },
     {
       "id": "sig_cap_gitlab_slsa_product",
@@ -355,11 +362,8 @@
       "occurred_at": "2026-08-25T00:00:00+00:00",
       "persona": "product",
       "so_what": "Provenance moves into a competitor's default CI path. Parity-relevant for how JFrog positions build-info and evidence collection in AppTrust; assess whether our provenance story is legible to buyers.",
-      "score": 48.0,
-      "score_breakdown": null,
       "handling": null,
       "awareness_only": false,
-      "change": null,
       "evidence": [
         {
           "quote": "Pipelines can now emit SLSA-compliant provenance stored alongside the package.",
@@ -383,7 +387,11 @@
       "corroboration_count": 1,
       "interrupt_tier": null,
       "signal_type_label": "Product release",
-      "handling_label": null
+      "handling_label": null,
+      "tier": "worth_knowing",
+      "tier_label": "Worth knowing",
+      "primary_stakeholder": "product",
+      "why_it_matters": "Provenance in a competitor default CI path pressures how legible our build-evidence story is to buyers."
     }
   ],
   "total": 8,
