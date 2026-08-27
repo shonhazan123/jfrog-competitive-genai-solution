@@ -53,7 +53,13 @@ def trigger_scoring() -> dict:
 
 def _new_items_from_report(report: dict) -> int:
     total = 0
-    for key in ("captures", "scored"):
+    for key in (
+        "captures",
+        "scored",
+        "industry_items",
+        "signals_items",
+        "comparison_items",
+    ):
         if key in report:
             total += int(report[key])
     return total

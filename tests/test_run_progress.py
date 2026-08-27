@@ -87,3 +87,16 @@ def test_a_failed_run_surfaces_a_readable_message_not_a_traceback(client, failed
     body = client.get(f"/runs/{failed_run.id}").json()
     assert body["status"] == "failed"
     assert "Traceback" not in body["message"]
+
+
+def test_new_items_from_report_sums_surface_counts():
+    from app.controllers.runs import _new_items_from_report
+
+    report = {
+        "captures": 3,
+        "industry_items": 4,
+        "signals_items": 5,
+        "comparison_items": 2,
+    }
+    assert _new_items_from_report(report) == 14
+    assert _new_items_from_report({"scored": 7}) == 7
