@@ -52,8 +52,12 @@ def run_seed() -> None:
 
 
 def run_backfill() -> dict[str, int]:
-    """Replay archive history for every enabled snapshot-mode source."""
-    totals = {"captures": 0, "claims": 0, "versions": 0}
+    """Replay archive history for every enabled snapshot-mode source.
+
+    Change-detection backfill is benched for verdict-first daily runs. When enabled
+    (``BACKFILL_ON_START=true`` or an explicit call), a missing offline fixture for
+    one source must not abort replay for the rest."""
+    totals = {"captures": 0, "claims": 0, "versions": 0, "skipped": 0}
     use_fixtures = settings.backfill_source == "fixtures"
     fetcher: Fetcher = (
         FixtureFetcher(settings.fixtures_dir) if use_fixtures else StaticFetcher()
@@ -68,7 +72,17 @@ def run_backfill() -> dict[str, int]:
                 source.robots_allowed = robots.allowed(source.url)
             if not source.robots_allowed or source.requires_js:
                 continue
-            report = backfill_source(session, source, fetcher)
+            try:
+                report = backfill_source(session, source, fetcher)
+            except LookupError as exc:
+                # Offline fixture replay: new snapshot sources may lack Wayback captures.
+                logger.warning(
+                    "backfill.skipped source=%s reason=%s",
+                    source.key,
+                    exc,
+                )
+                totals["skipped"] += 1
+                continue
             totals["captures"] += report.captures
             totals["claims"] += report.claims_created
             totals["versions"] += report.versions_created

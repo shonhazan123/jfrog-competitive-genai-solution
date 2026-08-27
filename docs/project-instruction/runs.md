@@ -2,6 +2,10 @@
 
 **Startup:** `api` and `worker` containers run `alembic upgrade head` on boot (see
 `backend/docker-entrypoint.sh`) so schema matches models before any run job touches Postgres.
+The worker seeds sources but skips Wayback backfill unless `BACKFILL_ON_START=true` (verdict-first:
+change-detection is benched). When backfill is enabled with `BACKFILL_SOURCE=fixtures`, a snapshot
+source with no committed Wayback fixture is skipped with a warning — it does not fail the worker or
+`POST /runs`.
 
 Manual and scheduled runs share the same worker jobs (`worker.jobs`). The demo keeps
 **only the current run** in memory — there is no run history or persistence of past

@@ -49,7 +49,14 @@ EXPECTED_KEYS = [theme["key"] for theme in THEMES]
 
 @pytest.fixture(autouse=True)
 def _themes_config_dir(monkeypatch):
-    config_dir = Path(__file__).resolve().parents[1] / "config"
+    repo_config = Path(__file__).resolve().parents[1] / "config"
+    app_config = Path("/app/config")
+    if (repo_config / "themes.yaml").exists():
+        config_dir = repo_config
+    elif (app_config / "themes.yaml").exists():
+        config_dir = app_config
+    else:
+        pytest.fail("themes.yaml not found under repo config or /app/config")
     monkeypatch.setattr("app.settings.settings.config_dir", str(config_dir))
 
 

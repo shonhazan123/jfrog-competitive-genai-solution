@@ -15,6 +15,10 @@ Starts **db + api + worker + client**. UI at http://localhost:5173, API at http:
 
 On startup, **api** and **worker** each run `alembic upgrade head` (via `backend/docker-entrypoint.sh`)
 before uvicorn or the worker process starts, so the Postgres volume always matches the code.
+The worker seeds the registry but **does not** replay Wayback backfill on boot by default
+(`BACKFILL_ON_START=false`; change-detection is benched). Set `BACKFILL_ON_START=true` on the
+worker service to opt into offline archive replay — missing fixtures for a snapshot source are
+logged and skipped rather than crashing the worker.
 
 - `docker compose down` — stop everything
 - `docker compose logs -f` — follow logs
