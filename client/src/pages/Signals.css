@@ -1,0 +1,50 @@
+.signals-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: var(--content-max);
+}
+
+.signals-page__intro {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+.signals-page__filters {
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.signals-page__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.signals-page__group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.signals-page__group-label {
+  color: var(--group-hue);
+}
+
+.signals-page__group-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.signals-page__group-count {
+  color: var(--ink-muted);
+}
+
+.signals-page__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}

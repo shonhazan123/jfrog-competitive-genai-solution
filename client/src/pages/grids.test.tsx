@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
 import industryThemeDetail from "../fixtures/industry_theme_detail.json";
 import industryThemes from "../fixtures/industry_themes.json";
-import { Divisions } from "./Divisions";
 import { Industry } from "./Industry";
 import { ThemePage } from "./ThemePage";
 
@@ -22,15 +21,15 @@ function renderPage(ui: ReactElement) {
   );
 }
 
-test("Divisions and Industry render as multi-column grids", () => {
+test("Industry renders as a multi-column grid", () => {
   setViewport(1440);
-  renderPage(<Divisions />);
+  renderPage(<Industry />);
   expect(getComputedStyle(screen.getByTestId("card-grid")).display).toBe("grid");
 });
 
 test("grids collapse to one column below 1000px", () => {
   setViewport(390);
-  renderPage(<Divisions />);
+  renderPage(<Industry />);
   expect(screen.getByTestId("card-grid")).toHaveAttribute("data-columns", "1");
 });
 

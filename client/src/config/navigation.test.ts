@@ -12,15 +12,15 @@ test("every destination has a unique path and a label", () => {
   expect(NAVIGATION.every((n) => n.label.length > 0)).toBe(true);
 });
 
-test("verdict-first primary nav: four daily rooms plus divisions, tools, and digest", () => {
+test("verdict-first primary nav: five daily rooms plus reference and tools", () => {
   const labels = NAVIGATION.map((n) => n.label);
   expect(labels).toEqual([
     "Today",
     "Competitors",
     "Signals",
     "Industry",
-    "Divisions",
     "Ask",
+    "Divisions",
     "Settings",
     "Email Digest",
   ]);

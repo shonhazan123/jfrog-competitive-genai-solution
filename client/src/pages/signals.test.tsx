@@ -1,8 +1,10 @@
 import type { ReactElement } from "react";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
+import { signalTypeLabel } from "../config/labels";
 import signalsTodayFixture from "../fixtures/signals_today.json";
 import { Signals } from "./Signals";
 
@@ -36,20 +38,112 @@ function fixtureGroups() {
   return [...groups.values()];
 }
 
-test("signals room groups cards by signal type with section labels", () => {
+function presentTypesFromFixture() {
+  const counts = new Map<string, number>();
+  for (const item of signalsTodayFixture.items) {
+    counts.set(item.signal_type, (counts.get(item.signal_type) ?? 0) + 1);
+  }
+  return [...counts.keys()];
+}
+
+test("signals room shows type filter chips for present types plus All", () => {
+  renderPage(<Signals />);
+
+  const filterBar = screen.getByTestId("signal-type-filter");
+  const chips = within(filterBar).getAllByRole("button");
+
+  expect(chips.length).toBe(presentTypesFromFixture().length + 1);
+  expect(
+    within(filterBar).getByRole("button", {
+      name: `All (${signalsTodayFixture.items.length})`,
+      pressed: true,
+    }),
+  ).toBeInTheDocument();
+
+  for (const type of presentTypesFromFixture()) {
+    const count = signalsTodayFixture.items.filter(
+      (item) => item.signal_type === type,
+    ).length;
+    expect(
+      within(filterBar).getByRole("button", {
+        name: `${signalTypeLabel(type as never)} (${count})`,
+      }),
+    ).toBeInTheDocument();
+  }
+});
+
+test("signals room groups accordion rows by signal type with mono headers", () => {
   renderPage(<Signals />);
 
   expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
 
   for (const group of fixtureGroups()) {
     const section = screen.getByTestId(`signal-group-${group.signal_type}`);
+    const header = within(section).getByTestId(
+      `signal-group-header-${group.signal_type}`,
+    );
     expect(
-      within(section).getByText(group.signal_type_label, {
-        selector: ".section-label",
+      within(header).getByText(signalTypeLabel(group.signal_type as never), {
+        selector: ".mono-label",
       }),
     ).toBeInTheDocument();
-    expect(within(section).getAllByTestId("signal-card").length).toBeGreaterThanOrEqual(
-      1,
-    );
+    expect(
+      within(section).getAllByTestId("signal-accordion-row").length,
+    ).toBe(group.items.length);
+  }
+});
+
+test("signal accordion row expands in place to show intent read", async () => {
+  const user = userEvent.setup();
+  renderPage(<Signals />);
+
+  const firstSignal = signalsTodayFixture.items[0];
+  const trigger = screen.getByTestId(`signal-row-trigger-${firstSignal.id}`);
+
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  expect(
+    screen.queryByTestId(`signal-row-body-${firstSignal.id}`),
+  ).not.toBeInTheDocument();
+
+  await user.click(trigger);
+
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  const body = screen.getByTestId(`signal-row-body-${firstSignal.id}`);
+  expect(within(body).getByText("Intent read")).toBeInTheDocument();
+  expect(within(body).getByTestId("so-what")).toHaveTextContent(
+    firstSignal.so_what,
+  );
+  expect(
+    within(body).getByRole("link", { name: firstSignal.evidence[0].source_name }),
+  ).toHaveAttribute("href", firstSignal.evidence[0].source_url);
+});
+
+test("type filter chip narrows visible groups and rows", async () => {
+  const user = userEvent.setup();
+  renderPage(<Signals />);
+
+  const productType = presentTypesFromFixture()[0];
+  const productCount = signalsTodayFixture.items.filter(
+    (item) => item.signal_type === productType,
+  ).length;
+  const filterBar = screen.getByTestId("signal-type-filter");
+
+  await user.click(
+    within(filterBar).getByRole("button", {
+      name: `${signalTypeLabel(productType as never)} (${productCount})`,
+    }),
+  );
+
+  expect(screen.getByTestId(`signal-group-${productType}`)).toBeInTheDocument();
+  expect(screen.getAllByTestId("signal-accordion-row")).toHaveLength(
+    productCount,
+  );
+
+  for (const group of fixtureGroups()) {
+    if (group.signal_type !== productType) {
+      expect(
+        screen.queryByTestId(`signal-group-${group.signal_type}`),
+      ).not.toBeInTheDocument();
+    }
   }
 });

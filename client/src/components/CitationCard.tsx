@@ -1,6 +1,7 @@
-import type { AskEvidence } from "../api/types";
-import { GradeChip } from "./primitives/GradeChip";
-import { Quote } from "./primitives/Quote";
+import type { AskEvidence, Citation } from "../api/types";
+import { Cited } from "./Cited";
+import { SourceLink } from "./SourceLink";
+import "./CitationCard.css";
 
 interface CitationCardProps {
   evidence: AskEvidence;
@@ -14,41 +15,46 @@ function formatDate(iso: string): string {
   });
 }
 
+function evidenceCitation(evidence: AskEvidence): Citation {
+  if (evidence.citation) {
+    return evidence.citation;
+  }
+  return {
+    source_name: evidence.source_name,
+    source_url: evidence.source_url,
+    captured_at: evidence.captured_at,
+    origin: "extracted",
+    archived_url: null,
+    grade: evidence.reliability_grade,
+  };
+}
+
 export function CitationCard({ evidence }: CitationCardProps) {
+  const citation = evidenceCitation(evidence);
+
   return (
-    <article
-      data-testid="citation-card"
-      style={{
-        padding: "var(--sp-4)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--r-md)",
-        background: "var(--surface)",
-      }}
-    >
-      <p
-        style={{
-          fontSize: "var(--fs-mono)",
-          color: "var(--ink-muted)",
-          marginBottom: "var(--sp-2)",
-        }}
+    <Cited citation={citation}>
+      <article
+        className="citation-badge"
+        data-testid="citation-card"
+        title={evidence.quote}
       >
-        [{evidence.n}]
-      </p>
-      <Quote>{evidence.quote}</Quote>
-      <p
-        style={{
-          marginTop: "var(--sp-2)",
-          fontSize: "var(--fs-meta)",
-          lineHeight: "var(--lh-meta)",
-          color: "var(--ink-secondary)",
-        }}
-      >
-        <span>{evidence.source_name}</span>
-        {" · "}
-        <time dateTime={evidence.captured_at}>{formatDate(evidence.captured_at)}</time>
-        {" · "}
-        <GradeChip grade={evidence.reliability_grade} />
-      </p>
-    </article>
+        <span className="citation-badge__icon" aria-hidden="true">
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <path
+              d="M1 4h6M4 1v6"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+        <span className="citation-badge__label">
+          <SourceLink citation={citation} variant="name" />
+          {" · "}
+          <time dateTime={evidence.captured_at}>{formatDate(evidence.captured_at)}</time>
+        </span>
+      </article>
+    </Cited>
   );
 }

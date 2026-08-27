@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { ComparisonMatrix } from "../api/types";
 import { ComparisonGrid } from "../components/ComparisonGrid";
-import { Panel } from "../components/primitives/Panel";
 import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
+import "./Comparison.css";
 
 export function Comparison() {
   const { data } = useQuery({
@@ -13,16 +13,12 @@ export function Comparison() {
   });
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-5)",
-        maxWidth: "var(--content-max)",
-      }}
-    >
+    <div className="comparison-page">
       <header>
-        <h1 className="page-heading">Competitors</h1>
+        <span className="mono-label" style={{ marginBottom: "var(--sp-3)" }}>
+          Positional Map
+        </span>
+        <h1 className="page-heading font-display">Competitor Landscape</h1>
         <p
           style={{
             marginTop: "var(--sp-2)",
@@ -31,14 +27,12 @@ export function Comparison() {
             color: "var(--ink-secondary)",
           }}
         >
-          JFrog product line mapped against rival public claims. Click a cell for
-          sourced evidence.
+          Where each rival stands versus JFrog across capability dimensions. Click
+          any row to view the full assessment.
         </p>
       </header>
 
-      <Panel>
-        <ComparisonGrid matrix={data} />
-      </Panel>
+      <ComparisonGrid matrix={data} />
     </div>
   );
 }

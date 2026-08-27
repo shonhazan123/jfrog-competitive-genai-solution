@@ -1,0 +1,116 @@
+.divisions-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: var(--content-max);
+}
+
+.divisions-page__eyebrow {
+  display: block;
+  margin-bottom: var(--sp-3);
+}
+
+.divisions-page__intro {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+/* ── persona tabs ─────────────────────────────────────── */
+.divisions-page__tabs {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.divisions-page__tab {
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-meta);
+  color: var(--ink-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.divisions-page__tab:hover {
+  background: var(--surface-sunk);
+  color: var(--ink);
+}
+
+.divisions-page__tab--active {
+  color: var(--brand-jfrog);
+  background: var(--brand-jfrog-wash);
+  border-color: color-mix(in srgb, var(--brand-jfrog) 30%, transparent);
+  font-weight: 600;
+}
+
+/* ── filter bar ───────────────────────────────────────── */
+.divisions-page__filters {
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── company groups ───────────────────────────────────── */
+.divisions-page__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.divisions-page__group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.divisions-page__group-label {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.divisions-page__group-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.divisions-page__group-count {
+  color: var(--ink-muted);
+}
+
+.divisions-page__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* ── executive view ───────────────────────────────────── */
+.divisions-page__exec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.divisions-page__exec-lead {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+.divisions-page__stability {
+  padding: var(--sp-4);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+.divisions-page__stability-title {
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: var(--sp-2);
+}

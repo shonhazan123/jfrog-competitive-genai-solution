@@ -10,8 +10,8 @@ export const NAVIGATION: NavItem[] = [
   { path: "/comparison", label: "Competitors",  group: "daily",     icon: "chart",    primary: true },
   { path: "/signals",    label: "Signals",      group: "daily",     icon: "activity", primary: true },
   { path: "/industry",   label: "Industry",     group: "daily",     icon: "globe",    primary: true },
-  { path: "/divisions",  label: "Divisions",    group: "reference", icon: "users",    primary: true },
-  { path: "/ask",        label: "Ask",          group: "tools",     icon: "message" },
+  { path: "/ask",        label: "Ask",          group: "daily",     icon: "message",  primary: true },
+  { path: "/divisions",  label: "Divisions",    group: "reference", icon: "users" },
   { path: "/settings",   label: "Settings",     group: "tools",     icon: "gear" },
   { path: "/digest",     label: "Email Digest", group: "tools",     icon: "mail" },
 ];

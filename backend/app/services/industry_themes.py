@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config.loader import load_config
 from app.controllers.signals import _signal_evidence
-from app.models.registry import Entity
+from app.models.registry import Entity, Source
 from app.models.signal import Signal
 from app.serializers.common import fmt_ts, signal_type_label
 from app.settings import settings
@@ -82,6 +82,18 @@ def build_industry_item(session: Session, signal: Signal) -> dict:
     }
 
 
+def _source_covers(session: Session, signal: Signal) -> list[str]:
+    """The source's `covers` hint, used only for theme routing — kept out of the
+    public industry item so the API response shape stays stable."""
+    source = session.query(Source).filter_by(id=signal.source_id).one_or_none()
+    return list(source.covers) if source and source.covers else []
+
+
+def _routing_item(session: Session, signal: Signal, item: dict) -> dict:
+    """Augment an item with the source `covers` hint for `assign_theme` only."""
+    return {**item, "covers": _source_covers(session, signal)}
+
+
 def assign_theme(item: dict, themes: list[dict]) -> str | None:
     signal_type = item.get("signal_type")
     headline = item.get("headline") or ""
@@ -101,6 +113,10 @@ def assign_theme(item: dict, themes: list[dict]) -> str | None:
         if any(keyword.lower() in text for keyword in keywords):
             return theme["key"]
 
+        covers = item.get("covers") or []
+        if any(cover in signal_types for cover in covers):
+            return theme["key"]
+
     return None
 
 
@@ -118,7 +134,7 @@ def list_themes(session: Session) -> list[dict]:
 
     for signal in signals:
         item = build_industry_item(session, signal)
-        key = assign_theme(item, themes)
+        key = assign_theme(_routing_item(session, signal, item), themes)
         if key is None:
             other_items.append(item)
         else:
@@ -164,7 +180,7 @@ def theme_detail(session: Session, key: str) -> dict:
     items: list[dict] = []
     for signal in signals:
         item = build_industry_item(session, signal)
-        assigned = assign_theme(item, themes)
+        assigned = assign_theme(_routing_item(session, signal, item), themes)
         if key == _OTHER_THEME["key"]:
             if assigned is None:
                 items.append(item)

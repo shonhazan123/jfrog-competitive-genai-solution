@@ -17,6 +17,7 @@ from app.config.loader import load_config
 from app.controllers.config import current_instructions
 from app.settings import settings
 from app.models.capture import RawCapture
+from app.models.ledger import Claim, Evidence
 from app.models.registry import Entity, Source
 from app.models.signal import AnalystQueue, Signal, SignalEvidence
 from app.services.claim_lookup import DbClaimLookup
@@ -132,6 +133,77 @@ def _persist_signal(session: Session, capture: RawCapture, source: Source, final
         ))
     session.flush()
     return signal
+
+def _bridge_competitor_signal_to_claims(
+    session: Session,
+    capture: RawCapture,
+    source: Source,
+    signal: Signal,
+    final: dict,
+    *,
+    asserting_kind: str,
+) -> None:
+    if asserting_kind != "competitor":
+        return
+
+    data = yaml.safe_load(
+        (Path(settings.config_dir) / "jfrog_components.yaml").read_text(encoding="utf-8")
+    )
+    dims: set[str] = set()
+    for component in data.get("components", []):
+        dims.update(component.get("dimensions", []))
+
+    jfrog = session.query(Entity).filter_by(slug="jfrog").one()
+    extraction = final.get("extraction") or {}
+    now = datetime.now(UTC)
+
+    for claim in extraction.get("claims", []):
+        quote = claim.get("quote")
+        if not quote:
+            continue
+        offset = claim.get("offset", 0) or 0
+        # Each dimension cell carries THIS claim's own specific text — never the
+        # signal-level so_what, which would paint every dimension identically.
+        per_dimension_text = claim.get("claim_text") or signal.headline
+        for tag in claim.get("capability_tags", []):
+            if tag not in dims:
+                continue
+            dimension_claim = (
+                session.query(Claim)
+                .filter_by(
+                    dimension=tag,
+                    asserting_entity_id=source.entity_id,
+                    subject_entity_id=jfrog.id,
+                )
+                .one_or_none()
+            )
+            if dimension_claim is None:
+                dimension_claim = Claim(
+                    subject_entity_id=jfrog.id,
+                    asserting_entity_id=source.entity_id,
+                    claim_text=per_dimension_text,
+                    claim_type="positioning",
+                    capability_tags=[tag],
+                    dimension=tag,
+                    reliability_grade=source.reliability_grade,
+                    first_seen_at=now,
+                    last_confirmed_at=now,
+                )
+                session.add(dimension_claim)
+                session.flush()
+            else:
+                dimension_claim.claim_text = per_dimension_text
+                dimension_claim.last_confirmed_at = now
+                dimension_claim.reliability_grade = source.reliability_grade
+
+            session.add(Evidence(
+                claim_id=dimension_claim.id,
+                capture_id=capture.id,
+                quote=quote,
+                quote_offset=offset,
+            ))
+
+    session.flush()
 
 def _production_deps(session: Session):
     config = load_config()
@@ -259,7 +331,31 @@ def interpret_capture(capture_id: int, *, session: Session, deps=None) -> Interp
         )
         return InterpretResult(status="empty", thread_id=thread_id)
 
+    asserting = session.query(Entity).filter_by(id=source.entity_id).one()
+    subject_slug = (final.get("extraction") or {}).get("subject_entity")
+    subject = (
+        session.query(Entity).filter_by(slug=subject_slug).one_or_none()
+        if subject_slug
+        else None
+    )
+    if asserting.kind == "self" or (subject is not None and subject.kind == "self"):
+        step(
+            logger,
+            "interpret.capture.self_suppressed",
+            capture_id=capture_id,
+            thread_id=thread_id,
+        )
+        return InterpretResult(status="empty", thread_id=thread_id)
+
     signal = _persist_signal(session, capture, source, final)
+    _bridge_competitor_signal_to_claims(
+        session,
+        capture,
+        source,
+        signal,
+        final,
+        asserting_kind=asserting.kind,
+    )
     step(
         logger,
         "interpret.capture.done",

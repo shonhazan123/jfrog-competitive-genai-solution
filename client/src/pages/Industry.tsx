@@ -1,13 +1,14 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { IndustryItem, IndustryTheme } from "../api/types";
 import { signalHue } from "../config/labels";
+import { ThemeTile } from "../components/ThemeTile";
 import { Chip } from "../components/primitives/Chip";
 import { Quote } from "../components/primitives/Quote";
 import { SectionLabel } from "../components/primitives/SectionLabel";
 import industryThemesFixture from "../fixtures/industry_themes.json";
+import "./Industry.css";
 
 const GRID_BREAKPOINT = 1000;
 
@@ -141,80 +142,6 @@ export function IndustryCard({ item }: { item: IndustryItem }) {
   );
 }
 
-function ThemeTile({ theme }: { theme: IndustryTheme }) {
-  return (
-    <Link
-      to={`/industry/${theme.key}`}
-      data-testid="theme-tile"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-3)",
-        padding: "var(--sp-5)",
-        background: "var(--surface)",
-        borderRadius: "var(--r-md)",
-        boxShadow: "var(--shadow-1)",
-        textDecoration: "none",
-        color: "inherit",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: "var(--sp-3)",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "var(--fs-headline)",
-            lineHeight: "var(--lh-headline)",
-            fontWeight: 600,
-            color: "var(--ink)",
-          }}
-        >
-          {theme.label}
-        </h2>
-        <span
-          style={{
-            fontSize: "var(--fs-meta)",
-            fontWeight: 600,
-            color: "var(--ink-muted)",
-            flexShrink: 0,
-          }}
-        >
-          {theme.count}
-        </span>
-      </div>
-
-      <p
-        style={{
-          margin: 0,
-          fontSize: "var(--fs-body)",
-          lineHeight: "var(--lh-body)",
-          color: "var(--ink-secondary)",
-        }}
-      >
-        {theme.state_of_play}
-      </p>
-
-      {theme.jfrog_relevance ? (
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--fs-meta)",
-            lineHeight: "var(--lh-meta)",
-            color: "var(--ink-muted)",
-          }}
-        >
-          {theme.jfrog_relevance}
-        </p>
-      ) : null}
-    </Link>
-  );
-}
-
 export function Industry() {
   const gridColumns = useGridColumns();
 
@@ -225,42 +152,34 @@ export function Industry() {
   });
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-5)",
-        maxWidth: "var(--content-max)",
-      }}
-    >
-      <header>
-        <h1 className="page-heading">Industry</h1>
-        <p
-          style={{
-            marginTop: "var(--sp-2)",
-            fontSize: "var(--fs-body)",
-            lineHeight: "var(--lh-body)",
-            color: "var(--ink-secondary)",
-          }}
-        >
-          DevSecOps field feed — standards, regulation and ecosystem moves. No
-          competitor entity; industry-wide signals only.
+    <div className="industry">
+      <header className="industry__header">
+        <p className="industry__eyebrow mono-label">Landscape</p>
+        <h1 className="industry__title font-display">Industry &amp; Market</h1>
+        <p className="industry__lede">
+          The DevSecOps market on its own terms. Click a theme to read the
+          synthesis and JFrog relevance.
         </p>
       </header>
 
       <div
         data-testid="card-grid"
         data-columns={gridColumns}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
-          gap: "var(--sp-5)",
-        }}
+        className="industry__grid"
+        style={{ display: "grid" }}
       >
         {themes.map((theme) => (
           <ThemeTile key={theme.key} theme={theme} />
         ))}
       </div>
+
+      <footer className="industry__footer">
+        <p className="industry__footer-note">
+          Themes are stable week-to-week so you can track developments without
+          losing your bearings. Each industry item carries a JFrog relevance
+          line — that is what keeps it intel rather than a news reader.
+        </p>
+      </footer>
     </div>
   );
 }

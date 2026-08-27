@@ -9,46 +9,74 @@ import { EmptyState } from "../components/primitives/EmptyState";
 import { FilterChips } from "../components/primitives/FilterChips";
 import { Quote } from "../components/primitives/Quote";
 import { WasNow } from "../components/primitives/WasNow";
+import "./StyleGuide.css";
 
-const guideLayout = {
-  display: "flex",
-  flexDirection: "column" as const,
-  gap: "var(--sp-5)",
-  maxWidth: "var(--content-max)",
-};
+const TYPE_FAMILIES = [
+  {
+    token: "--font-sans",
+    label: "Outfit",
+    role: "Sans — body & UI",
+    className: "style-guide__type-sans",
+    sample: "Capability landscape at 15px body scale",
+  },
+  {
+    token: "--font-serif",
+    label: "Fraunces",
+    role: "Display serif",
+    className: "style-guide__type-display font-display",
+    sample: "Editorial verdict at display scale",
+  },
+  {
+    token: "--font-mono",
+    label: "DM Mono",
+    role: "Mono — labels & meta",
+    className: "mono-label",
+    sample: "POSITIONAL MAP · AUG 27, 2026",
+  },
+];
 
-const introStyle = {
-  margin: "var(--sp-2) 0 0",
-  fontSize: "var(--fs-body)",
-  lineHeight: "var(--lh-body)",
-  color: "var(--ink-secondary)",
-};
+const TIER_TOKENS = [
+  { token: "--tier-act", wash: "--tier-act-wash", label: "Act on it" },
+  { token: "--tier-worth", wash: "--tier-worth-wash", label: "Worth knowing" },
+  { token: "--tier-bg", wash: "--tier-bg-wash", label: "Background" },
+];
 
-const rowStyle = {
-  display: "flex",
-  flexWrap: "wrap" as const,
-  gap: "var(--sp-2)",
-  alignItems: "center",
-};
+const BRAND_TOKENS = [
+  { token: "--brand-jfrog", wash: "--brand-jfrog-wash", label: "JFrog brand" },
+];
 
-const stackStyle = {
-  display: "flex",
-  flexDirection: "column" as const,
-  gap: "var(--sp-3)",
-};
+const SIG_TOKENS = [
+  { token: "--sig-product", wash: "--sig-product-wash", label: "Product" },
+  { token: "--sig-security", wash: "--sig-security-wash", label: "Security" },
+  { token: "--sig-pricing", wash: "--sig-pricing-wash", label: "Pricing" },
+  {
+    token: "--sig-positioning",
+    wash: "--sig-positioning-wash",
+    label: "Positioning",
+  },
+  { token: "--sig-regulatory", wash: "--sig-regulatory-wash", label: "Regulatory" },
+  {
+    token: "--sig-partnership",
+    wash: "--sig-partnership-wash",
+    label: "Partnership",
+  },
+  { token: "--sig-customer", wash: "--sig-customer-wash", label: "Customer" },
+  { token: "--sig-corporate", wash: "--sig-corporate-wash", label: "Corporate" },
+  { token: "--sig-talent", wash: "--sig-talent-wash", label: "Talent" },
+];
 
-const itemStyle = {
-  display: "flex",
-  flexDirection: "column" as const,
-  alignItems: "center",
-  gap: "var(--sp-1)",
-};
+const SPACE_TOKENS = [
+  { token: "--sp-2", px: 8 },
+  { token: "--sp-3", px: 12 },
+  { token: "--sp-4", px: 16 },
+  { token: "--sp-5", px: 24 },
+];
 
-const captionStyle = {
-  fontSize: "var(--fs-meta)",
-  lineHeight: "var(--lh-meta)",
-  color: "var(--ink-muted)",
-};
+const RADIUS_TOKENS = [
+  { token: "--r-sm", className: "style-guide__radius-demo" },
+  { token: "--r-md", className: "style-guide__radius-demo" },
+  { token: "--r-lg", className: "style-guide__radius-demo" },
+];
 
 const SIGNAL_TYPES: SignalType[] = [
   "product_capability",
@@ -78,18 +106,133 @@ const SECTION_LABELS = [
   "HOW THIS WAS PRODUCED",
 ];
 
+interface ColourSwatchProps {
+  token: string;
+  wash: string;
+  label: string;
+}
+
+function ColourSwatch({ token, wash, label }: ColourSwatchProps) {
+  return (
+    <div className="style-guide__swatch">
+      <div className="style-guide__swatch-row">
+        <div
+          className="style-guide__swatch-fg"
+          style={{ backgroundColor: `var(${token})` }}
+          aria-hidden="true"
+        />
+        <div
+          className="style-guide__swatch-wash"
+          style={{ backgroundColor: `var(${wash})` }}
+          aria-hidden="true"
+        />
+      </div>
+      <span className="style-guide__swatch-label mono-label">{label}</span>
+      <span className="style-guide__swatch-token">
+        {token} · {wash}
+      </span>
+    </div>
+  );
+}
+
 export function StyleGuide() {
   const [filter, setFilter] = useState("All");
 
   return (
-    <div style={guideLayout}>
-      <h1 className="page-heading">Style Guide</h1>
-      <p style={introStyle}>
-        Every primitive in every state — the design review surface.
+    <div className="style-guide">
+      <h1 className="page-heading font-display">Style Guide</h1>
+      <p className="style-guide__intro">
+        Token-driven design system — type, colour, spacing, and primitives in every
+        state.
       </p>
 
+      <Panel title="Typography">
+        <div className="style-guide__type-stack">
+          {TYPE_FAMILIES.map((family) => (
+            <div key={family.token} className="style-guide__type-sample">
+              <span className="mono-label">{family.role}</span>
+              <p className={family.className}>{family.sample}</p>
+              <span className="style-guide__type-token">
+                {family.label} · {family.token}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Type helpers">
+        <p className="style-guide__helper-sample font-display">
+          .font-display — Fraunces for editorial headings &amp; verdicts
+        </p>
+        <p className="mono-label">
+          .mono-label — uppercase tracked DM Mono eyebrow
+        </p>
+        <p className="style-guide__helper-note">
+          Used on page eyebrows (Positional Map, Pull Layer, Landscape), tally
+          strips, group headers, and source meta.
+        </p>
+      </Panel>
+
+      <Panel title="Verdict tiers">
+        <div className="style-guide__swatch-grid">
+          {TIER_TOKENS.map((entry) => (
+            <ColourSwatch key={entry.token} {...entry} />
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="JFrog brand">
+        <div className="style-guide__swatch-grid">
+          {BRAND_TOKENS.map((entry) => (
+            <ColourSwatch key={entry.token} {...entry} />
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Signal hues (type system)">
+        <div className="style-guide__swatch-grid">
+          {SIG_TOKENS.map((entry) => (
+            <ColourSwatch key={entry.token} {...entry} />
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Spacing tokens">
+        <div className="style-guide__space-row">
+          {SPACE_TOKENS.map(({ token, px }) => (
+            <div key={token} className="style-guide__space-block">
+              <div
+                className="style-guide__space-demo"
+                style={{
+                  width: `var(${token})`,
+                  height: `var(${token})`,
+                }}
+                aria-hidden="true"
+              />
+              <span className="style-guide__swatch-token">{token}</span>
+              <span className="style-guide__caption">{px}px</span>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Radius tokens">
+        <div className="style-guide__radius-row">
+          {RADIUS_TOKENS.map(({ token }) => (
+            <div key={token} className="style-guide__space-block">
+              <div
+                className="style-guide__radius-demo"
+                style={{ borderRadius: `var(${token})` }}
+                aria-hidden="true"
+              />
+              <span className="style-guide__swatch-token">{token}</span>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
       <Panel title="Signal Chips (hue system)">
-        <div style={rowStyle}>
+        <div className="style-guide__primitive-row">
           {SIGNAL_TYPES.map((type) => (
             <Chip key={type} signalType={type} />
           ))}
@@ -97,18 +240,18 @@ export function StyleGuide() {
       </Panel>
 
       <Panel title="Score Badges (weight system)">
-        <div style={rowStyle}>
+        <div className="style-guide__primitive-row">
           {SCORE_TIERS.map(({ value, label }) => (
-            <div key={value} style={itemStyle}>
+            <div key={value} className="style-guide__primitive-item">
               <ScoreBadge value={value} />
-              <span style={captionStyle}>{label}</span>
+              <span className="style-guide__caption">{label}</span>
             </div>
           ))}
         </div>
       </Panel>
 
       <Panel title="Grade Chips (form system)">
-        <div style={rowStyle}>
+        <div className="style-guide__primitive-row">
           {GRADES.map((grade) => (
             <GradeChip key={grade} grade={grade} />
           ))}
@@ -116,7 +259,7 @@ export function StyleGuide() {
       </Panel>
 
       <Panel title="Section Labels">
-        <div style={stackStyle}>
+        <div className="style-guide__primitive-stack">
           {SECTION_LABELS.map((label) => (
             <SectionLabel key={label}>{label}</SectionLabel>
           ))}

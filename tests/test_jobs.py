@@ -71,17 +71,21 @@ def test_manual_trigger_calls_the_same_function_the_scheduler_calls():
     assert "run_collection" in inspect.getsource(trigger_collection)
 
 
-def test_run_interpret_continues_after_a_capture_failure(session, seeded_source, monkeypatch):
+def test_run_interpret_continues_after_a_capture_failure(session, monkeypatch):
     from datetime import UTC, datetime
     from types import SimpleNamespace
 
     from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
     from worker import jobs
 
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
     captures = []
     for idx in range(2):
         capture = RawCapture(
-            source_id=seeded_source.id,
+            source_id=feed_source.id,
             fetched_at=datetime.now(UTC),
             http_status=200,
             content_hash=f"hash-{idx}",
@@ -110,14 +114,18 @@ def test_run_interpret_continues_after_a_capture_failure(session, seeded_source,
     assert report["interpreted"] == 1
 
 
-def test_run_interpret_counts_empty_captures(session, seeded_source, monkeypatch):
+def test_run_interpret_counts_empty_captures(session, monkeypatch):
     from datetime import UTC, datetime
     from types import SimpleNamespace
     from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
     from worker import jobs
 
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
     capture = RawCapture(
-        source_id=seeded_source.id, fetched_at=datetime.now(UTC), http_status=200,
+        source_id=feed_source.id, fetched_at=datetime.now(UTC), http_status=200,
         content_hash="empty-batch", blob_path="/tmp/eb",
         extracted_text="boilerplate", provenance="test",
     )
@@ -133,15 +141,19 @@ def test_run_interpret_counts_empty_captures(session, seeded_source, monkeypatch
     assert report["interpreted"] == 0
 
 
-def test_run_interpret_dedups_identical_captures(session, seeded_source, monkeypatch):
+def test_run_interpret_dedups_identical_captures(session, monkeypatch):
     from datetime import UTC, datetime
     from types import SimpleNamespace
     from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
     from worker import jobs
 
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
     for idx in range(2):
         session.add(RawCapture(
-            source_id=seeded_source.id, fetched_at=datetime.now(UTC), http_status=200,
+            source_id=feed_source.id, fetched_at=datetime.now(UTC), http_status=200,
             content_hash="same-hash", blob_path=f"/tmp/dup{idx}",
             extracted_text="identical page body", provenance="test",
         ))
@@ -190,7 +202,7 @@ def test_two_domains_fetch_concurrently(session, monkeypatch):
             barrier.wait()
             return FetchResult(url, 200, b"<html></html>", None, None, False)
     by_domain: dict[str, Source] = {}
-    for source in session.query(Source).filter(Source.mode == "snapshot").all():
+    for source in session.query(Source).all():
         netloc = urlparse(source.url).netloc
         if netloc not in by_domain:
             by_domain[netloc] = source
@@ -226,16 +238,20 @@ def test_two_domains_fetch_concurrently(session, monkeypatch):
     )
 
 
-def test_run_interpret_runs_captures_concurrently(session, seeded_source, monkeypatch):
+def test_run_interpret_runs_captures_concurrently(session, monkeypatch):
     import threading
     from datetime import UTC, datetime
     from types import SimpleNamespace
     from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
     from worker import jobs
 
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
     ids = []
     for idx in range(3):
-        c = RawCapture(source_id=seeded_source.id, fetched_at=datetime.now(UTC),
+        c = RawCapture(source_id=feed_source.id, fetched_at=datetime.now(UTC),
                        http_status=200, content_hash=f"conc-{idx}",
                        blob_path=f"/tmp/c{idx}", extracted_text=f"t{idx}",
                        provenance="test")
@@ -253,3 +269,144 @@ def test_run_interpret_runs_captures_concurrently(session, seeded_source, monkey
     monkeypatch.setattr(jobs, "SessionLocal", lambda: session)
     report = jobs.run_interpret(max_workers=2)
     assert report["interpreted"] == 3
+
+
+def test_run_interpret_excludes_snapshot_captures(session, monkeypatch):
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+
+    from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
+    from worker import jobs
+
+    seed(session)
+    snapshot_source = session.query(Source).filter_by(key="sonatype_compare_jfrog").one()
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
+    snapshot_capture = RawCapture(
+        source_id=snapshot_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="snapshot-hash",
+        blob_path="/tmp/snapshot",
+        extracted_text="snapshot page",
+        provenance="test",
+    )
+    feed_capture = RawCapture(
+        source_id=feed_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="feed-hash",
+        blob_path="/tmp/feed",
+        extracted_text="feed entry",
+        provenance="test",
+    )
+    session.add_all([snapshot_capture, feed_capture])
+    session.flush()
+
+    calls: list[int] = []
+
+    def fake_interpret(capture_id, *, session):
+        calls.append(capture_id)
+        return SimpleNamespace(status="ok", signal_id=1, thread_id="t")
+
+    monkeypatch.setattr(jobs, "interpret_capture", fake_interpret)
+    jobs.run_interpret(session=session)
+
+    assert snapshot_capture.id not in calls
+    assert feed_capture.id in calls
+
+
+def test_run_interpret_caps_captures_per_source(session, monkeypatch):
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+
+    from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.seeding import seed
+    from worker import jobs
+
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
+    for idx in range(5):
+        session.add(
+            RawCapture(
+                source_id=feed_source.id,
+                fetched_at=datetime.now(UTC),
+                http_status=200,
+                content_hash=f"cap-hash-{idx}",
+                blob_path=f"/tmp/cap-{idx}",
+                extracted_text=f"entry {idx}",
+                provenance="test",
+            )
+        )
+    session.flush()
+
+    calls: list[int] = []
+
+    def fake_interpret(capture_id, *, session):
+        calls.append(capture_id)
+        return SimpleNamespace(status="ok", signal_id=1, thread_id="t")
+
+    monkeypatch.setattr(jobs, "interpret_capture", fake_interpret)
+    jobs.run_interpret(session=session)
+
+    assert len(calls) == jobs.PER_SOURCE_INTERPRET_CAP
+
+
+def test_manual_window_skips_old_feed_entries(session):
+    from datetime import UTC, datetime
+
+    from app.models.capture import RawCapture
+    from app.models.registry import Source
+    from app.services.collection.fetcher import FetchResult
+    from app.services.collection.robots import RobotsCache
+    from app.services.seeding import seed
+    from worker import jobs
+
+    seed(session)
+    feed_source = session.query(Source).filter_by(key="harbor_releases").one()
+    now = datetime(2026, 8, 27, 12, 0, 0, tzinfo=UTC)
+    feed_body = b"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <id>recent-entry</id>
+    <title>Recent Release</title>
+    <link href="https://example.com/recent"/>
+    <published>2026-08-25T12:00:00Z</published>
+    <summary>Recent entry</summary>
+  </entry>
+  <entry>
+    <id>old-entry</id>
+    <title>Old Release</title>
+    <link href="https://example.com/old"/>
+    <published>2026-05-29T12:00:00Z</published>
+    <summary>Old entry</summary>
+  </entry>
+</feed>"""
+
+    class WindowFeedFetcher:
+        def fetch(self, url, etag=None, last_modified=None):
+            return FetchResult(url, 200, feed_body, None, None, False)
+
+    report = {
+        "captures": 0,
+        "skipped_robots": 0,
+        "skipped_not_due": 0,
+        "errors": 0,
+    }
+    jobs._collect_source(
+        session,
+        feed_source,
+        WindowFeedFetcher(),
+        RobotsCache(),
+        now,
+        force=True,
+        report=report,
+    )
+    session.flush()
+
+    assert report["captures"] == 1
+    captures = session.query(RawCapture).filter_by(source_id=feed_source.id).all()
+    assert len(captures) == 1
+    assert captures[0].external_id == "recent-entry"

@@ -33,10 +33,13 @@ _RUN_STAGE_JOBS: dict[str, list[tuple[str, str, dict]]] = {
     "scoring": [("score", "run_scoring", {})],
     "manual": [
         ("collect", "run_collection", {"force": True}),
-        # Cap backlog drain so Run now stays interactive; failures are per-capture.
-        # run_interpret round-robins across sources, so this budget spreads over distinct
-        # sources (new screens) instead of draining one backlogged page.
-        ("extract", "run_interpret", {"limit": 6}),
+        # Budget must cover at least one capture per source so every screen (each
+        # competitor column + each industry theme) lights up in a single Run now.
+        # run_interpret drains unsignaled sources first (diversify), so this spreads
+        # across distinct sources rather than draining one backlogged page. Raise
+        # further or run the unlimited scheduled job to deepen coverage; the ceiling
+        # is per-capture LLM latency, so keep it near the source count.
+        ("extract", "run_interpret", {"limit": 20}),
         ("score", "run_scoring", {}),
     ],
 }

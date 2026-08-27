@@ -5,6 +5,8 @@ import "./SourceLink.css";
 
 interface SourceLinkProps {
   citation: Citation;
+  /** When "name", the anchor text is the source name (Ask citation badges). */
+  variant?: "default" | "name";
 }
 
 function ExternalLink({
@@ -26,7 +28,7 @@ function ExternalLink({
   );
 }
 
-export function SourceLink({ citation }: SourceLinkProps) {
+export function SourceLink({ citation, variant = "default" }: SourceLinkProps) {
   if (citation.origin === "authored") {
     return (
       <span className="source-link source-link--authored">
@@ -38,18 +40,22 @@ export function SourceLink({ citation }: SourceLinkProps) {
   if (citation.archived_url) {
     return (
       <span className="source-link">
-        <ExternalLink href={citation.source_url}>Live page</ExternalLink>
+        <ExternalLink href={citation.source_url}>
+          {variant === "name" ? citation.source_name : "Live page"}
+        </ExternalLink>
         <span className="source-link__sep" aria-hidden="true">
           {" · "}
         </span>
         <ExternalLink href={citation.archived_url}>
-          As we captured it
+          {variant === "name" ? "Captured copy" : "As we captured it"}
         </ExternalLink>
       </span>
     );
   }
 
   return (
-    <ExternalLink href={citation.source_url}>View source</ExternalLink>
+    <ExternalLink href={citation.source_url}>
+      {variant === "name" ? citation.source_name : "View source"}
+    </ExternalLink>
   );
 }

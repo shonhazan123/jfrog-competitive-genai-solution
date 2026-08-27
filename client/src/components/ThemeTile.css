@@ -1,0 +1,118 @@
+.theme-tile {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.theme-tile:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.theme-tile__accent {
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--theme-accent);
+  margin-bottom: var(--sp-4);
+  flex-shrink: 0;
+}
+
+.theme-tile__title {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.theme-tile:hover .theme-tile__title {
+  color: var(--ink);
+}
+
+.theme-tile__state {
+  margin: 0;
+  flex: 1;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin-bottom: var(--sp-4);
+}
+
+.theme-tile__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: auto;
+}
+
+.theme-tile__areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.theme-tile__area-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-sunk);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.theme-tile__count-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+.theme-tile__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  color: var(--theme-accent);
+}
+
+.theme-tile__count-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.theme-tile__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--sp-1);
+  color: var(--ink-muted);
+  transition: color 0.2s ease;
+}
+
+.theme-tile:hover .theme-tile__arrow {
+  color: var(--ink-secondary);
+}

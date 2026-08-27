@@ -78,6 +78,94 @@ def test_assign_theme_returns_none_when_unmatched():
     assert assign_theme(item, THEMES) is None
 
 
+def test_assign_theme_covers_fallback_funding_ma():
+    item = {
+        "signal_type": "corporate_financial",
+        "headline": "Quarterly revenue outlook revised",
+        "body": "Earnings guidance update.",
+        "covers": ["corporate_financial"],
+    }
+    assert assign_theme(item, THEMES) == "funding_ma"
+
+
+def test_assign_theme_covers_fallback_ai_mlops():
+    item = {
+        "signal_type": "product_capability",
+        "headline": "Platform release expands integrations",
+        "body": "New connector and workflow support.",
+        "covers": ["product_capability"],
+    }
+    assert assign_theme(item, THEMES) == "ai_mlops"
+
+
+def test_assign_theme_returns_none_for_unknown_signal_type_with_empty_covers():
+    item = {
+        "signal_type": "talent_org",
+        "headline": "Leadership transition announced",
+        "body": "Executive hire details.",
+        "covers": [],
+    }
+    assert assign_theme(item, THEMES) is None
+
+
+def test_source_covers_route_signal_without_keyword(session):
+    """A source `covers` hint routes an item whose text misses every keyword —
+    and `covers` stays internal (out of the public industry item)."""
+    from app.models.registry import Entity, Source
+    from app.models.signal import Signal
+    from app.services.industry_themes import build_industry_item
+
+    now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
+    industry_entity = Entity(
+        slug="industry",
+        name="Industry",
+        kind="industry",
+        tier=1,
+        aliases=[],
+    )
+    session.add(industry_entity)
+    session.flush()
+
+    source = Source(
+        key="industry_covers_fixture",
+        entity_id=industry_entity.id,
+        url="https://example.com/industry-covers",
+        kind="atom",
+        mode="feed",
+        reliability_grade="A",
+        is_primary=True,
+        check_frequency_minutes=60,
+        last_checked_at=now,
+        covers=["corporate_financial"],
+    )
+    session.add(source)
+    session.flush()
+
+    signal = Signal(
+        source_id=source.id,
+        entity_id=industry_entity.id,
+        signal_type="corporate_financial",
+        headline="Revenue guidance update",
+        occurred_at=now,
+        cluster_key="industry-covers",
+        score_sales=50.0,
+        score_product=50.0,
+        score_exec=50.0,
+        so_what_product="Financial framing.",
+    )
+    session.add(signal)
+    session.flush()
+
+    # covers must NOT leak into the public item shape
+    item = build_industry_item(session, signal)
+    assert "covers" not in item
+
+    # but the covers hint must still route the item to funding_ma
+    themes = list_themes(session)
+    by_key = {theme["key"]: theme for theme in themes}
+    assert by_key["funding_ma"]["count"] == 1
+
+
 def test_list_themes_returns_stable_yaml_order_with_counts(session):
     from app.models.registry import Entity, Source
     from app.services.seeding import seed

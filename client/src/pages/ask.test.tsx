@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -15,21 +15,44 @@ function renderPage(ui) {
   );
 }
 
-test("an answer renders its citations beneath it", () => {
+test("an answer renders its citations beneath it", async () => {
   renderPage(<Ask />);
-  expect(screen.getAllByTestId("citation-card").length).toBeGreaterThanOrEqual(1);
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /what has sonatype changed about how it describes jfrog's malware detection/i,
+    }),
+  );
+  await waitFor(() => {
+    expect(screen.getAllByTestId("citation-card").length).toBeGreaterThanOrEqual(1);
+  });
 });
 
-test("a refusal is rendered as a distinct, prominent state", () => {
+test("a refusal is rendered as a distinct, prominent state", async () => {
   renderPage(<Ask />);
-  const refusal = screen.getByTestId("refusal");
-  expect(refusal).toBeVisible();
-  expect(refusal).toHaveTextContent(/don't have grounded evidence/i);
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /how many net-new enterprise customers did sonatype win from jfrog last quarter/i,
+    }),
+  );
+  await waitFor(() => {
+    const refusal = screen.getByTestId("refusal");
+    expect(refusal).toBeVisible();
+    expect(refusal).toHaveTextContent(/don't have grounded evidence/i);
+  });
 });
 
-test("a refusal offers what the ledger does hold nearby", () => {
+test("a refusal offers what the ledger does hold nearby", async () => {
   renderPage(<Ask />);
-  expect(within(screen.getByTestId("refusal")).getByText(/here's what i do have/i)).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /how many net-new enterprise customers did sonatype win from jfrog last quarter/i,
+    }),
+  );
+  await waitFor(() => {
+    expect(
+      within(screen.getByTestId("refusal")).getByText(/here's what i do have/i),
+    ).toBeInTheDocument();
+  });
 });
 
 test("industry items carry no competitor entity", () => {

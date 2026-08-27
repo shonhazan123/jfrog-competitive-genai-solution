@@ -20,8 +20,10 @@ test("the headline verdict banner renders", () => {
   expect(banner).toHaveTextContent(todayFixture.headline);
 });
 
-test("at most five signal cards render in a single column", () => {
+test("at most five signal cards render in a responsive grid", () => {
   renderPage(<Today />);
+  const grid = screen.getByTestId("card-grid");
+  expect(getComputedStyle(grid).display).toBe("grid");
   const cards = screen.getAllByTestId("signal-card");
   expect(cards.length).toBeGreaterThan(0);
   expect(cards.length).toBeLessThanOrEqual(5);

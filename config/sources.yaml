@@ -51,16 +51,6 @@ sources:
     check_frequency_minutes: 1440
     covers: [positioning_messaging]
 
-  - key: jfrog_homepage
-    entity: jfrog
-    url: https://jfrog.com/
-    kind: html_page
-    mode: snapshot
-    reliability_grade: A
-    is_primary: true
-    check_frequency_minutes: 1440
-    covers: [positioning_messaging]
-
   # --- Developer sentiment via the free Hacker News (Algolia) API -------------------------
   # The ToS-clean substitute for scraping review sites. The query encodes the subject, so the
   # same adapter collects "what developers say" symmetrically about each product.
@@ -120,3 +110,83 @@ sources:
     check_frequency_minutes: 1440
     adapter: lever
     covers: [talent_org]
+
+  - key: github_changelog
+    entity: github
+    url: https://github.blog/changelog/feed/
+    kind: rss
+    mode: feed
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 360
+    covers: [product_capability, positioning_messaging]
+
+  - key: github_blog
+    entity: github
+    url: https://github.blog/feed/
+    kind: rss
+    mode: feed
+    reliability_grade: B
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [positioning_messaging]
+
+  - key: gitlab_blog
+    entity: gitlab
+    url: https://about.gitlab.com/atom.xml
+    kind: atom
+    mode: feed
+    reliability_grade: A
+    is_primary: true
+    check_frequency_minutes: 360
+    covers: [product_capability, pricing_packaging, positioning_messaging]
+
+  - key: azure_artifacts_news
+    entity: azure_artifacts
+    url: "https://news.google.com/rss/search?q=%22Azure%20Artifacts%22%20OR%20%22Azure%20DevOps%20Artifacts%22"
+    kind: rss
+    mode: feed
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [product_capability]
+
+  - key: gnews_funding
+    entity: industry
+    url: "https://news.google.com/rss/search?q=%28Sonatype%20OR%20GitLab%20OR%20Harbor%20OR%20%22GitHub%20Packages%22%29%20%28acquisition%20OR%20funding%20OR%20raises%20OR%20series%29"
+    kind: rss
+    mode: feed
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [corporate_financial]
+
+  - key: huggingface_blog
+    entity: industry
+    url: https://huggingface.co/blog/feed.xml
+    kind: rss
+    mode: feed
+    reliability_grade: B
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [product_capability]
+
+  - key: gnews_model_registry
+    entity: industry
+    url: "https://news.google.com/rss/search?q=%22model%20registry%22%20OR%20MLOps%20artifact"
+    kind: rss
+    mode: feed
+    reliability_grade: C
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [product_capability]
+
+  - key: cisa_advisories
+    entity: industry
+    url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+    kind: rss
+    mode: feed
+    reliability_grade: A
+    is_primary: false
+    check_frequency_minutes: 720
+    covers: [security_trust, market_regulatory]

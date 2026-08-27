@@ -38,7 +38,7 @@ export function AppShell() {
         <StatusStrip data={runStatus} />
       </header>
       <div className="app-shell__body">
-        {!isMobile ? <Sidebar /> : null}
+        {!isMobile ? <Sidebar runStatus={runStatus} /> : null}
         <main className="app-shell__main">
           <Outlet />
         </main>

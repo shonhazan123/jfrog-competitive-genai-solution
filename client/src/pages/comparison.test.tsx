@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -15,14 +15,15 @@ function renderPage(ui) {
   );
 }
 
-test("the grid renders component rows and competitor columns", () => {
+test("the transposed grid renders a row per competitor", () => {
   renderPage(<Comparison />);
-  expect(screen.getByTestId("component-row-xray")).toBeInTheDocument();
-  expect(screen.getByTestId("competitor-column-sonatype")).toBeInTheDocument();
-  expect(screen.getByTestId("competitor-column-harbor")).toBeInTheDocument();
+  expect(screen.getByTestId("competitor-row-sonatype")).toBeInTheDocument();
+  expect(screen.getByTestId("competitor-row-harbor")).toBeInTheDocument();
+  expect(screen.getByTestId("matrix-cell-sonatype-xray")).toBeInTheDocument();
+  expect(screen.getByTestId("matrix-cell-harbor-artifactory")).toBeInTheDocument();
 });
 
-test("expanding a cell shows evidence as a linked source", async () => {
+test("clicking a competitor row shows the detail page with dimension cards", async () => {
   const user = userEvent.setup();
   const xrayComponent = comparisonMatrixFixture.components.find(
     (component) => component.key === "xray",
@@ -33,9 +34,16 @@ test("expanding a cell shows evidence as a linked source", async () => {
   const evidence = sonatypeCell?.evidence[0];
 
   renderPage(<Comparison />);
-  await user.click(screen.getByTestId("matrix-cell-xray-sonatype"));
+  await user.click(screen.getByTestId("competitor-row-sonatype"));
 
-  const link = screen.getByRole("link", { name: evidence.source_name });
+  expect(screen.getByTestId("competitor-detail")).toBeInTheDocument();
+  const xrayCard = screen.getByTestId("dimension-card-xray");
+  expect(xrayCard).toBeInTheDocument();
+  expect(screen.getByTestId("dimension-card-apptrust")).toBeInTheDocument();
+
+  const link = within(xrayCard).getByRole("link", {
+    name: evidence.source_name,
+  });
   expect(link).toHaveAttribute("href", evidence.source_url);
 });
 

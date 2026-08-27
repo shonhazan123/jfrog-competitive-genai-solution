@@ -5,17 +5,20 @@ interface RefusalNoticeProps {
   answer: string;
   refusalReason: string | null;
   nearbyEvidence: NearbyItem[];
+  className?: string;
 }
 
 export function RefusalNotice({
   answer,
   refusalReason,
   nearbyEvidence,
+  className,
 }: RefusalNoticeProps) {
   return (
     <div
       data-testid="refusal"
       role="alert"
+      className={className}
       style={{
         padding: "var(--sp-5)",
         borderRadius: "var(--r-md)",

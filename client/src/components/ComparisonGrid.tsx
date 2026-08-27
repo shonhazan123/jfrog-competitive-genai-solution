@@ -1,218 +1,159 @@
 import { useState } from "react";
-import type {
-  ComparisonMatrix,
-  ComparisonMatrixCell,
-  Evidence,
-} from "../api/types";
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function cellKey(componentKey: string, competitorSlug: string): string {
-  return `${componentKey}:${competitorSlug}`;
-}
+import type { ComparisonMatrix } from "../api/types";
+import type { Strength } from "../utils/comparisonPresentation";
+import {
+  deriveThreat,
+  dimensionLabel,
+  getCellForCompetitor,
+  stanceToStrength,
+  STRENGTH_LABELS,
+} from "../utils/comparisonPresentation";
+import { CompetitorDetail } from "./CompetitorDetail";
+import { StrengthBar, StrengthLabel, ThreatChip } from "./ComparisonStrength";
+import "./ComparisonGrid.css";
 
 interface ComparisonGridProps {
   matrix: ComparisonMatrix;
 }
 
-export function ComparisonGrid({ matrix }: ComparisonGridProps) {
-  const [expandedComponent, setExpandedComponent] = useState<string | null>(
-    null,
-  );
-  const [expandedCell, setExpandedCell] = useState<string | null>(null);
-
-  const findCell = (
-    componentKey: string,
-    competitorSlug: string,
-  ): ComparisonMatrixCell | undefined => {
-    const component = matrix.components.find((row) => row.key === componentKey);
-    return component?.cells.find((cell) => cell.competitor === competitorSlug);
-  };
-
-  const toggleComponent = (key: string) => {
-    setExpandedComponent((current) => (current === key ? null : key));
-  };
-
-  const toggleCell = (key: string) => {
-    setExpandedCell((current) => (current === key ? null : key));
-  };
-
+function StrengthCell({
+  strength,
+  position,
+}: {
+  strength: Strength;
+  position: string;
+}) {
   return (
-    <div data-testid="table-scroll" style={{ overflowX: "auto" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: "var(--fs-body)",
-          lineHeight: "var(--lh-body)",
-        }}
-      >
-        <thead>
-          <tr>
-            <th
-              style={{
-                textAlign: "left",
-                padding: "var(--sp-2) var(--sp-3)",
-                borderBottom: "1px solid var(--border)",
-                fontSize: "var(--fs-meta)",
-                color: "var(--ink-muted)",
-              }}
-            >
-              JFrog component
-            </th>
-            {matrix.competitors.map((competitor) => (
-              <th
-                key={competitor.slug}
-                data-testid={`competitor-column-${competitor.slug}`}
-                style={{
-                  textAlign: "left",
-                  padding: "var(--sp-2) var(--sp-3)",
-                  borderBottom: "1px solid var(--border)",
-                  fontSize: "var(--fs-meta)",
-                  color: "var(--ink-muted)",
-                }}
-              >
-                {competitor.name}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {matrix.components.map((component) => {
-            const primaryCell = component.cells[0];
-            const jfrogPosition =
-              primaryCell?.jfrog_position ?? "";
-
-            return (
-              <tr key={component.key} data-testid={`component-row-${component.key}`}>
-                <td
-                  style={{
-                    padding: "var(--sp-3)",
-                    borderBottom: "1px solid var(--border)",
-                    verticalAlign: "top",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleComponent(component.key)}
-                    data-testid={`component-name-${component.key}`}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      font: "inherit",
-                      color: "inherit",
-                      cursor: "pointer",
-                      textAlign: "left",
-                    }}
-                  >
-                    {component.name}
-                  </button>
-                  {expandedComponent === component.key && jfrogPosition ? (
-                    <div
-                      data-testid={`jfrog-position-${component.key}`}
-                      style={{
-                        marginTop: "var(--sp-2)",
-                        fontSize: "var(--fs-meta)",
-                        color: "var(--ink-secondary)",
-                      }}
-                    >
-                      {jfrogPosition}
-                    </div>
-                  ) : null}
-                </td>
-                {matrix.competitors.map((competitor) => {
-                  const cell = findCell(component.key, competitor.slug);
-                  if (!cell) {
-                    return (
-                      <td
-                        key={competitor.slug}
-                        style={{
-                          padding: "var(--sp-3)",
-                          borderBottom: "1px solid var(--border)",
-                          verticalAlign: "top",
-                        }}
-                      />
-                    );
-                  }
-
-                  const key = cellKey(component.key, competitor.slug);
-                  const isExpanded = expandedCell === key;
-                  const primaryEvidence =
-                    cell.evidence.find((item) => item.is_primary) ??
-                    cell.evidence[0];
-
-                  return (
-                    <td
-                      key={competitor.slug}
-                      style={{
-                        padding: "var(--sp-3)",
-                        borderBottom: "1px solid var(--border)",
-                        verticalAlign: "top",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleCell(key)}
-                        data-testid={`matrix-cell-${component.key}-${competitor.slug}`}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          padding: 0,
-                          font: "inherit",
-                          color: "inherit",
-                          cursor: "pointer",
-                          textAlign: "left",
-                          width: "100%",
-                        }}
-                      >
-                        <span data-testid="cell-stance">{cell.stance}</span>
-                        <div
-                          style={{
-                            marginTop: "var(--sp-1)",
-                            color: "var(--ink-secondary)",
-                          }}
-                        >
-                          {cell.summary}
-                        </div>
-                      </button>
-                      {isExpanded && primaryEvidence ? (
-                        <div
-                          data-testid={`cell-evidence-${component.key}-${competitor.slug}`}
-                          style={{ marginTop: "var(--sp-2)" }}
-                        >
-                          <p style={{ margin: "0 0 var(--sp-1)" }}>
-                            {primaryEvidence.quote}
-                          </p>
-                          <EvidenceLink evidence={primaryEvidence} />
-                        </div>
-                      ) : null}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="comparison-grid__matrix-cell-inner">
+      <div className="comparison-grid__strength-row">
+        <span className="strength-dot" data-strength={strength} aria-hidden="true" />
+        <StrengthLabel strength={strength} />
+      </div>
+      <StrengthBar strength={strength} />
+      {position ? (
+        <p className="comparison-grid__position">{position}</p>
+      ) : null}
     </div>
   );
 }
 
-function EvidenceLink({ evidence }: { evidence: Evidence }) {
+export function ComparisonGrid({ matrix }: ComparisonGridProps) {
+  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  const dimensionCount = matrix.components.length;
+
+  if (selectedCompetitor) {
+    return (
+      <CompetitorDetail
+        matrix={matrix}
+        competitorSlug={selectedCompetitor}
+        onClose={() => setSelectedCompetitor(null)}
+      />
+    );
+  }
+
   return (
-    <span style={{ fontSize: "var(--fs-meta)", color: "var(--ink-muted)" }}>
-      <a href={evidence.source_url} target="_blank" rel="noreferrer">
-        {evidence.source_name}
-      </a>
-      {" · "}
-      <span>{formatDate(evidence.captured_at)}</span>
-    </span>
+    <div
+      data-testid="table-scroll"
+      style={{
+        overflowX: "auto",
+        ["--dimension-count" as string]: String(dimensionCount),
+      }}
+    >
+      <div className="comparison-grid">
+        <div className="comparison-grid__header-row">
+          <div className="comparison-grid__header-cell">
+            <span className="mono-label">Competitor</span>
+          </div>
+          {matrix.components.map((component) => (
+            <div key={component.key} className="comparison-grid__header-cell">
+              <span className="mono-label">
+                {dimensionLabel(component.key, component.name)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="comparison-grid__rows">
+          {matrix.competitors.map((competitor) => {
+            const threat = deriveThreat(matrix, competitor.slug);
+
+            return (
+              <button
+                key={competitor.slug}
+                type="button"
+                className="comparison-grid__row"
+                data-testid={`competitor-row-${competitor.slug}`}
+                onClick={() => setSelectedCompetitor(competitor.slug)}
+              >
+                <div className="comparison-grid__competitor-cell">
+                  <div className="comparison-grid__competitor-inner">
+                    <div className="comparison-grid__competitor-info">
+                      <div className="comparison-grid__competitor-name-row">
+                        <span className="comparison-grid__competitor-name">
+                          {competitor.name}
+                        </span>
+                        {threat ? (
+                          <ThreatChip level={threat.level} derived={threat.derived} />
+                        ) : null}
+                      </div>
+                    </div>
+                    <svg
+                      className="comparison-grid__arrow"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M2.5 6H9.5M6.5 3L9.5 6L6.5 9"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {matrix.components.map((component) => {
+                  const cell = getCellForCompetitor(
+                    matrix,
+                    component.key,
+                    competitor.slug,
+                  );
+                  const strength = stanceToStrength(cell?.stance ?? "no_claim");
+                  const position =
+                    cell?.summary && cell.summary !== "No public claim on record."
+                      ? cell.summary
+                      : "";
+
+                  return (
+                    <div
+                      key={component.key}
+                      className="comparison-grid__matrix-cell"
+                      data-testid={`matrix-cell-${competitor.slug}-${component.key}`}
+                    >
+                      <StrengthCell strength={strength} position={position} />
+                    </div>
+                  );
+                })}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="comparison-grid__legend">
+          {(Object.keys(STRENGTH_LABELS) as Strength[]).map((key) => (
+            <div key={key} className="comparison-grid__legend-item">
+              <span className="strength-dot" data-strength={key} aria-hidden="true" />
+              <span className="mono-label comparison-grid__legend-label">
+                {STRENGTH_LABELS[key]}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

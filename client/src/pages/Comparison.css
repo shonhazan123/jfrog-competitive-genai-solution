@@ -1,0 +1,14 @@
+.comparison-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  width: 70%;
+}
+
+/* Below large screens the 70% target leaves too little room for the
+   dimension columns, so let the page fill the main area instead. */
+@media (max-width: 1280px) {
+  .comparison-page {
+    width: 100%;
+  }
+}

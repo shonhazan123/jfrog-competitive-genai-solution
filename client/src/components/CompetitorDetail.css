@@ -1,0 +1,122 @@
+.competitor-detail {
+  max-width: 48rem;
+}
+
+.competitor-detail__back {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-6);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.competitor-detail__back:hover {
+  color: var(--ink-secondary);
+}
+
+.competitor-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-2);
+}
+
+.competitor-detail__title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  font-weight: 300;
+  color: var(--ink);
+  margin: 0;
+}
+
+.competitor-detail__divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-5) 0;
+}
+
+.competitor-detail__summary {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+  margin: 0 0 var(--sp-6);
+}
+
+.competitor-detail__section-label {
+  margin-bottom: var(--sp-4);
+}
+
+.competitor-detail__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.competitor-detail__card {
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+
+.competitor-detail__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+.competitor-detail__card-title {
+  font-size: var(--fs-headline);
+  line-height: var(--lh-headline);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.competitor-detail__card-strength {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+.competitor-detail__position {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  color: var(--ink-muted);
+  margin: 0 0 var(--sp-2);
+}
+
+.competitor-detail__evidence {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+  margin: 0;
+}
+
+.competitor-detail__evidence a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.competitor-detail__evidence a:hover {
+  text-decoration: underline;
+}
+
+.competitor-detail__evidence-meta {
+  font-size: var(--fs-meta);
+  color: var(--ink-muted);
+}

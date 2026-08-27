@@ -30,9 +30,16 @@
   --sig-talent:       #EA580C;   --sig-talent-wash:       #FDEEE4;
 
   /* ── verdict tiers (calm, non-alarmist) ──────────────── */
-  --tier-act:   #2B59FF;
-  --tier-worth: #0284C7;
-  --tier-bg:    #8A92A6;
+  --tier-act:        #F59E0B;
+  --tier-act-wash:   #FEF3E0;
+  --tier-worth:      #60A5FA;
+  --tier-worth-wash: #E7F0FE;
+  --tier-bg:         #8A92A6;
+  --tier-bg-wash:    #F1F2F6;
+
+  /* ── JFrog brand ─────────────────────────────────────── */
+  --brand-jfrog:      #38C172;
+  --brand-jfrog-wash: #E6F7EE;
 
   /* ── SYSTEM 2 · materiality owns WEIGHT, never hue ───── */
   --mat-low-fg:   var(--ink-muted);    --mat-low-bg:   transparent;
@@ -53,9 +60,9 @@
   --caution-wash:   #FEF6E7;
 
   /* ── type ────────────────────────────────────────────── */
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: ui-serif, Georgia, "Times New Roman", serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
 
   --fs-display: 2rem;    --lh-display: 1.15;
   --fs-h1:      1.625rem;--lh-h1:      1.2;
@@ -92,6 +99,10 @@
     --sig-regulatory-wash: #102E2A;  --sig-partnership-wash: #10263A;
     --sig-customer-wash: #0F2C22;  --sig-corporate-wash: #2E1233;
     --sig-talent-wash: #331D10;
+    --tier-act-wash: rgba(245, 158, 11, 0.12);
+    --tier-worth-wash: rgba(96, 165, 250, 0.12);
+    --tier-bg-wash: rgba(138, 146, 166, 0.12);
+    --brand-jfrog-wash: rgba(56, 193, 114, 0.12);
   }
 }
 [data-theme="dark"] { /* repeat the dark block so an explicit toggle wins */ }

@@ -33,3 +33,16 @@
 `synthesis` is currently deterministic (`"{n} items grouped under {label}."`); LLM synthesis is a follow-up.
 
 `items` use the same dict shape as `GET /industry` rows (including linked `evidence`).
+
+## Client presentation (Stage 5 — Figma match)
+
+- **`/industry`** — `Industry.tsx` renders a 2-column theme grid (`ThemeTile`) with accent
+  bar (hue derived from `theme.key` via `config/themeAccent.ts`), `.font-display` title,
+  CSS-clipped `state_of_play`, item-count badge + arrow, and `data-testid="theme-tile"`.
+  Routed `Link` to `/industry/:key` (not in-component state). Grid container keeps
+  `data-testid="card-grid"`.
+- **`/industry/:key`** — `ThemePage.tsx`: back link, accent bar, title, item-count/updated
+  meta (from `items`), **State of Play** (`synthesis`), green **JFrog Relevance** callout
+  (`--brand-jfrog-wash` / `--brand-jfrog`) headed **"What this means for JFrog"**, and a
+  **Source Items** list (`↳` + `body` relevance line, evidence source link + date). Area
+  chips render only when area data is present in the payload (currently omitted).

@@ -113,3 +113,139 @@ def test_zero_claim_capture_persists_no_signal(session, seeded_source, graph_dep
     result = interpret_capture(capture.id, session=session, deps=deps)
     assert result.status == "empty"
     assert session.query(Signal).count() == before
+
+def test_self_guard_suppresses_self_subject_signal(session, seeded_source, graph_deps):
+    from app.models.capture import RawCapture
+    from app.models.signal import Signal
+    from app.services.agent_service import interpret_capture
+
+    text = "JFrog Artifactory lacks SBOM export while Nexus leads."
+    capture = RawCapture(
+        source_id=seeded_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="self-guard-1",
+        blob_path="/tmp/self-guard-1",
+        extracted_text=text,
+        provenance="test",
+    )
+    session.add(capture)
+    session.flush()
+
+    extraction = {
+        "signal_type": "product_capability",
+        "asserting_entity": "sonatype",
+        "subject_entity": "jfrog",
+        "mentions_jfrog": True,
+        "headline": "JFrog SBOM gap",
+        "claims": [{
+            "claim_text": "JFrog lacks SBOM export",
+            "quote": "JFrog Artifactory lacks SBOM export",
+            "claim_type": "capability",
+            "capability_tags": ["sbom"],
+        }],
+    }
+    deps = graph_deps(extract=FakeModel([extraction]))
+
+    before = session.query(Signal).count()
+    result = interpret_capture(capture.id, session=session, deps=deps)
+    assert result.status == "empty"
+    assert session.query(Signal).count() == before
+
+def test_bridge_creates_dimensioned_claim_for_competitor(session, seeded_source, graph_deps):
+    from app.models.capture import RawCapture
+    from app.models.ledger import Claim, Evidence
+    from app.models.registry import Entity
+    from app.models.signal import Signal
+    from app.services.agent_service import interpret_capture
+    from app.services.comparison_matrix import build_comparison_matrix
+
+    text = "Nexus adds SBOM export for all repositories."
+    capture = RawCapture(
+        source_id=seeded_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="bridge-1",
+        blob_path="/tmp/bridge-1",
+        extracted_text=text,
+        provenance="test",
+    )
+    session.add(capture)
+    session.flush()
+
+    sonatype = session.query(Entity).filter_by(slug="sonatype").one()
+    jfrog = session.query(Entity).filter_by(slug="jfrog").one()
+
+    extraction = {
+        "signal_type": "product_capability",
+        "asserting_entity": "sonatype",
+        "subject_entity": "sonatype",
+        "mentions_jfrog": False,
+        "headline": "SBOM export",
+        "claims": [{
+            "claim_text": "Nexus adds SBOM export",
+            "quote": "Nexus adds SBOM export",
+            "claim_type": "capability",
+            "capability_tags": ["sbom"],
+        }],
+    }
+    deps = graph_deps(extract=FakeModel([extraction]))
+
+    result = interpret_capture(capture.id, session=session, deps=deps)
+    assert result.status == "ok"
+    assert session.query(Signal).count() == 1
+
+    claim = session.query(Claim).filter_by(
+        dimension="sbom",
+        asserting_entity_id=sonatype.id,
+        subject_entity_id=jfrog.id,
+    ).one()
+    assert claim.claim_type == "positioning"
+    assert claim.reliability_grade == seeded_source.reliability_grade
+
+    evidence = session.query(Evidence).filter_by(claim_id=claim.id).one()
+    assert evidence.quote == "Nexus adds SBOM export"
+
+    matrix = build_comparison_matrix(session)
+    apptrust = next(c for c in matrix["components"] if c["key"] == "apptrust")
+    sonatype_cell = next(cell for cell in apptrust["cells"] if cell["competitor"] == "sonatype")
+    assert sonatype_cell["stance"] != "no_claim"
+
+def test_bridge_skips_pricing_model_tag_not_a_dimension(session, seeded_source, graph_deps):
+    from app.models.capture import RawCapture
+    from app.models.ledger import Claim
+    from app.models.signal import Signal
+    from app.services.agent_service import interpret_capture
+
+    text = "Nexus now offers consumption-based pricing for enterprise."
+    capture = RawCapture(
+        source_id=seeded_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="bridge-pricing-1",
+        blob_path="/tmp/bridge-pricing-1",
+        extracted_text=text,
+        provenance="test",
+    )
+    session.add(capture)
+    session.flush()
+
+    extraction = {
+        "signal_type": "product_capability",
+        "asserting_entity": "sonatype",
+        "subject_entity": "sonatype",
+        "mentions_jfrog": False,
+        "headline": "Pricing change",
+        "claims": [{
+            "claim_text": "Consumption-based pricing",
+            "quote": "consumption-based pricing",
+            "claim_type": "pricing",
+            "capability_tags": ["pricing_model"],
+        }],
+    }
+    deps = graph_deps(extract=FakeModel([extraction]))
+
+    result = interpret_capture(capture.id, session=session, deps=deps)
+    assert result.status == "ok"
+    assert session.query(Signal).count() == 1
+    assert session.query(Claim).filter_by(dimension="pricing_model").count() == 0

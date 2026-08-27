@@ -37,6 +37,8 @@ _ADAPTERS = {
     "hn": HackerNewsAdapter(),
 }
 _WEEKDAYS = frozenset({"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"})
+PER_SOURCE_INTERPRET_CAP = 3
+MANUAL_WINDOW_DAYS = 30
 logger = get_logger("worker.jobs")
 
 
@@ -130,6 +132,12 @@ def _collect_source(session, source, fetcher, robots, now, force, report) -> Non
             if result.etag:
                 source.etag = result.etag
             for entry in parse_feed(result.body, source.url):
+                if (
+                    force
+                    and entry.published_at is not None
+                    and entry.published_at < now - timedelta(days=MANUAL_WINDOW_DAYS)
+                ):
+                    continue
                 if not is_new(session, source.id, entry.external_id):
                     continue
                 text = entry.content_html or entry.summary_html or entry.title
@@ -140,6 +148,12 @@ def _collect_source(session, source, fetcher, robots, now, force, report) -> Non
             if adapter is None:
                 return
             for record in adapter.collect(source, fetcher):
+                if (
+                    force
+                    and record.occurred_at is not None
+                    and record.occurred_at < now - timedelta(days=MANUAL_WINDOW_DAYS)
+                ):
+                    continue
                 if not is_new(session, source.id, record.external_id):
                     continue
                 _store_capture(session, source, record.external_id, record.body, record.url)
@@ -302,11 +316,18 @@ def run_interpret(
     if interpreted_ids:
         query = (
             session.query(RawCapture)
+            .join(Source, RawCapture.source_id == Source.id)
             .filter(RawCapture.id.notin_(interpreted_ids))
+            .filter(Source.mode != "snapshot")
             .order_by(RawCapture.id)
         )
     else:
-        query = session.query(RawCapture).order_by(RawCapture.id)
+        query = (
+            session.query(RawCapture)
+            .join(Source, RawCapture.source_id == Source.id)
+            .filter(Source.mode != "snapshot")
+            .order_by(RawCapture.id)
+        )
     captures = query.all()
     signaled_source_ids = {row[0] for row in session.query(Signal.source_id).distinct().all()}
     captures = _diversify_by_source(captures, signaled_source_ids)
@@ -326,6 +347,14 @@ def run_interpret(
         seen_hashes.add(capture.content_hash)
         deduped.append(capture)
     captures = deduped
+    source_counts: dict[int, int] = {}
+    capped: list[RawCapture] = []
+    for capture in captures:
+        count = source_counts.get(capture.source_id, 0)
+        if count < PER_SOURCE_INTERPRET_CAP:
+            capped.append(capture)
+            source_counts[capture.source_id] = count + 1
+    captures = capped
     if limit is not None:
         captures = captures[:limit]
     capture_ids = [c.id for c in captures]

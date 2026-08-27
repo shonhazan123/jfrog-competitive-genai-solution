@@ -61,6 +61,9 @@ const HUE_TOKENS: Record<SignalType, string> = {
 export type StateKey = keyof typeof STATE_LABELS;
 export type OriginKey = keyof typeof ORIGIN_LABELS;
 
+/** Canonical display order for the nine signal types (keys of the label map). */
+export const SIGNAL_TYPE_ORDER = Object.keys(SIGNAL_TYPE_LABELS) as SignalType[];
+
 export function signalTypeLabel(type: SignalType): string {
   return SIGNAL_TYPE_LABELS[type];
 }

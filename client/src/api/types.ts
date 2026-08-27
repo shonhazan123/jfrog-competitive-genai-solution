@@ -98,9 +98,20 @@ export interface SignalDetail extends Signal {
   bullet_classification: Record<string, unknown> | null;
 }
 
+export interface IndustryRadarItem {
+  id: string;
+  signal_type: string;
+  headline: string;
+  summary: string;
+  why_it_matters: string | null;
+  occurred_at: string | null;
+  evidence: Evidence[];
+}
+
 export interface TodayBrief {
   headline: string;
   cards: Signal[];
+  industry?: IndustryRadarItem[];
 }
 
 export interface ListResponse<T> {
@@ -288,6 +299,7 @@ export interface AskEvidence {
   captured_at: string;
   reliability_grade: ReliabilityGrade;
   credibility_score: CredibilityScore;
+  citation?: Citation;
 }
 
 export interface NearbyItem {

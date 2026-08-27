@@ -1,75 +1,96 @@
 import type { AskResponse } from "../api/types";
 import { CitationCard } from "./CitationCard";
 import { RefusalNotice } from "./RefusalNotice";
+import "./AskTranscript.css";
 
 interface AskTranscriptProps {
   exchanges: AskResponse[];
+  pending?: boolean;
+  pendingQuestion?: string | null;
 }
 
-export function AskTranscript({ exchanges }: AskTranscriptProps) {
+function AssistantAvatar() {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-6)",
-      }}
-    >
-      {exchanges.map((exchange, index) => (
-        <article
-          key={index}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--sp-4)",
-            paddingBottom: "var(--sp-6)",
-            borderBottom:
-              index < exchanges.length - 1 ? "1px solid var(--border)" : undefined,
-          }}
-        >
-          <p
-            style={{
-              fontSize: "var(--fs-headline)",
-              lineHeight: "var(--lh-headline)",
-              fontWeight: 600,
-              color: "var(--ink)",
-            }}
-          >
-            {exchange.question}
-          </p>
+    <div className="ask-assistant__avatar" aria-hidden="true">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M1 5L5 1L9 5L5 9Z" fill="currentColor" />
+      </svg>
+    </div>
+  );
+}
 
+function UserBubble({ content }: { content: string }) {
+  return (
+    <div className="ask-user">
+      <div className="ask-user__bubble">{content}</div>
+    </div>
+  );
+}
+
+function AssistantExchange({ exchange }: { exchange: AskResponse }) {
+  return (
+    <>
+      <UserBubble content={exchange.question} />
+      <div className="ask-assistant">
+        <AssistantAvatar />
+        <div className="ask-assistant__body">
+          <div className="ask-assistant__label">Intel Assistant</div>
           {exchange.grounded ? (
             <>
-              <p
-                style={{
-                  fontSize: "var(--fs-body)",
-                  lineHeight: "var(--lh-body)",
-                  color: "var(--ink)",
-                }}
-              >
-                {exchange.answer}
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "var(--sp-3)",
-                }}
-              >
-                {exchange.evidence.map((item) => (
-                  <CitationCard key={item.n} evidence={item} />
-                ))}
-              </div>
+              <p className="ask-assistant__answer">{exchange.answer}</p>
+              {exchange.evidence.length > 0 ? (
+                <div className="ask-assistant__citations">
+                  {exchange.evidence.map((item) => (
+                    <CitationCard key={item.n} evidence={item} />
+                  ))}
+                </div>
+              ) : null}
             </>
           ) : (
             <RefusalNotice
               answer={exchange.answer}
               refusalReason={exchange.refusal_reason}
               nearbyEvidence={exchange.nearby_evidence}
+              className="ask-assistant__refusal"
             />
           )}
-        </article>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function AskLoader() {
+  return (
+    <div className="ask-loader" aria-live="polite" aria-busy="true">
+      <AssistantAvatar />
+      <div className="ask-loader__dots" aria-label="Loading answer">
+        <span className="ask-loader__dot" />
+        <span className="ask-loader__dot" />
+        <span className="ask-loader__dot" />
+      </div>
+    </div>
+  );
+}
+
+export function AskTranscript({
+  exchanges,
+  pending = false,
+  pendingQuestion = null,
+}: AskTranscriptProps) {
+  const showPendingUser =
+    pendingQuestion &&
+    !exchanges.some((exchange) => exchange.question === pendingQuestion);
+
+  return (
+    <div className="ask-transcript">
+      {exchanges.map((exchange, index) => (
+        <div key={`${exchange.question}-${index}`}>
+          <AssistantExchange exchange={exchange} />
+        </div>
       ))}
+      {showPendingUser ? <UserBubble content={pendingQuestion} /> : null}
+      {pending ? <AskLoader /> : null}
     </div>
   );
 }

@@ -9,9 +9,9 @@ themes:
     jfrog_relevance: "SBOM mandates map directly to AppTrust's evidence story."
   - key: funding_ma
     label: Funding & acquisitions
-    match: { signal_types: [corporate_financial], keywords: [acquires, funding, raises, series] }
+    match: { signal_types: [corporate_financial], keywords: [acquire, acquires, acquisition, funding, raises, series] }
     jfrog_relevance: "Consolidation reshapes the competitive set."
   - key: ai_mlops
     label: AI / MLOps & model registries
-    match: { signal_types: [product_capability], keywords: [model, mlops, registry, llm] }
+    match: { signal_types: [product_capability], keywords: [model, model registry, ml, mlops, registry, llm] }
     jfrog_relevance: "Validates JFrog ML / AI Catalog as the next artifact frontier."
