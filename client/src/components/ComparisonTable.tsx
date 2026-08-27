@@ -5,15 +5,6 @@ function toDimKey(dimension: string): string {
   return dimension.toLowerCase().replace(/ /g, "_");
 }
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 interface ComparisonTableProps {
   rows: BattlecardRow[];
 }
@@ -64,17 +55,6 @@ export function ComparisonTable({ rows }: ComparisonTableProps) {
             >
               Competitor position
             </th>
-            <th
-              style={{
-                textAlign: "left",
-                padding: "var(--sp-2) var(--sp-3)",
-                borderBottom: "1px solid var(--border)",
-                fontSize: "var(--fs-meta)",
-                color: "var(--ink-muted)",
-              }}
-            >
-              Last changed
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -92,15 +72,6 @@ export function ComparisonTable({ rows }: ComparisonTableProps) {
                   }}
                 >
                   {row.dimension}
-                  {row.changed_recently ? (
-                    <span
-                      data-testid="changed-flag"
-                      title="Supporting claim changed recently"
-                      style={{ marginLeft: "var(--sp-1)" }}
-                    >
-                      ⚠
-                    </span>
-                  ) : null}
                 </td>
                 <td
                   style={{
@@ -153,18 +124,6 @@ export function ComparisonTable({ rows }: ComparisonTableProps) {
                       )}
                     </div>
                   </div>
-                </td>
-                <td
-                  style={{
-                    padding: "var(--sp-3)",
-                    borderBottom: "1px solid var(--border)",
-                    verticalAlign: "top",
-                    fontSize: "var(--fs-meta)",
-                    color: "var(--ink-secondary)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {formatDate(row.last_changed_at)}
                 </td>
               </tr>
             );

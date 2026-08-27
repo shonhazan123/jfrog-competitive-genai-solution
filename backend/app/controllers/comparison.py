@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.capture import RawCapture
-from app.models.ledger import Claim, ClaimVersion, Evidence
+from app.models.ledger import Claim, Evidence
 from app.models.registry import Source
 from app.serializers.common import (
     authored_citation,
     evidence_from_capture,
-    fmt_ts,
-    signal_type_label,
 )
 from app.services.comparison import build_comparison
 
@@ -66,26 +62,6 @@ def _evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
     ]
 
 
-def _change_for_claim(session: Session, claim: Claim | None, dimension: str) -> dict | None:
-    if claim is None:
-        return None
-    version = session.execute(
-        select(ClaimVersion)
-        .where(ClaimVersion.claim_id == claim.id, ClaimVersion.change_kind == "substantive")
-        .order_by(ClaimVersion.changed_at.desc())
-        .limit(1)
-    ).scalar_one_or_none()
-    if version is None:
-        return None
-    label = _DIMENSION_LABELS.get(dimension, dimension)
-    return {
-        "dimension": f'row "{label}" · cell "JFrog"',
-        "kind": version.change_kind,
-        "was": version.old_text or "",
-        "now": version.new_text or claim.claim_text,
-    }
-
-
 def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
     from app.models.entity_helpers import entity_by_slug
 
@@ -103,9 +79,6 @@ def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
     for row in rows:
         claim = claims.get(row.dimension)
         no_claim = row.competitor.origin == "absent"
-        changed_recently = False
-        if row.last_changed_at:
-            changed_recently = row.last_changed_at >= datetime.now(UTC) - timedelta(days=7)
 
         items.append(
             {
@@ -124,10 +97,7 @@ def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
                 ),
                 "reliability_grade": row.competitor.grade if not no_claim else "C",
                 "credibility_score": 4 if no_claim else 2,
-                "last_changed_at": fmt_ts(row.last_changed_at),
-                "changed_recently": changed_recently,
                 "evidence": _evidence_for_claim(session, claim),
-                "change": _change_for_claim(session, claim, row.dimension),
                 "no_claim_on_record": no_claim,
             }
         )

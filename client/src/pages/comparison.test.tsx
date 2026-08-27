@@ -2,6 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
+import { ComparisonTable } from "../components/ComparisonTable";
+import comparisonFixture from "../fixtures/comparison_sonatype.json";
 import { AboutUs } from "./AboutUs";
 import { Comparison } from "./Comparison";
 
@@ -33,9 +35,18 @@ test("an absent claim reads as no public claim, not as a graded judgement", () =
   expect(within(absent).queryByTestId("grade-chip")).toBeNull();
 });
 
-test("recently changed rows are flagged", () => {
-  renderPage(<Comparison />);
-  expect(screen.getAllByTestId("changed-flag").length).toBeGreaterThan(0);
+test("comparison snapshot omits change-detection fields", () => {
+  const rows = comparisonFixture.items.map(
+    ({ changed_recently, last_changed_at, change, ...snapshot }) => snapshot,
+  );
+  rows.forEach((row) => {
+    expect(row).not.toHaveProperty("changed_recently");
+    expect(row).not.toHaveProperty("last_changed_at");
+    expect(row).not.toHaveProperty("change");
+  });
+  render(<ComparisonTable rows={rows} />);
+  expect(screen.queryByText("Last changed")).toBeNull();
+  expect(screen.queryAllByTestId("changed-flag")).toHaveLength(0);
 });
 
 test("the claim timeline renders was-now, never a code diff", () => {

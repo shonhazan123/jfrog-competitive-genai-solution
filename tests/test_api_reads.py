@@ -53,6 +53,7 @@ def test_signal_payload_uses_tier_not_numeric_score(client_with_data):
     assert "why_it_matters" in row
     assert "score" not in row
     assert "score_breakdown" not in row
+    assert "change" not in row
 
 
 def test_timestamps_carry_a_utc_offset(client_with_data):

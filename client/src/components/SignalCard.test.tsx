@@ -59,6 +59,21 @@ test("a caution-flagged security signal shows its handling warning", () => {
   expect(screen.getByText(/lead on posture/i)).toBeInTheDocument();
 });
 
+test("renders no was-now diff even when change data is present on the signal", () => {
+  const staleSignal = {
+    ...SIGNAL,
+    change: {
+      dimension: "test",
+      kind: "substantive",
+      was: "old text",
+      now: "new text",
+    },
+  } as unknown as import("./SignalCard").SignalCardSignal;
+  render(<SignalCard signal={staleSignal} persona="sales" />);
+  expect(screen.queryByText(/^was$/i)).toBeNull();
+  expect(document.querySelector(".was-now")).toBeNull();
+});
+
 test("the four analyst actions are always reachable", () => {
   render(<SignalCard signal={SIGNAL} persona="sales" onAction={vi.fn()} />);
   ["confirm","reject","edit","mute"].forEach((a) =>

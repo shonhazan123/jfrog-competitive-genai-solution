@@ -5,7 +5,6 @@ import { Disclosure } from "./primitives/Disclosure";
 import { Quote } from "./primitives/Quote";
 import { ScoreBadge } from "./primitives/ScoreBadge";
 import { SectionLabel } from "./primitives/SectionLabel";
-import { WasNow } from "./primitives/WasNow";
 import "./SignalCard.css";
 
 const HUE_TOKENS: Record<string, string> = {
@@ -171,9 +170,6 @@ export function SignalCard({ signal, persona, onAction }: SignalCardProps) {
             <span aria-hidden="true"> · </span>
             <span>{formatDate(evidence.captured_at)}</span>
           </p>
-          {signal.change ? (
-            <WasNow was={signal.change.was} now={signal.change.now} />
-          ) : null}
         </section>
       ) : null}
 

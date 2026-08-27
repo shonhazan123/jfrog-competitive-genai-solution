@@ -127,6 +127,18 @@ def test_recently_changed_rows_expose_their_change_time(session, seeded_claims_w
     changed = [r for r in rows if r.last_changed_at is not None]
     assert changed
 
+
+def test_list_comparison_rows_omit_change_detection(session, seeded_claims_with_history):
+    from app.controllers.comparison import list_comparison
+
+    result = list_comparison(session, "sonatype")
+    assert result["items"]
+    for item in result["items"]:
+        assert "changed_recently" not in item
+        assert "last_changed_at" not in item
+        assert "change" not in item
+
+
 def test_every_dimension_in_config_appears_even_with_no_claims(session):
     rows = build_comparison(session, "harbor", cfg=...)
     assert len(rows) >= 6

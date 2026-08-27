@@ -82,7 +82,6 @@ export interface Signal {
   score_breakdown: ScoreBreakdown | null;
   handling: Handling | null;
   awareness_only: boolean;
-  change: Change | null;
   evidence: Evidence[];
   cluster_id: string | null;
   corroboration_count: number;
@@ -157,10 +156,7 @@ export interface BattlecardRow {
   supporting_claim_ids: string[];
   reliability_grade: ReliabilityGrade | null;
   credibility_score: CredibilityScore | null;
-  last_changed_at: string | null;
-  changed_recently: boolean;
   evidence: Evidence[];
-  change: Change | null;
   no_claim_on_record: boolean;
 }
 

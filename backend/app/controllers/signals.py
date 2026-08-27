@@ -112,7 +112,6 @@ def _serialize_signal(
         "handling": signal.handling,
         "handling_label": state_label(signal.handling, cfg),
         "awareness_only": bool(breakdown.get("awareness_only")),
-        "change": breakdown.get("change"),
         "evidence": [],
         "cluster_id": signal.cluster_key,
         "corroboration_count": signal.corroboration_count,
