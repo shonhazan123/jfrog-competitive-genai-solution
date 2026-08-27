@@ -1,0 +1,29 @@
+buckets:
+  - key: supply_chain_vulns
+    label: Software Supply-Chain Vulnerabilities & Exploits
+    signal_type: security_trust
+    include: [malicious package, typosquatting, dependency confusion, repo poisoning,
+              secret leakage, poisoned library, npm, pypi, compromised package, CVE exploit]
+    exclude: [data breach unrelated to packages]
+    jfrog_relevance: "Raises demand for provenance and blocking at the gate — Curation and Xray."
+  - key: ai_secops
+    label: AI Code-Gen & ML Security
+    signal_type: security_trust
+    include: [poisoned model, malicious HuggingFace model, model supply chain, MCP security,
+              insecure AI-generated code, AI agent exploit, model scanning]
+    exclude: [benchmark, quantization, reasoning eval, RAG technique, model release, model quality]
+    jfrog_relevance: "Validates JFrog ML / AI Catalog as a secure model registry."
+  - key: pipeline_devsecops
+    label: Pipeline Security & DevSecOps Platform
+    signal_type: product_capability
+    include: [CI/CD pipeline attack, reachability analysis, contextual analysis, SBOM automation,
+              binary authorization, container runtime security]
+    exclude: [general cloud ops, unrelated k8s tutorials]
+    jfrog_relevance: "Direct read on the Contextual Analysis value proposition."
+  - key: regulation_compliance
+    label: Regulatory, Compliance & Standards
+    signal_type: market_regulatory
+    include: [EU Cyber Resilience Act, CRA, CISA Secure by Design, federal SBOM mandate,
+              NVD delay, executive order]
+    exclude: [non-software regulation]
+    jfrog_relevance: "SBOM/CRA mandates map to AppTrust's evidence story."

@@ -44,6 +44,27 @@ calls:
     temperature: 0
     reasoning_effort: null
 
+  # Research graphs — relevance/usable gate over search hits or structured material.
+  # Cheap, fast, schema-locked structured output per box.
+  gate:
+    description: >-
+      Per-box relevance gate for Industry, Signals, and Comparison research graphs.
+      Keeps on-topic hits or marks absent; never fabricates.
+    model: gpt-5-mini
+    temperature: 0
+    timeout_seconds: 45
+    reasoning_effort: low
+
+  # Research graphs — heavier synthesis when a gate resolves (optional tier).
+  synthesize:
+    description: >-
+      Optional synthesis pass for research findings when the graph needs richer
+      card text beyond the gate verdict.
+    model: gpt-5-mini
+    temperature: 0
+    timeout_seconds: 90
+    reasoning_effort: low
+
   # Ask endpoint — answers analyst questions strictly from retrieved ledger
   # evidence and refuses when the answer is not supported. Read-only.
   ask:
