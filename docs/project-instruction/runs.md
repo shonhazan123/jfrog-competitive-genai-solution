@@ -2,6 +2,8 @@
 
 **Startup:** `api` and `worker` containers run `alembic upgrade head` on boot (see
 `backend/docker-entrypoint.sh`) so schema matches models before any run job touches Postgres.
+Both may start migrations concurrently; `backend/alembic/env.py` serializes them with a Postgres
+session advisory lock (`MIGRATION_LOCK_KEY`) so only one container applies revisions at a time.
 The worker seeds sources but skips Wayback backfill unless `BACKFILL_ON_START=true` (verdict-first:
 change-detection is benched). When backfill is enabled with `BACKFILL_SOURCE=fixtures`, a snapshot
 source with no committed Wayback fixture is skipped with a warning — it does not fail the worker or

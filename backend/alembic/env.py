@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 from app.models.base import Base
 import app.models.capture  # noqa: F401
@@ -17,6 +17,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
+MIGRATION_LOCK_KEY = 811223344556677
 
 
 def run_migrations_offline() -> None:
@@ -42,12 +44,25 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        try:
+            connection.execute(
+                text("SELECT pg_advisory_lock(:k)"),
+                {"k": MIGRATION_LOCK_KEY},
+            )
+            connection.commit()
 
-        with context.begin_transaction():
-            context.run_migrations()
+            context.configure(
+                connection=connection, target_metadata=target_metadata
+            )
+
+            with context.begin_transaction():
+                context.run_migrations()
+        finally:
+            connection.execute(
+                text("SELECT pg_advisory_unlock(:k)"),
+                {"k": MIGRATION_LOCK_KEY},
+            )
+            connection.commit()
 
 
 if context.is_offline_mode():
