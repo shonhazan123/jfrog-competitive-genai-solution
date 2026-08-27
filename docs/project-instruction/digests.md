@@ -7,7 +7,8 @@ roll-up, and do not invent a third assembly path.
 
 Persona ∈ `{sales, product}`. Paths: `/digests/sales`, `/digests/product`.
 
-Assembled, budget-capped, ranked by persona score. Response shape is
+Assembled, budget-capped, ranked by persona tier (`act_on_it` → `worth_knowing` →
+`background`; stable within a tier). Response shape is
 [API_CONTRACT §2.1](../API_CONTRACT.md#21-get-digestspersona--assembled-per-persona-digest):
 
 `persona`, `date`, `subject`, `lead`, `budget`, `item_count`,
