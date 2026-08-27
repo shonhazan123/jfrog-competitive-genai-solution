@@ -9,9 +9,8 @@ Code: `backend/agent/graphs/interpret/graph.py`, nodes under `backend/agent/node
 
 Each node emits structured **INFO** lines via `agent.log.step` under logger names
 `agent.sanitize`, `agent.extract`, `agent.verify`, `agent.repair`,
-`agent.quarantine`, `agent.contextualize`, `agent.interpret`. The service bridge
-`app.services.agent_service.interpret_capture` logs start/done/quarantine/empty under
-`app.agent_service`. Worker batch interpret logs under `worker.jobs`.
+`agent.quarantine`, `agent.contextualize`, `agent.interpret`. Worker batch interpret
+logs under `worker.jobs` when that path is enabled.
 
 Routing after verify is logged as `interpret.route` with `from_node`, `to_node`,
 and `verification_ok`.
@@ -43,7 +42,6 @@ see which model each `get_model(role)` call builds (`agent.llm`).
 | `interpret.route … to_node='repair'` | Retrying extraction with feedback |
 | `interpret.route … to_node='quarantine'` | Max repairs exhausted |
 | `interpret.route … to_node='finalize_empty'` | Zero verified claims; skips LLM contextualize |
-| `interpret.capture.empty` | Service returned without persisting a Signal |
 | `quarantine` | Capture sent to analyst queue |
 | `extract.failed` / `repair.failed` | LLM or schema error — see traceback |
 | `run.failed` | Background run job threw — see traceback |

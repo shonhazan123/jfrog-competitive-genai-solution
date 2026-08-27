@@ -16,13 +16,12 @@ Handled in `app.controllers.config` + `app.routers.config`. Overrides are held i
 process (`_instructions_override`, watchlist override) and bump a config version;
 `clear_config_extensions()` resets them (used by tests).
 
-## Instructions injection
+## Instructions
 
-`current_instructions()` loads `config/instructions.yaml`. `agent_service` appends
-the text into the **Analyst instructions** section of both `agent/prompts/extract.md`
-and `agent/prompts/contextualize.md`, so the analyst's intent steers extraction and
-the `why_it_matters` one-liner without any code change. Empty instructions leave the
-prompts unchanged.
+`current_instructions()` loads `config/instructions.yaml` (or the in-process override
+from `PUT /config/instructions`). The API persists and returns analyst free-text
+instructions; there is no live path that injects them into interpret LLM prompts in
+Phase 0.
 
 ## Tiers (verdict thresholds)
 

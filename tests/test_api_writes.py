@@ -35,18 +35,6 @@ def test_put_config_instructions_persists_and_get_returns_them(client_with_data)
     assert get_resp.json()["instructions"] == ["flag anything mentioning SLSA"]
 
 
-def test_extract_prompt_includes_instruction_when_present(client_with_data, session):
-    from app.services.agent_service import _production_deps
-
-    client_with_data.put(
-        "/config/instructions",
-        json={"instructions": ["flag anything mentioning SLSA"]},
-    )
-    deps = _production_deps(session)
-    prompt_text = deps.prompt("extract").format(content="sample untrusted text")
-    assert "flag anything mentioning SLSA" in prompt_text
-
-
 def test_invalid_config_is_rejected_with_a_readable_message(client_with_data):
     response = client_with_data.put("/config/materiality",
                                     json={"modifiers": {"reliability_grade": {"A": "not a number"}}})
