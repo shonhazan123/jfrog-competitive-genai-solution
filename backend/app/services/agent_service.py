@@ -250,6 +250,15 @@ def interpret_capture(capture_id: int, *, session: Session, deps=None) -> Interp
         session.flush()
         return InterpretResult(status="quarantined", thread_id=thread_id)
 
+    if status == "empty":
+        step(
+            logger,
+            "interpret.capture.empty",
+            capture_id=capture_id,
+            thread_id=thread_id,
+        )
+        return InterpretResult(status="empty", thread_id=thread_id)
+
     signal = _persist_signal(session, capture, source, final)
     step(
         logger,

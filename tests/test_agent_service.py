@@ -75,3 +75,41 @@ def test_stored_evidence_quote_is_a_substring_of_the_capture(session, capture_fi
 def test_thread_id_includes_the_prompt_version_so_reanalysis_starts_fresh(session, capture_fixture, fake_deps):
     from app.services.agent_service import thread_id_for
     assert thread_id_for(capture_fixture.id, prompt_version=2) != thread_id_for(capture_fixture.id, prompt_version=1)
+
+def test_zero_claim_capture_persists_no_signal(session, seeded_source, graph_deps):
+    from app.models.capture import RawCapture
+    from app.models.signal import Signal
+    from app.services.agent_service import interpret_capture
+
+    capture = RawCapture(
+        source_id=seeded_source.id,
+        fetched_at=datetime.now(UTC),
+        http_status=200,
+        content_hash="empty-1",
+        blob_path="/tmp/empty-1",
+        extracted_text="Nothing competitive here at all.",
+        provenance="test",
+    )
+    session.add(capture)
+    session.flush()
+
+    class _CtxBoom:
+        def invoke(self, _):
+            raise AssertionError("contextualize should be skipped on empty captures")
+
+    deps = graph_deps(
+        extract=FakeModel([{
+            "signal_type": "product_capability",
+            "asserting_entity": "sonatype",
+            "subject_entity": "sonatype",
+            "mentions_jfrog": False,
+            "headline": "",
+            "claims": [],
+        }]),
+        contextualize=_CtxBoom(),
+    )
+
+    before = session.query(Signal).count()
+    result = interpret_capture(capture.id, session=session, deps=deps)
+    assert result.status == "empty"
+    assert session.query(Signal).count() == before

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
 
@@ -107,6 +109,101 @@ def _store_capture(
     return capture
 
 
+def _collect_source(session, source, fetcher, robots, now, force, report) -> None:
+    if not force and not _due(source, now):
+        report["skipped_not_due"] += 1
+        return
+    allowed = robots.allowed(source.url)
+    source.robots_allowed = allowed
+    source.last_checked_at = now
+    source.check_count += 1
+    if not allowed:
+        report["skipped_robots"] += 1
+        return
+
+    # One malformed or unreachable source must never abort the whole daily run.
+    try:
+        if source.mode == "feed":
+            result = fetcher.fetch(source.url, source.etag)
+            if result.not_modified or not result.body:
+                return
+            if result.etag:
+                source.etag = result.etag
+            for entry in parse_feed(result.body, source.url):
+                if not is_new(session, source.id, entry.external_id):
+                    continue
+                text = entry.content_html or entry.summary_html or entry.title
+                _store_capture(session, source, entry.external_id, text, entry.link)
+                report["captures"] += 1
+        elif source.mode == "api":
+            adapter = _ADAPTERS.get(source.adapter or "")
+            if adapter is None:
+                return
+            for record in adapter.collect(source, fetcher):
+                if not is_new(session, source.id, record.external_id):
+                    continue
+                _store_capture(session, source, record.external_id, record.body, record.url)
+                report["captures"] += 1
+        elif source.mode == "snapshot":
+            if source.requires_js:
+                return
+            report["captures"] += collect_snapshot_source(session, source, fetcher)
+    except Exception:
+        report["errors"] += 1
+
+
+def _run_collection_parallel(
+    sources_or_groups,
+    fetcher,
+    *,
+    robots,
+    now,
+    force,
+    session_factory,
+    max_workers=8,
+) -> dict:
+    """Fetch sources grouped by domain: domains run concurrently, one domain's
+    sources run serially (respecting DomainRateLimiter). Each domain gets its own
+    Session so no Session is shared across threads."""
+    if isinstance(sources_or_groups, dict):
+        groups = sources_or_groups
+        n_sources = sum(len(ids) for ids in groups.values())
+    else:
+        groups: dict[str, list] = {}
+        for source in sources_or_groups:
+            groups.setdefault(urlparse(source.url).netloc, []).append(source.id)
+        n_sources = len(sources_or_groups)
+
+    totals = {
+        "captures": 0,
+        "skipped_robots": 0,
+        "skipped_not_due": 0,
+        "errors": 0,
+        "sources": n_sources,
+    }
+
+    def _run_group(source_ids):
+        report = {
+            "captures": 0,
+            "skipped_robots": 0,
+            "skipped_not_due": 0,
+            "errors": 0,
+            "sources": 0,
+        }
+        with session_factory() as s:
+            for sid in source_ids:
+                source = s.query(Source).filter_by(id=sid).one()
+                _collect_source(s, source, fetcher, robots, now, force, report)
+            s.commit()
+        return report
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        for report in pool.map(_run_group, groups.values()):
+            for key in ("captures", "skipped_robots", "skipped_not_due", "errors"):
+                totals[key] += report[key]
+    return totals
+
+
 def run_collection(
     session: Session | None = None,
     fetcher: Fetcher | None = None,
@@ -131,52 +228,26 @@ def run_collection(
     report["sources"] = len(sources)
     now = datetime.now(UTC)
 
-    for source in sources:
-        if not force and not _due(source, now):
-            report["skipped_not_due"] += 1
-            continue
-        allowed = robots.allowed(source.url)
-        source.robots_allowed = allowed
-        source.last_checked_at = now
-        source.check_count += 1
-        if not allowed:
-            report["skipped_robots"] += 1
-            continue
-
-        # One malformed or unreachable source must never abort the whole daily run.
-        try:
-            if source.mode == "feed":
-                result = fetcher.fetch(source.url, source.etag)
-                if result.not_modified or not result.body:
-                    continue
-                if result.etag:
-                    source.etag = result.etag
-                for entry in parse_feed(result.body, source.url):
-                    if not is_new(session, source.id, entry.external_id):
-                        continue
-                    text = entry.content_html or entry.summary_html or entry.title
-                    _store_capture(session, source, entry.external_id, text, entry.link)
-                    report["captures"] += 1
-            elif source.mode == "api":
-                adapter = _ADAPTERS.get(source.adapter or "")
-                if adapter is None:
-                    continue
-                for record in adapter.collect(source, fetcher):
-                    if not is_new(session, source.id, record.external_id):
-                        continue
-                    _store_capture(session, source, record.external_id, record.body, record.url)
-                    report["captures"] += 1
-            elif source.mode == "snapshot":
-                if source.requires_js:
-                    continue
-                report["captures"] += collect_snapshot_source(session, source, fetcher)
-        except Exception:
-            report["errors"] += 1
-            continue
-
     if own_session:
-        session.commit()
+        groups: dict[str, list[int]] = {}
+        for source in sources:
+            groups.setdefault(urlparse(source.url).netloc, []).append(source.id)
         session.close()
+        report = _run_collection_parallel(
+            groups,
+            fetcher,
+            robots=robots,
+            now=now,
+            force=force,
+            session_factory=SessionLocal,
+        )
+        report["sources"] = len(sources)
+        step(logger, "collection.done", **report)
+        return report
+
+    for source in sources:
+        _collect_source(session, source, fetcher, robots, now, force, report)
+
     step(logger, "collection.done", **report)
     return report
 
@@ -202,13 +273,29 @@ def _diversify_by_source(captures: list[RawCapture], signaled_source_ids: set[in
     return diversified
 
 
-def run_interpret(session: Session | None = None, limit: int | None = None) -> dict:
+def _interpret_one(capture_id: int) -> str:
+    with SessionLocal() as s:
+        try:
+            result = interpret_capture(capture_id, session=s)
+            s.commit()
+            return result.status
+        except Exception:
+            logger.exception("interpret.batch.failed capture_id=%s", capture_id)
+            return "failed"
+
+
+def run_interpret(
+    session: Session | None = None,
+    limit: int | None = None,
+    max_workers: int = 3,
+) -> dict:
     own_session = session is None
     if own_session:
         session = SessionLocal()
     interpreted = 0
     quarantined = 0
     failed = 0
+    skipped_empty = 0
     interpreted_ids = {
         row[0] for row in session.query(SignalEvidence.capture_id).distinct().all()
     }
@@ -223,36 +310,61 @@ def run_interpret(session: Session | None = None, limit: int | None = None) -> d
     captures = query.all()
     signaled_source_ids = {row[0] for row in session.query(Signal.source_id).distinct().all()}
     captures = _diversify_by_source(captures, signaled_source_ids)
+    interpreted_hashes = {
+        row[0]
+        for row in session.query(RawCapture.content_hash)
+        .join(SignalEvidence, SignalEvidence.capture_id == RawCapture.id)
+        .distinct()
+    }
+    seen_hashes = set(interpreted_hashes)
+    skipped_duplicate = 0
+    deduped: list[RawCapture] = []
+    for capture in captures:
+        if capture.content_hash in seen_hashes:
+            skipped_duplicate += 1
+            continue
+        seen_hashes.add(capture.content_hash)
+        deduped.append(capture)
+    captures = deduped
     if limit is not None:
         captures = captures[:limit]
-    step(logger, "interpret.batch.start", pending=len(captures), limit=limit)
-    for capture in captures:
-        step(logger, "interpret.batch.capture", capture_id=capture.id)
-        try:
-            result = interpret_capture(capture.id, session=session)
-        except Exception:
-            logger.exception(
-                "interpret.batch.failed capture_id=%s",
-                capture.id,
-            )
-            failed += 1
-            continue
-        step(
-            logger,
-            "interpret.batch.result",
-            capture_id=capture.id,
-            status=result.status,
-            signal_id=result.signal_id,
-            thread_id=result.thread_id,
-        )
-        if result.status == "ok":
+    capture_ids = [c.id for c in captures]
+    step(logger, "interpret.batch.start", pending=len(capture_ids), limit=limit)
+
+    def _tally(status: str) -> None:
+        nonlocal interpreted, quarantined, failed, skipped_empty
+        if status == "ok":
             interpreted += 1
-        elif result.status == "quarantined":
+        elif status == "quarantined":
             quarantined += 1
-    if own_session:
+        elif status == "empty":
+            skipped_empty += 1
+        elif status == "failed":
+            failed += 1
+
+    if own_session and max_workers > 1:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for status in pool.map(_interpret_one, capture_ids):
+                _tally(status)
+    else:
+        for capture_id in capture_ids:
+            try:
+                result = interpret_capture(capture_id, session=session)
+                _tally(result.status)
+            except Exception:
+                logger.exception("interpret.batch.failed capture_id=%s", capture_id)
+                failed += 1
+
+    if own_session and max_workers <= 1:
         session.commit()
         session.close()
-    report = {"interpreted": interpreted, "quarantined": quarantined, "failed": failed}
+    report = {
+        "interpreted": interpreted,
+        "quarantined": quarantined,
+        "failed": failed,
+        "skipped_empty": skipped_empty,
+        "skipped_duplicate": skipped_duplicate,
+    }
     step(logger, "interpret.batch.done", **report)
     return report
 

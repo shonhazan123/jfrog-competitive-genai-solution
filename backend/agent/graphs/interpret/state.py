@@ -13,6 +13,6 @@ class InterpretState(TypedDict, total=False):
     candidates: list[dict]
     relations: list[dict]
     contextualization: dict | None
-    status: Literal["ok", "quarantined", "rejected"]
+    status: Literal["ok", "quarantined", "rejected", "empty"]
     errors: list[str]
     trace: list[dict]

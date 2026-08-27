@@ -21,6 +21,25 @@ def bad_extraction():
     return {**good_extraction(),
             "claims": [{**good_extraction()["claims"][0], "quote": "will discontinue Artifactory"}]}
 
+def empty_extraction():
+    return {"signal_type": "product_capability", "asserting_entity": "sonatype",
+            "subject_entity": "sonatype", "mentions_jfrog": False,
+            "headline": "", "claims": []}
+
+def test_zero_claim_capture_skips_contextualise(graph_deps):
+    ctx = FakeModel([{"so_what_sales": "s", "so_what_product": "p",
+                      "so_what_exec": "e", "relevance_adjustment": 0.0,
+                      "adjustment_reason": ""}])
+    graph = build_interpret_graph(
+        graph_deps(extract=FakeModel([empty_extraction()]), contextualize=ctx))
+    final = graph.invoke({"capture_id": 9, "raw_text": SOURCE, "source_meta": {},
+                          "repair_attempts": 0, "_max_repairs": 2},
+                         config={"configurable": {"thread_id": "t9"}})
+    assert final["status"] == "empty"
+    assert final.get("contextualization") is None
+    assert ctx.calls == 0
+    assert "contextualize" not in [t.get("node") for t in final["trace"]]
+
 def test_clean_document_reaches_contextualisation(graph_deps):
     graph = build_interpret_graph(graph_deps(extract=FakeModel([good_extraction()])))
     final = graph.invoke({"capture_id": 1, "raw_text": SOURCE, "source_meta": {},

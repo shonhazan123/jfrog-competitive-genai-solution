@@ -32,7 +32,7 @@ calls:
     model: gpt-5-mini
     temperature: 0
     timeout_seconds: 180
-    reasoning_effort: null
+    reasoning_effort: low
 
   # Interpret graph — turns verified claims and JFrog positions into the
   # per-persona "so what" framing shown on signal cards.

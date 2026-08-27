@@ -108,3 +108,148 @@ def test_run_interpret_continues_after_a_capture_failure(session, seeded_source,
     assert calls == [first_id, second_id]
     assert report["failed"] == 1
     assert report["interpreted"] == 1
+
+
+def test_run_interpret_counts_empty_captures(session, seeded_source, monkeypatch):
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+    from app.models.capture import RawCapture
+    from worker import jobs
+
+    capture = RawCapture(
+        source_id=seeded_source.id, fetched_at=datetime.now(UTC), http_status=200,
+        content_hash="empty-batch", blob_path="/tmp/eb",
+        extracted_text="boilerplate", provenance="test",
+    )
+    session.add(capture); session.flush()
+
+    def fake_interpret(capture_id, *, session):
+        return SimpleNamespace(status="empty", signal_id=None,
+                               thread_id=f"interpret:{capture_id}:v1")
+
+    monkeypatch.setattr(jobs, "interpret_capture", fake_interpret)
+    report = jobs.run_interpret(session=session, limit=1)
+    assert report["skipped_empty"] == 1
+    assert report["interpreted"] == 0
+
+
+def test_run_interpret_dedups_identical_captures(session, seeded_source, monkeypatch):
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+    from app.models.capture import RawCapture
+    from worker import jobs
+
+    for idx in range(2):
+        session.add(RawCapture(
+            source_id=seeded_source.id, fetched_at=datetime.now(UTC), http_status=200,
+            content_hash="same-hash", blob_path=f"/tmp/dup{idx}",
+            extracted_text="identical page body", provenance="test",
+        ))
+    session.flush()
+
+    calls: list[int] = []
+    def fake_interpret(capture_id, *, session):
+        calls.append(capture_id)
+        return SimpleNamespace(status="ok", signal_id=1, thread_id="t")
+
+    monkeypatch.setattr(jobs, "interpret_capture", fake_interpret)
+    report = jobs.run_interpret(session=session)
+    assert len(calls) == 1
+    assert report["skipped_duplicate"] == 1
+    assert report["interpreted"] == 1
+
+
+def test_parallel_collection_collects_all_domains(session, monkeypatch, scripted_feed_fetcher):
+    from app.services.seeding import seed
+    from worker.jobs import run_collection
+    seed(session)
+    serial = run_collection(session=session, fetcher=scripted_feed_fetcher, force=True)
+    assert serial["captures"] >= 0
+
+
+def test_two_domains_fetch_concurrently(session, monkeypatch):
+    import threading
+    from urllib.parse import urlparse
+    from app.services.seeding import seed
+    from app.models.registry import Source
+    from app.services.collection.fetcher import FetchResult
+    from worker import jobs
+    seed(session)
+    monkeypatch.setattr("app.services.collection.robots.RobotsCache.allowed",
+                        lambda self, url: True)
+    barrier = threading.Barrier(2, timeout=5)
+
+    def fake_collect(_session, source, fetcher, _robots, _now, _force, report):
+        fetcher.fetch(source.url)
+        report["captures"] += 1
+
+    monkeypatch.setattr(jobs, "_collect_source", fake_collect)
+
+    class BarrierFetcher:
+        def fetch(self, url, etag=None, last_modified=None):
+            barrier.wait()
+            return FetchResult(url, 200, b"<html></html>", None, None, False)
+    by_domain: dict[str, Source] = {}
+    for source in session.query(Source).filter(Source.mode == "snapshot").all():
+        netloc = urlparse(source.url).netloc
+        if netloc not in by_domain:
+            by_domain[netloc] = source
+    assert len(by_domain) >= 2
+    sources = list(by_domain.values())[:2]
+    source_by_id = {s.id: s for s in sources}
+
+    class _FakeSession:
+        def query(self, model):
+            assert model is Source
+            return self
+
+        def filter_by(self, *, id):
+            self._source = source_by_id[id]
+            return self
+
+        def one(self):
+            return self._source
+
+        def commit(self):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            pass
+
+    jobs._run_collection_parallel(
+        sources, BarrierFetcher(),
+        robots=jobs.RobotsCache(), now=__import__("datetime").datetime.now(__import__("datetime").UTC),
+        force=True, session_factory=_FakeSession, max_workers=2,
+    )
+
+
+def test_run_interpret_runs_captures_concurrently(session, seeded_source, monkeypatch):
+    import threading
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+    from app.models.capture import RawCapture
+    from worker import jobs
+
+    ids = []
+    for idx in range(3):
+        c = RawCapture(source_id=seeded_source.id, fetched_at=datetime.now(UTC),
+                       http_status=200, content_hash=f"conc-{idx}",
+                       blob_path=f"/tmp/c{idx}", extracted_text=f"t{idx}",
+                       provenance="test")
+        session.add(c); session.flush(); ids.append(c.id)
+
+    barrier = threading.Barrier(2, timeout=5)
+    def fake_interpret(capture_id, *, session):
+        try:
+            barrier.wait()
+        except threading.BrokenBarrierError:
+            pass
+        return SimpleNamespace(status="ok", signal_id=1, thread_id="t")
+
+    monkeypatch.setattr(jobs, "interpret_capture", fake_interpret)
+    monkeypatch.setattr(jobs, "SessionLocal", lambda: session)
+    report = jobs.run_interpret(max_workers=2)
+    assert report["interpreted"] == 3

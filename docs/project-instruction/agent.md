@@ -2,14 +2,15 @@
 
 ## Interpret graph
 
-Flow: `sanitize → extract → verify → (repair | crossref | quarantine) → contextualize`.
+Flow: `sanitize → extract → verify → (repair | crossref | quarantine | finalize_empty) → contextualize`.
+Zero verified claims after verify route to `finalize_empty` (status `"empty"`) and skip crossref/contextualize.
 
 Code: `backend/agent/graphs/interpret/graph.py`, nodes under `backend/agent/nodes/`.
 
 Each node emits structured **INFO** lines via `agent.log.step` under logger names
 `agent.sanitize`, `agent.extract`, `agent.verify`, `agent.repair`,
 `agent.quarantine`, `agent.contextualize`, `agent.interpret`. The service bridge
-`app.services.agent_service.interpret_capture` logs start/done/quarantine under
+`app.services.agent_service.interpret_capture` logs start/done/quarantine/empty under
 `app.agent_service`. Worker batch interpret logs under `worker.jobs`.
 
 Routing after verify is logged as `interpret.route` with `from_node`, `to_node`,
@@ -41,6 +42,8 @@ see which model each `get_model(role)` call builds (`agent.llm`).
 | `verify.failed` | Quote verification failed; check `failed_quotes` |
 | `interpret.route … to_node='repair'` | Retrying extraction with feedback |
 | `interpret.route … to_node='quarantine'` | Max repairs exhausted |
+| `interpret.route … to_node='finalize_empty'` | Zero verified claims; skips LLM contextualize |
+| `interpret.capture.empty` | Service returned without persisting a Signal |
 | `quarantine` | Capture sent to analyst queue |
 | `extract.failed` / `repair.failed` | LLM or schema error — see traceback |
 | `run.failed` | Background run job threw — see traceback |
