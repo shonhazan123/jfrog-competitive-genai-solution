@@ -90,8 +90,7 @@ def _serialize_signal(
         "exec": float(signal.score_exec),
     }
     stakeholder = primary_stakeholder(scores)
-    overall = scores[stakeholder]
-    tier = tier_for(overall, cfg)
+    tier = tier_for(scores[active_persona], cfg)
     return {
         "id": f"sig_{signal.id}",
         "entity": entity_ref(entity),

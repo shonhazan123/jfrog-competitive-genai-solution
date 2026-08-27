@@ -9,6 +9,7 @@ from app.controllers.digests import exec_weekly
 from app.controllers.signals import list_signals
 from app.serializers.common import fmt_ts, signal_type_label
 from app.services.delivery.assembly import assemble
+from app.services.scoring.materiality import tier_priority
 
 
 def _email_items_from_signals(items: list[dict]) -> list[dict]:
@@ -32,9 +33,13 @@ def _persona_preview(session: Session, persona: str) -> dict:
     cfg = load_config()
     digest = assemble(session, persona, cfg, datetime.now(UTC))
     signal_list = list_signals(session, persona=persona)
-    # A digest is persona-ranked: order by the persona's own score so each
-    # audience leads with what matters to them, not by recency.
-    ranked = sorted(signal_list["items"], key=lambda item: item.get("score", 0.0), reverse=True)
+    # A digest is persona-ranked: order by the persona's tier so each audience
+    # leads with what matters to them, not by recency.
+    ranked = sorted(
+        signal_list["items"],
+        key=lambda item: tier_priority(item.get("tier", "")),
+        reverse=True,
+    )
     items = _email_items_from_signals(ranked) or [
         {
             "signal_type": "product_capability",

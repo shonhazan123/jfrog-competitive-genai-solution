@@ -78,7 +78,7 @@
         "signal_type": "product_capability",
         "headline": "Nexus 3.95 — 3 signals from 40 bullets",
         "so_what": "Cargo support + provenance attestation; 37 bullets filtered as no_signal.",
-        "flag": null,
+        "flag": "⚠ caution",
         "app_link": "https://app.internal/signals/sig_cap_nexus_release_395",
         "signal_type_label": "Product release",
         "handling_label": null

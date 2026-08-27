@@ -11,8 +11,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 2,
-      "last_changed_at": "2026-08-24T00:00:00+00:00",
-      "changed_recently": true,
       "evidence": [
         {
           "quote": "80% more accurate data than JFrog … JFrog malware detection is very limited, not proactive.",
@@ -32,12 +30,6 @@
           }
         }
       ],
-      "change": {
-        "dimension": "row \"Malware detection\" · cell \"JFrog\"",
-        "kind": "substantive",
-        "was": "Limited",
-        "now": "Very limited, not proactive"
-      },
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -59,8 +51,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 3,
-      "last_changed_at": "2026-07-11T00:00:00+00:00",
-      "changed_recently": false,
       "evidence": [
         {
           "quote": "JFrog SBOM support is export only.",
@@ -80,7 +70,6 @@
           }
         }
       ],
-      "change": null,
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -102,8 +91,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 3,
-      "last_changed_at": "2026-08-24T00:00:00+00:00",
-      "changed_recently": true,
       "evidence": [
         {
           "quote": "Beware hidden costs with JFrog Artifactory.",
@@ -123,7 +110,6 @@
           }
         }
       ],
-      "change": null,
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -145,8 +131,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 2,
-      "last_changed_at": "2026-08-25T00:00:00+00:00",
-      "changed_recently": false,
       "evidence": [
         {
           "quote": "Added: hosted, proxy and group repositories for the Cargo (crates.io) format.",
@@ -166,7 +150,6 @@
           }
         }
       ],
-      "change": null,
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -188,8 +171,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 2,
-      "last_changed_at": "2026-08-21T00:00:00+00:00",
-      "changed_recently": true,
       "evidence": [
         {
           "quote": "Firewall policies can now quarantine Hugging Face model components by license and malware signature.",
@@ -209,7 +190,6 @@
           }
         }
       ],
-      "change": null,
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -229,10 +209,7 @@
       "supporting_claim_ids": [],
       "reliability_grade": "C",
       "credibility_score": 4,
-      "last_changed_at": null,
-      "changed_recently": false,
       "evidence": [],
-      "change": null,
       "no_claim_on_record": true,
       "jfrog_citation": {
         "source_name": "CI team",
@@ -254,8 +231,6 @@
       ],
       "reliability_grade": "A",
       "credibility_score": 2,
-      "last_changed_at": "2026-06-03T00:00:00+00:00",
-      "changed_recently": false,
       "evidence": [
         {
           "quote": "Deploy Nexus Repository self-hosted or as a managed cloud offering.",
@@ -275,7 +250,6 @@
           }
         }
       ],
-      "change": null,
       "no_claim_on_record": false,
       "jfrog_citation": {
         "source_name": "CI team",

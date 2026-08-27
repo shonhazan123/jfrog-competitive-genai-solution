@@ -9,13 +9,20 @@ def test_an_analyst_action_is_persisted_with_actor_and_reason(client_with_data):
                                      json={"action": "reject", "reason": "duplicate", "actor": "a@jfrog.com"})
     assert response.status_code == 201
 
-def test_changing_a_weight_rescore_without_re_inference(client_with_data):
+def test_changing_a_weight_rescore_without_re_inference(client_with_data, session):
     """Re-scoring the ledger is a SQL update, not re-running the model."""
-    before = client_with_data.get("/signals?persona=sales").json()["items"][0]["score"]
-    client_with_data.put("/config/materiality",
-                         json={"modifiers": {"subject_is_jfrog": 1.0}})
-    after = client_with_data.get("/signals?persona=sales").json()["items"][0]["score"]
-    assert after != before
+    from app.models.signal import Signal
+
+    signal = session.query(Signal).filter_by(cluster_key="jfrog-subject").one()
+    before = signal.score_sales
+
+    client_with_data.put(
+        "/config/materiality",
+        json={"modifiers": {"subject_is_jfrog": 1.0}},
+    )
+
+    session.refresh(signal)
+    assert signal.score_sales != before
 
 def test_put_config_instructions_persists_and_get_returns_them(client_with_data):
     response = client_with_data.put(

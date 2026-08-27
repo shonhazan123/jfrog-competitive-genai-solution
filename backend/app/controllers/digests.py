@@ -8,6 +8,7 @@ from app.config.loader import load_config
 from app.models.registry import Entity, Source
 from app.models.signal import Signal
 from app.serializers.common import fmt_ts
+from app.services.scoring.materiality import tier_priority
 
 _PERSONA_TITLE = {"sales": "Sales", "product": "Product"}
 
@@ -23,7 +24,7 @@ def persona_digest(session: Session, persona: str, date: str | None = None) -> d
 
     ranked = sorted(
         list_signals(session, persona=persona)["items"],
-        key=lambda item: item.get("score", 0.0),
+        key=lambda item: tier_priority(item.get("tier", "")),
         reverse=True,
     )
     items = ranked[:budget]

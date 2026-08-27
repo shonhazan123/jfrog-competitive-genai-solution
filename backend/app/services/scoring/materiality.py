@@ -48,6 +48,11 @@ def score(facets: dict, persona: str, config: AppConfig) -> ScoreBreakdown:
 
 
 _TIE_ORDER = {"exec": 3, "product": 2, "sales": 1}
+_TIER_PRIORITY = {"act_on_it": 3, "worth_knowing": 2, "background": 1}
+
+
+def tier_priority(tier: str) -> int:
+    return _TIER_PRIORITY.get(tier, 0)
 
 
 def tier_for(total: float, config: AppConfig) -> str:
