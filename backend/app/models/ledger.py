@@ -12,6 +12,7 @@ class Claim(Base, TimestampMixin):
     claim_type: Mapped[str] = mapped_column(String(32))
     capability_tags: Mapped[list] = mapped_column(JSON, default=list)
     dimension: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    stance: Mapped[str | None] = mapped_column(String(16), nullable=True)  # strong|moderate|weak|none
     status: Mapped[str] = mapped_column(String(16), default="active")
     reliability_grade: Mapped[str] = mapped_column(String(1))
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

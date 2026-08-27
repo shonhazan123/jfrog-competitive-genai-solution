@@ -20,6 +20,7 @@ class Signal(Base, TimestampMixin):
     capability_tags: Mapped[list] = mapped_column(JSON, default=list)
 
     cluster_key: Mapped[str] = mapped_column(String(128), index=True)
+    theme_key: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     corroboration_count: Mapped[int] = mapped_column(Integer, default=1)
 
     score_sales: Mapped[float] = mapped_column(Float, default=0.0)
