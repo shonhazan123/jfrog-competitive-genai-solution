@@ -66,9 +66,12 @@ def get_embedder(model: str = "text-embedding-3-small"):
 
     class _Embedder:
         def __init__(self):
-            self._client = OpenAIEmbeddings(model=model)
+            self._client = None
+            self._model = model
 
         def embed(self, texts):
+            if self._client is None:
+                self._client = OpenAIEmbeddings(model=self._model)
             return self._client.embed_documents(list(texts))
 
     return _Embedder()

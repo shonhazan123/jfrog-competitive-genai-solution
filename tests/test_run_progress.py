@@ -67,13 +67,8 @@ def test_post_runs_returns_immediately_with_a_run_id(client):
 
 def test_progress_reports_a_human_stage_never_a_layer_name(client, running_run):
     body = client.get(f"/runs/{running_run.id}").json()
-    assert body["stage_label"] in (
-        "Checking sources",
-        "Reading new documents",
-        "Extracting claims",
-        "Scoring and routing",
-        "Done",
-    )
+    labels = {stage["label"] for stage in load_run_stages()}
+    assert body["stage_label"] in labels
     assert "_" not in body["stage_label"]
 
 
