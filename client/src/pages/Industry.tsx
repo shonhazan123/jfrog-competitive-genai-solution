@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { IndustryItem, IndustryTheme } from "../api/types";
 import { signalHue } from "../config/labels";
@@ -143,13 +143,34 @@ export function IndustryCard({ item }: { item: IndustryItem }) {
 }
 
 export function Industry() {
+  const queryClient = useQueryClient();
   const gridColumns = useGridColumns();
+  const [isRunning, setIsRunning] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
 
   const { data: themes } = useQuery({
     queryKey: ["industry", "themes"],
     queryFn: () => api.getThemes(),
     initialData: industryThemesFixture as IndustryTheme[],
   });
+
+  const handleRunThisPage = async () => {
+    if (isRunning) return;
+    setRunError(null);
+    setIsRunning(true);
+    try {
+      const result = await api.runSurface("industry");
+      if (result.status === "done") {
+        void queryClient.invalidateQueries({ queryKey: ["industry", "themes"] });
+      } else if (result.status === "failed") {
+        setRunError(result.message || "The industry run could not complete.");
+      }
+    } catch {
+      setRunError("Couldn't start the run — is the API reachable?");
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   return (
     <div className="industry">
@@ -160,6 +181,32 @@ export function Industry() {
           The DevSecOps market on its own terms. Click a theme to read the
           synthesis and JFrog relevance.
         </p>
+        <button
+          type="button"
+          data-testid="run-this-page"
+          onClick={() => void handleRunThisPage()}
+          disabled={isRunning}
+          aria-busy={isRunning}
+          style={{
+            marginTop: "var(--sp-3)",
+            padding: "var(--sp-1) var(--sp-3)",
+            fontSize: "var(--fs-meta)",
+            fontWeight: 500,
+            color: isRunning ? "var(--ink-muted)" : "var(--accent)",
+            background: isRunning ? "var(--surface-sunk)" : "var(--accent-wash)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--r-sm)",
+            cursor: isRunning ? "not-allowed" : "pointer",
+            opacity: isRunning ? 0.7 : 1,
+          }}
+        >
+          {isRunning ? "Running…" : "Run this page"}
+        </button>
+        {runError ? (
+          <p data-testid="run-error" role="alert" className="industry__run-error">
+            {runError}
+          </p>
+        ) : null}
       </header>
 
       <div

@@ -24,6 +24,7 @@ import sinceLastVisitFixture from "../fixtures/since_last_visit.json";
 import sourcesFixture from "../fixtures/sources.json";
 import watchlistFixture from "../fixtures/watchlist.json";
 
+import { RUN_POLL_INTERVAL_MS } from "../config/runPolling";
 import * as paths from "./endpoints";
 import type {
   AnalystActionRequest,
@@ -161,6 +162,39 @@ function fixtureOrLive<T>(
   return request<T>(path, init);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export type SurfaceRunKind = "industry" | "signals" | "comparison";
+
+async function pollRunToCompletion(runId: string): Promise<RunProgress> {
+  while (true) {
+    const progress = await request<RunProgress>(paths.runPath(runId));
+    if (progress.status === "done" || progress.status === "failed") {
+      return progress;
+    }
+    await sleep(RUN_POLL_INTERVAL_MS);
+  }
+}
+
+async function runSurfaceLive(kind: SurfaceRunKind): Promise<RunProgress> {
+  const { run_id } = await request<{ run_id: string }>(paths.runsPath(), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ kind }),
+  });
+  return pollRunToCompletion(run_id);
+}
+
+async function runSurface(kind: SurfaceRunKind): Promise<RunProgress> {
+  if (getMode() === "fixture") {
+    const { run_id } = await Promise.resolve({ run_id: FIXTURE_RUN_ID });
+    return { ...FIXTURE_RUN_PROGRESS, run_id };
+  }
+  return runSurfaceLive(kind);
+}
+
 export const FIXTURES = {
   getRunStatus: runStatusFixture,
   getSinceLastVisit: sinceLastVisitFixture,
@@ -192,6 +226,7 @@ export const FIXTURES = {
   getToday: todayFixture,
   startRun: { run_id: FIXTURE_RUN_ID },
   getRun: FIXTURE_RUN_PROGRESS,
+  runSurface: FIXTURE_RUN_PROGRESS,
 } as const;
 
 export const api = {
@@ -472,4 +507,6 @@ export const api = {
       paths.runPath(runId),
     );
   },
+
+  runSurface,
 };
