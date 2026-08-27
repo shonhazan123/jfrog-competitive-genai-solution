@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import lru_cache
@@ -48,7 +49,7 @@ def stage_label(stage_key: str) -> str:
 def create_run() -> Run:
     global _current_run_id
     started = datetime.now(UTC)
-    run_id = f"run_{started.strftime('%Y-%m-%dT%H:%MZ')}"
+    run_id = f"run_{started.strftime('%Y-%m-%dT%H:%M:%SZ')}_{uuid.uuid4().hex[:6]}"
     stages = load_run_stages()
     first_key = stages[0]["key"]
     run = Run(
@@ -58,7 +59,6 @@ def create_run() -> Run:
         total=len(stages),
         started_at=started,
     )
-    _store.clear()
     _store[run_id] = run
     _current_run_id = run_id
     return run
@@ -66,7 +66,6 @@ def create_run() -> Run:
 
 def put_run(run: Run) -> None:
     global _current_run_id
-    _store.clear()
     _store[run.id] = run
     _current_run_id = run.id
 

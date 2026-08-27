@@ -12,7 +12,13 @@ class RunRequest(BaseModel):
 
 @router.post("", status_code=202)
 def start_run(body: RunRequest, background_tasks: BackgroundTasks) -> dict:
+    if body.kind in {"industry", "signals", "comparison"}:
+        return runs.start_surface_run(body.kind, background_tasks)
     return runs.start_run(body.kind, body.reason, background_tasks)
+
+@router.post("/all", status_code=202)
+def start_all_runs(background_tasks: BackgroundTasks) -> dict:
+    return runs.start_all(background_tasks)
 
 @router.post("/collect")
 def collect() -> dict:

@@ -1,6 +1,5 @@
 stages:
-  - { key: collect, label: Checking sources }
-  - { key: read,    label: Reading new documents }
-  - { key: extract, label: Extracting claims }
-  - { key: score,   label: Scoring and routing }
-  - { key: done,    label: Done }
+  - { key: collect,   label: Checking sources }
+  - { key: research,  label: Researching }
+  - { key: synthesize,label: Writing findings }
+  - { key: done,      label: Done }

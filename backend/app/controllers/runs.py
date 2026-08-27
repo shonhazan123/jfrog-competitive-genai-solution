@@ -126,6 +126,47 @@ def _execute_run(run_id: str, kind: str) -> None:
         )
 
 
+_SURFACE_JOBS = {
+    "industry": "run_industry",
+    "signals": "run_signals",
+    "comparison": "run_comparison",
+}
+
+
+def _run_surface(run_id: str, kind: str) -> None:
+    try:
+        report = getattr(jobs, _SURFACE_JOBS[kind])()
+        update_run(run_id, status="done", new_items=_new_items_from_report(report),
+                   finished_at=datetime.now(UTC))
+    except Exception as exc:  # one surface failing must not fail the others
+        logger.exception("run.surface.failed run_id=%s kind=%s", run_id, kind)
+        update_run(run_id, status="failed", message=_readable_error(exc),
+                   finished_at=datetime.now(UTC))
+
+
+def start_surface_run(kind: str, background_tasks=None) -> dict:
+    if kind not in _SURFACE_JOBS:
+        raise ValueError(f"Unknown surface run: {kind}")
+    run = create_run()
+    if background_tasks is not None:
+        background_tasks.add_task(_run_surface, run.id, kind)
+    else:
+        _run_surface(run.id, kind)
+    return {"run_id": run.id, "kind": kind}
+
+
+def start_all(background_tasks=None) -> dict:
+    run_ids: dict[str, str] = {}
+    for kind in _SURFACE_JOBS:
+        run = create_run()
+        run_ids[kind] = run.id
+        if background_tasks is not None:
+            background_tasks.add_task(_run_surface, run.id, kind)
+        else:
+            _run_surface(run.id, kind)
+    return {"run_ids": run_ids}
+
+
 def start_run(
     kind: str,
     reason: str | None = None,
