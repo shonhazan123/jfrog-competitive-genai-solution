@@ -16,6 +16,13 @@ from app.settings import settings
 _NO_CLAIM_SUMMARY = "No public claim on record."
 
 
+def load_dimensions() -> list[dict]:
+    data = yaml.safe_load(
+        (Path(settings.config_dir) / "comparison_dimensions.yaml").read_text(encoding="utf-8")
+    )
+    return data["dimensions"]
+
+
 def _load_components() -> list[dict]:
     data = yaml.safe_load(
         (Path(settings.config_dir) / "jfrog_components.yaml").read_text(encoding="utf-8")

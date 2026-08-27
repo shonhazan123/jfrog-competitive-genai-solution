@@ -1,0 +1,21 @@
+dimensions:
+  - key: artifact_management
+    label: Artifact Management
+    probe_keywords: ["<rival> artifact repository", "supported package formats", "deployment model"]
+    jfrog_position: "Artifactory — universal, 30+ package types, self-hosted + cloud."
+  - key: sca_sbom
+    label: SCA / SBOM
+    probe_keywords: ["<rival> SCA", "SBOM generation", "dependency scanning"]
+    jfrog_position: "Xray + AppTrust — SCA with contextual analysis and SBOM evidence."
+  - key: container_security
+    label: Container Security
+    probe_keywords: ["<rival> container scanning", "image security", "runtime protection"]
+    jfrog_position: "Xray container scanning + Advanced Security runtime."
+  - key: cicd_integration
+    label: CI/CD Integration
+    probe_keywords: ["<rival> CI/CD integration", "Jenkins GitHub Actions plugin", "pipeline"]
+    jfrog_position: "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline."
+  - key: developer_experience
+    label: Developer Experience
+    probe_keywords: ["<rival> developer experience", "CLI IDE plugin", "onboarding"]
+    jfrog_position: "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first."
