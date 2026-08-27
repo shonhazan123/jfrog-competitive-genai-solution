@@ -30,6 +30,7 @@ from app.services.signals.novelty import is_new
 from app.settings import settings
 from app.services.research.industry_agent import run_industry  # noqa: F401
 from app.services.research.signals_agent import run_signals  # noqa: F401
+from app.services.research.comparison_agent import run_comparison  # noqa: F401
 
 _ADAPTERS = {
     "osv": OsvAdapter(),
