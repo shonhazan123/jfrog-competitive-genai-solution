@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import yaml
+from sqlalchemy import select
+
+from app.models.registry import Entity
 from app.services.config_overrides import (
     apply_materiality_override,
     apply_watchlist_override,
@@ -9,6 +15,46 @@ from app.services.config_overrides import (
     watchlist_config_version,
 )
 from app.services.scoring.rescore import rescore_all_signals
+from app.settings import settings
+
+_instructions_override: list[str] | None = None
+_instructions_config_version: int = 1
+_competitors_config_version: int = 1
+
+
+def _load_instructions_yaml() -> list[str]:
+    p = Path(settings.config_dir) / "instructions.yaml"
+    if not p.exists():
+        return []
+    data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    return list(data.get("instructions", []))
+
+
+def current_instructions() -> list[str]:
+    if _instructions_override is not None:
+        return list(_instructions_override)
+    return _load_instructions_yaml()
+
+
+def instructions_config_version() -> int:
+    return _instructions_config_version
+
+
+def apply_instructions_override(instructions: list[str]) -> None:
+    global _instructions_config_version, _instructions_override
+    _instructions_override = list(instructions)
+    _instructions_config_version += 1
+
+
+def competitors_config_version() -> int:
+    return _competitors_config_version
+
+
+def clear_config_extensions() -> None:
+    global _instructions_override, _instructions_config_version, _competitors_config_version
+    _instructions_override = None
+    _instructions_config_version = 1
+    _competitors_config_version = 1
 
 _WEIGHT_SPECS = [
     {
@@ -155,3 +201,52 @@ def update_watchlist(session, body: dict) -> dict:
     apply_watchlist_override(terms)
     rescore_all_signals(session)
     return get_watchlist()
+
+
+def get_instructions() -> dict:
+    return {
+        "config_version": instructions_config_version(),
+        "instructions": current_instructions(),
+    }
+
+
+def update_instructions(session, body: dict) -> dict:
+    instructions = body.get("instructions")
+    if not isinstance(instructions, list):
+        raise ConfigValidationError("instructions must be a list of strings")
+    if not all(isinstance(line, str) for line in instructions):
+        raise ConfigValidationError("instructions must be a list of strings")
+    apply_instructions_override(instructions)
+    return get_instructions()
+
+
+def get_competitors(session) -> dict:
+    rows = session.execute(
+        select(Entity).where(Entity.kind == "competitor").order_by(Entity.slug)
+    ).scalars().all()
+    return {
+        "config_version": competitors_config_version(),
+        "competitors": [{"slug": row.slug, "name": row.name} for row in rows],
+    }
+
+
+def update_competitors(session, body: dict) -> dict:
+    global _competitors_config_version
+    competitors = body.get("competitors")
+    if not isinstance(competitors, list):
+        raise ConfigValidationError("competitors must be a list")
+    for item in competitors:
+        if not isinstance(item, dict):
+            raise ConfigValidationError("each competitor must be an object with slug and name")
+        slug = item.get("slug")
+        name = item.get("name")
+        if not slug or not name:
+            raise ConfigValidationError("each competitor requires slug and name")
+        existing = session.execute(select(Entity).where(Entity.slug == slug)).scalar_one_or_none()
+        if existing is None:
+            session.add(
+                Entity(slug=slug, name=name, kind="competitor", tier=2, aliases=[])
+            )
+    session.flush()
+    _competitors_config_version += 1
+    return get_competitors(session)

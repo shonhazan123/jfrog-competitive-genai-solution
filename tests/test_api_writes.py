@@ -17,6 +17,29 @@ def test_changing_a_weight_rescore_without_re_inference(client_with_data):
     after = client_with_data.get("/signals?persona=sales").json()["items"][0]["score"]
     assert after != before
 
+def test_put_config_instructions_persists_and_get_returns_them(client_with_data):
+    response = client_with_data.put(
+        "/config/instructions",
+        json={"instructions": ["flag anything mentioning SLSA"]},
+    )
+    assert response.status_code == 200
+    assert response.json()["instructions"] == ["flag anything mentioning SLSA"]
+    get_resp = client_with_data.get("/config/instructions")
+    assert get_resp.json()["instructions"] == ["flag anything mentioning SLSA"]
+
+
+def test_extract_prompt_includes_instruction_when_present(client_with_data, session):
+    from app.services.agent_service import _production_deps
+
+    client_with_data.put(
+        "/config/instructions",
+        json={"instructions": ["flag anything mentioning SLSA"]},
+    )
+    deps = _production_deps(session)
+    prompt_text = deps.prompt("extract").format(content="sample untrusted text")
+    assert "flag anything mentioning SLSA" in prompt_text
+
+
 def test_invalid_config_is_rejected_with_a_readable_message(client_with_data):
     response = client_with_data.put("/config/materiality",
                                     json={"modifiers": {"reliability_grade": {"A": "not a number"}}})
@@ -64,10 +87,12 @@ def client_with_data(session):
     from app.models.capture import RawCapture
     from app.models.registry import Entity, Source
     from app.models.signal import Signal, SignalEvidence
+    from app.controllers.config import clear_config_extensions
     from app.services.config_overrides import clear_overrides
     from app.services.seeding import seed
 
     clear_overrides()
+    clear_config_extensions()
     seed(session)
     entities = {entity.slug: entity for entity in session.query(Entity).all()}
     now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
@@ -185,3 +210,4 @@ def client_with_data(session):
     yield client
     app.dependency_overrides.clear()
     clear_overrides()
+    clear_config_extensions()

@@ -4,7 +4,9 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 
+import yaml
 from sqlalchemy.orm import Session
 
 from agent.graphs.interpret.graph import build_interpret_graph
@@ -12,6 +14,8 @@ from agent.llm import get_checkpointer, get_model, prompt as load_prompt
 from agent.log import get_logger, step
 from agent.schemas import Contextualisation, build_extraction_model
 from app.config.loader import load_config
+from app.controllers.config import current_instructions
+from app.settings import settings
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
 from app.models.signal import AnalystQueue, Signal, SignalEvidence
@@ -22,6 +26,22 @@ from app.services.verification import verify_quote
 
 PROMPT_VERSION = 1
 logger = get_logger("app.agent_service")
+
+
+def _load_instructions() -> list[str]:
+    p = Path(settings.config_dir) / "instructions.yaml"
+    if not p.exists():
+        return []
+    data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    return list(data.get("instructions", []))
+
+
+def _prompt_with_instructions(name: str) -> str:
+    text = load_prompt(name)
+    instructions = current_instructions()
+    if instructions:
+        text += "\n" + "\n".join(instructions)
+    return text
 
 @dataclass
 class InterpretResult:
@@ -150,7 +170,7 @@ def _production_deps(session: Session):
                 capability_tags=len(capability_tags),
             )
             prompt_text = (
-                load_prompt("contextualize")
+                _prompt_with_instructions("contextualize")
                 + "\n\nDATA:\n"
                 + json.dumps(payload, default=str)
             )
@@ -165,7 +185,7 @@ def _production_deps(session: Session):
         use_interrupt = True
         extract_model = extract_llm
         contextualize_model = ContextualizeAdapter()
-        prompt = staticmethod(load_prompt)
+        prompt = staticmethod(_prompt_with_instructions)
 
         @staticmethod
         def crossref(_state):

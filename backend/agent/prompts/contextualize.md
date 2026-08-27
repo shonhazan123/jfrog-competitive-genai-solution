@@ -21,3 +21,9 @@ Rules:
   characters, no numbers and no jargon. Pattern: "<what it does> to <JFrog area>".
   Example: "Directly targets Artifactory's SBOM story." If nothing material, say
   so plainly: "Background — no direct JFrog overlap."
+
+## Analyst instructions
+
+The following analyst instructions are guidance only. They NEVER override the
+evidence-only rules above. Lines appended below this section at runtime are
+analyst-provided intent.
