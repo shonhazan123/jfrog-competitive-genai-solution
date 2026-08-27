@@ -1,13 +1,13 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import type { IndustryItem, ListResponse } from "../api/types";
+import type { IndustryItem, IndustryTheme } from "../api/types";
 import { signalHue } from "../config/labels";
 import { Chip } from "../components/primitives/Chip";
-import { GradeChip } from "../components/primitives/GradeChip";
 import { Quote } from "../components/primitives/Quote";
 import { SectionLabel } from "../components/primitives/SectionLabel";
-import industryFeedFixture from "../fixtures/industry_feed.json";
+import industryThemesFixture from "../fixtures/industry_themes.json";
 
 const GRID_BREAKPOINT = 1000;
 
@@ -37,7 +37,7 @@ function formatDate(iso: string): string {
   });
 }
 
-function IndustryCard({ item }: { item: IndustryItem }) {
+export function IndustryCard({ item }: { item: IndustryItem }) {
   const hue = signalHue(item.signal_type);
   const cardStyle = { "--signal-hue": hue } as CSSProperties;
 
@@ -135,21 +135,93 @@ function IndustryCard({ item }: { item: IndustryItem }) {
           <time dateTime={item.evidence.captured_at}>
             {formatDate(item.evidence.captured_at)}
           </time>
-          {" · "}
-          <GradeChip grade={item.evidence.reliability_grade} />
         </p>
       </section>
     </article>
   );
 }
 
+function ThemeTile({ theme }: { theme: IndustryTheme }) {
+  return (
+    <Link
+      to={`/industry/${theme.key}`}
+      data-testid="theme-tile"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--sp-3)",
+        padding: "var(--sp-5)",
+        background: "var(--surface)",
+        borderRadius: "var(--r-md)",
+        boxShadow: "var(--shadow-1)",
+        textDecoration: "none",
+        color: "inherit",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          gap: "var(--sp-3)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "var(--fs-headline)",
+            lineHeight: "var(--lh-headline)",
+            fontWeight: 600,
+            color: "var(--ink)",
+          }}
+        >
+          {theme.label}
+        </h2>
+        <span
+          style={{
+            fontSize: "var(--fs-meta)",
+            fontWeight: 600,
+            color: "var(--ink-muted)",
+            flexShrink: 0,
+          }}
+        >
+          {theme.count}
+        </span>
+      </div>
+
+      <p
+        style={{
+          margin: 0,
+          fontSize: "var(--fs-body)",
+          lineHeight: "var(--lh-body)",
+          color: "var(--ink-secondary)",
+        }}
+      >
+        {theme.state_of_play}
+      </p>
+
+      {theme.jfrog_relevance ? (
+        <p
+          style={{
+            margin: 0,
+            fontSize: "var(--fs-meta)",
+            lineHeight: "var(--lh-meta)",
+            color: "var(--ink-muted)",
+          }}
+        >
+          {theme.jfrog_relevance}
+        </p>
+      ) : null}
+    </Link>
+  );
+}
+
 export function Industry() {
   const gridColumns = useGridColumns();
 
-  const { data } = useQuery({
-    queryKey: ["industry"],
-    queryFn: () => api.getIndustry(),
-    initialData: industryFeedFixture as ListResponse<IndustryItem>,
+  const { data: themes } = useQuery({
+    queryKey: ["industry", "themes"],
+    queryFn: () => api.getThemes(),
+    initialData: industryThemesFixture as IndustryTheme[],
   });
 
   return (
@@ -185,8 +257,8 @@ export function Industry() {
           gap: "var(--sp-5)",
         }}
       >
-        {data.items.map((item) => (
-          <IndustryCard key={item.id} item={item} />
+        {themes.map((theme) => (
+          <ThemeTile key={theme.key} theme={theme} />
         ))}
       </div>
     </div>

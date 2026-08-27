@@ -1,0 +1,34 @@
+{
+  "label": "Regulation & compliance",
+  "synthesis": "1 items grouped under Regulation & compliance.",
+  "jfrog_relevance": "SBOM mandates map directly to AppTrust's evidence story.",
+  "items": [
+    {
+      "id": "ind_cra",
+      "standard_chip": "EU CRA",
+      "signal_type": "market_regulatory",
+      "headline": "Cyber Resilience Act: 24-hour reporting for exploited vulnerabilities is now live (sample)",
+      "body": "Manufacturers placing products on the EU market must report actively exploited vulnerabilities within 24 hours. SBOM generation moves from best practice to a procurement precondition in scope sectors.",
+      "occurred_at": "2026-08-22T00:00:00+00:00",
+      "evidence": {
+        "quote": "Manufacturers must report actively exploited vulnerabilities within 24 hours of awareness.",
+        "source_url": "https://digital-strategy.ec.europa.eu/cra",
+        "source_name": "European Commission",
+        "captured_at": "2026-08-22T00:00:00+00:00",
+        "reliability_grade": "A",
+        "credibility_score": 1,
+        "is_primary": true,
+        "citation": {
+          "source_name": "European Commission",
+          "source_url": "https://digital-strategy.ec.europa.eu/cra",
+          "captured_at": "2026-08-22T00:00:00+00:00",
+          "origin": "extracted",
+          "archived_url": null,
+          "grade": "A"
+        }
+      },
+      "signal_type_label": "Industry & regulation",
+      "handling_label": null
+    }
+  ]
+}

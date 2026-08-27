@@ -258,6 +258,21 @@ export interface IndustryItem {
   evidence: Evidence;
 }
 
+export interface IndustryTheme {
+  key: string;
+  label: string;
+  count: number;
+  state_of_play: string;
+  jfrog_relevance: string;
+}
+
+export interface IndustryThemeDetail {
+  label: string;
+  synthesis: string;
+  jfrog_relevance: string;
+  items: IndustryItem[];
+}
+
 export interface GetIndustryParams {
   signal_type?: SignalType | null;
   standard?: string | null;

@@ -1,0 +1,37 @@
+[
+  {
+    "key": "supply_chain_attacks",
+    "label": "Supply-chain attacks & CVEs",
+    "count": 1,
+    "state_of_play": "1 items — Supply-chain attacks & CVEs",
+    "jfrog_relevance": "Raises demand for provenance and blocking at the gate — Curation and Xray."
+  },
+  {
+    "key": "regulation",
+    "label": "Regulation & compliance",
+    "count": 1,
+    "state_of_play": "1 items — Regulation & compliance",
+    "jfrog_relevance": "SBOM mandates map directly to AppTrust's evidence story."
+  },
+  {
+    "key": "funding_ma",
+    "label": "Funding & acquisitions",
+    "count": 0,
+    "state_of_play": "0 items — Funding & acquisitions",
+    "jfrog_relevance": "Consolidation reshapes the competitive set."
+  },
+  {
+    "key": "ai_mlops",
+    "label": "AI / MLOps & model registries",
+    "count": 0,
+    "state_of_play": "0 items — AI / MLOps & model registries",
+    "jfrog_relevance": "Validates JFrog ML / AI Catalog as the next artifact frontier."
+  },
+  {
+    "key": "other",
+    "label": "Other",
+    "count": 4,
+    "state_of_play": "4 items — Other",
+    "jfrog_relevance": ""
+  }
+]

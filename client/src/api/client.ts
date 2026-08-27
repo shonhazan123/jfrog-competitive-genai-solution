@@ -8,6 +8,8 @@ import coverageMatrixFixture from "../fixtures/coverage_matrix.json";
 import digestExecWeeklyFixture from "../fixtures/digest_exec_weekly.json";
 import emailPreviewFixture from "../fixtures/email_preview.json";
 import industryFeedFixture from "../fixtures/industry_feed.json";
+import industryThemeDetailFixture from "../fixtures/industry_theme_detail.json";
+import industryThemesFixture from "../fixtures/industry_themes.json";
 import kitsFixture from "../fixtures/kits.json";
 import materialityWeightsFixture from "../fixtures/materiality_weights.json";
 import runStatusFixture from "../fixtures/run_status.json";
@@ -37,6 +39,8 @@ import type {
   GetIndustryParams,
   GetSignalsParams,
   IndustryItem,
+  IndustryTheme,
+  IndustryThemeDetail,
   Kit,
   ListResponse,
   MaterialityConfig,
@@ -164,6 +168,8 @@ export const FIXTURES = {
   getClaims: claimsAboutJfrogFixture,
   getClaimHistory: claimsHistoryTimelineFixture,
   getIndustry: industryFeedFixture,
+  getThemes: industryThemesFixture,
+  getThemeDetail: industryThemeDetailFixture,
   postAsk: (askTranscriptFixture as { exchanges: AskResponse[] }).exchanges[0],
   getSources: sourcesFixture,
   patchSource: (sourcesFixture as ListResponse<Source>).items[0],
@@ -264,6 +270,20 @@ export const api = {
     return fixtureOrLive(
       industryFeedFixture as ListResponse<IndustryItem>,
       paths.industryPath(params),
+    );
+  },
+
+  getThemes(): Promise<IndustryTheme[]> {
+    return fixtureOrLive(
+      industryThemesFixture as IndustryTheme[],
+      "/industry/themes",
+    );
+  },
+
+  getThemeDetail(key: string): Promise<IndustryThemeDetail> {
+    return fixtureOrLive(
+      industryThemeDetailFixture as IndustryThemeDetail,
+      `/industry/themes/${encodeURIComponent(key)}`,
     );
   },
 
