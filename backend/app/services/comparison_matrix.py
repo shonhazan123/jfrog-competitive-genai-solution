@@ -11,6 +11,7 @@ from app.models.capture import RawCapture
 from app.models.ledger import Claim, Evidence
 from app.models.registry import Entity, Source
 from app.serializers.common import evidence_from_capture
+from app.services.research.competitors import load_competitors
 from app.settings import settings
 
 _NO_CLAIM_SUMMARY = "No public claim on record."
@@ -21,13 +22,6 @@ def load_dimensions() -> list[dict]:
         (Path(settings.config_dir) / "comparison_dimensions.yaml").read_text(encoding="utf-8")
     )
     return data["dimensions"]
-
-
-def _load_components() -> list[dict]:
-    data = yaml.safe_load(
-        (Path(settings.config_dir) / "jfrog_components.yaml").read_text(encoding="utf-8")
-    )
-    return data["components"]
 
 
 def evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
@@ -56,75 +50,68 @@ def evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
     ]
 
 
-def _jfrog_position_for_dimension(dimension: str) -> str:
-    cfg = load_config()
-    for position in cfg.jfrog_positions.positions:
-        if position.dimension == dimension:
-            return position.text or ""
-    return ""
-
-
-def _claim_for_component(
-    session: Session,
-    competitor_id: int,
-    dimensions: list[str],
-) -> Claim | None:
-    claims = session.execute(
-        select(Claim).where(
-            Claim.asserting_entity_id == competitor_id,
-            Claim.dimension.in_(dimensions),
-        )
-    ).scalars().all()
-    by_dimension = {claim.dimension: claim for claim in claims if claim.dimension}
-    for dimension in dimensions:
-        claim = by_dimension.get(dimension)
-        if claim is not None:
-            return claim
-    return None
-
-
 def build_comparison_matrix(session: Session) -> dict:
-    components_cfg = _load_components()
-    competitors = session.execute(
-        select(Entity).where(Entity.kind == "competitor").order_by(Entity.slug)
-    ).scalars().all()
+    jfrog = session.execute(select(Entity).filter_by(slug="jfrog")).scalar_one_or_none()
+    competitors_cfg = load_competitors()
+    competitor_refs = [{"slug": c["slug"], "name": c["name"]} for c in competitors_cfg]
 
-    competitor_refs = [{"slug": entity.slug, "name": entity.name} for entity in competitors]
-
-    components: list[dict] = []
-    for component in components_cfg:
-        key = component["key"]
-        name = component["name"]
-        dimensions = list(component["dimensions"])
-        primary_dimension = dimensions[0]
-        jfrog_position = _jfrog_position_for_dimension(primary_dimension)
-
+    dimensions_out: list[dict] = []
+    for dim in load_dimensions():
         cells: list[dict] = []
-        for competitor in competitors:
-            claim = _claim_for_component(session, competitor.id, dimensions)
+        for comp in competitors_cfg:
+            competitor = session.execute(
+                select(Entity).filter_by(slug=comp["slug"])
+            ).scalar_one_or_none()
+            if competitor is None or jfrog is None:
+                cells.append(
+                    {
+                        "competitor": comp["slug"],
+                        "competitor_name": comp["name"],
+                        "stance": "none",
+                        "summary": _NO_CLAIM_SUMMARY,
+                        "jfrog_position": dim["jfrog_position"],
+                        "evidence": [],
+                    }
+                )
+                continue
+
+            claim = session.execute(
+                select(Claim).where(
+                    Claim.asserting_entity_id == competitor.id,
+                    Claim.subject_entity_id == jfrog.id,
+                    Claim.dimension == dim["key"],
+                )
+            ).scalar_one_or_none()
+
             if claim is None:
                 cells.append(
                     {
-                        "competitor": competitor.slug,
-                        "competitor_name": competitor.name,
-                        "stance": "no_claim",
+                        "competitor": comp["slug"],
+                        "competitor_name": comp["name"],
+                        "stance": "none",
                         "summary": _NO_CLAIM_SUMMARY,
-                        "jfrog_position": jfrog_position,
+                        "jfrog_position": dim["jfrog_position"],
                         "evidence": [],
                     }
                 )
             else:
                 cells.append(
                     {
-                        "competitor": competitor.slug,
-                        "competitor_name": competitor.name,
-                        "stance": "comparable",
+                        "competitor": comp["slug"],
+                        "competitor_name": comp["name"],
+                        "stance": claim.stance or "none",
                         "summary": claim.claim_text or "",
-                        "jfrog_position": jfrog_position,
+                        "jfrog_position": dim["jfrog_position"],
                         "evidence": evidence_for_claim(session, claim),
                     }
                 )
 
-        components.append({"key": key, "name": name, "cells": cells})
+        dimensions_out.append(
+            {
+                "key": dim["key"],
+                "name": dim["label"],
+                "cells": cells,
+            }
+        )
 
-    return {"components": components, "competitors": competitor_refs}
+    return {"dimensions": dimensions_out, "competitors": competitor_refs}

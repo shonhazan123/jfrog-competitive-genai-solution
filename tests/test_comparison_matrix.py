@@ -3,40 +3,35 @@ from datetime import UTC, datetime
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def comparison_entities(session):
+@pytest.fixture
+def comparison_seed(session):
+    from app.services.seeding import seed
+
+    seed(session)
     from app.models.registry import Entity
 
-    entities = [
-        Entity(slug="jfrog", name="JFrog", kind="self", tier=1),
-        Entity(slug="sonatype", name="Sonatype", kind="competitor", tier=1),
-        Entity(slug="harbor", name="Harbor", kind="competitor", tier=2),
-    ]
-    session.add_all(entities)
-    session.flush()
-    return {e.slug: e for e in entities}
+    return {e.slug: e for e in session.query(Entity).all()}
 
 
 @pytest.fixture
-def seeded_malware_claim(session, comparison_entities):
+def artifact_claim(session, comparison_seed):
     from app.models.capture import RawCapture
     from app.models.ledger import Claim, Evidence
     from app.models.registry import Source
 
-    jfrog = comparison_entities["jfrog"]
-    sonatype = comparison_entities["sonatype"]
+    jfrog = comparison_seed["jfrog"]
+    sonatype = comparison_seed["sonatype"]
 
     source = Source(
-        key="sonatype_test_source",
+        key="comparison_matrix_fixture",
         entity_id=sonatype.id,
-        url="https://example.com/compare",
+        url="https://example.com/nexus",
         kind="html_page",
         mode="snapshot",
         reliability_grade="B",
         is_primary=True,
         check_frequency_minutes=60,
         requires_js=False,
-        covers=["malware_detection"],
     )
     session.add(source)
     session.flush()
@@ -45,9 +40,9 @@ def seeded_malware_claim(session, comparison_entities):
         source_id=source.id,
         fetched_at=datetime.now(UTC),
         http_status=200,
-        content_hash="deadbeef",
-        blob_path="/tmp/test",
-        extracted_text="Advanced malware detection protects your supply chain.",
+        content_hash="artifact-claim",
+        blob_path="https://example.com/nexus",
+        extracted_text="Nexus Repository supports universal formats.",
         provenance="live",
     )
     session.add(capture)
@@ -56,35 +51,74 @@ def seeded_malware_claim(session, comparison_entities):
     claim = Claim(
         subject_entity_id=jfrog.id,
         asserting_entity_id=sonatype.id,
-        claim_text="Sonatype provides advanced malware detection.",
-        claim_type="capability",
-        capability_tags=["malware_detection"],
-        dimension="malware_detection",
+        claim_text="Nexus Repository, mature artifact management.",
+        claim_type="positioning",
+        capability_tags=["artifact_management"],
+        dimension="artifact_management",
+        stance="moderate",
         status="active",
         reliability_grade="B",
         first_seen_at=datetime.now(UTC),
+        last_confirmed_at=datetime.now(UTC),
     )
     session.add(claim)
     session.flush()
 
-    evidence = Evidence(
-        claim_id=claim.id,
-        capture_id=capture.id,
-        quote="Advanced malware detection",
-        quote_offset=0,
+    session.add(
+        Evidence(
+            claim_id=claim.id,
+            capture_id=capture.id,
+            quote="Nexus Repository",
+            quote_offset=0,
+        )
     )
-    session.add(evidence)
     session.flush()
+    return claim
 
 
-def test_xray_row_has_sourced_cell_for_competitor_with_malware_claim(
-    session, seeded_malware_claim,
-):
-    from app.controllers.comparison import list_comparison_matrix
+def test_matrix_has_five_dimensions_and_five_competitors(session, comparison_seed):
+    from app.services.comparison_matrix import build_comparison_matrix
 
-    matrix = list_comparison_matrix(session)
-    xray = next(c for c in matrix["components"] if c["key"] == "xray")
-    sonatype_cell = next(c for c in xray["cells"] if c["competitor"] == "sonatype")
+    matrix = build_comparison_matrix(session)
+    assert len(matrix["dimensions"]) == 5
+    assert [d["key"] for d in matrix["dimensions"]] == [
+        "artifact_management",
+        "sca_sbom",
+        "container_security",
+        "cicd_integration",
+        "developer_experience",
+    ]
+    assert {c["slug"] for c in matrix["competitors"]} == {
+        "github",
+        "sonatype",
+        "snyk",
+        "aqua",
+        "checkmarx",
+    }
 
-    assert sonatype_cell["stance"] != "no_claim"
+
+def test_cell_with_claim_returns_stance_and_evidence(session, artifact_claim):
+    from app.services.comparison_matrix import build_comparison_matrix
+
+    matrix = build_comparison_matrix(session)
+    artifact_col = next(d for d in matrix["dimensions"] if d["key"] == "artifact_management")
+    sonatype_cell = next(c for c in artifact_col["cells"] if c["competitor"] == "sonatype")
+
+    assert sonatype_cell["stance"] == "moderate"
+    assert sonatype_cell["summary"] == "Nexus Repository, mature artifact management."
+    assert sonatype_cell["jfrog_position"] == (
+        "Artifactory — universal, 30+ package types, self-hosted + cloud."
+    )
     assert sonatype_cell["evidence"]
+
+
+def test_cell_without_claim_returns_none(session, comparison_seed):
+    from app.services.comparison_matrix import build_comparison_matrix
+
+    matrix = build_comparison_matrix(session)
+    artifact_col = next(d for d in matrix["dimensions"] if d["key"] == "artifact_management")
+    snyk_cell = next(c for c in artifact_col["cells"] if c["competitor"] == "snyk")
+
+    assert snyk_cell["stance"] == "none"
+    assert snyk_cell["summary"] == "No public claim on record."
+    assert snyk_cell["evidence"] == []
