@@ -34,7 +34,9 @@ _RUN_STAGE_JOBS: dict[str, list[tuple[str, str, dict]]] = {
     "manual": [
         ("collect", "run_collection", {"force": True}),
         # Cap backlog drain so Run now stays interactive; failures are per-capture.
-        ("extract", "run_interpret", {"limit": 3}),
+        # run_interpret round-robins across sources, so this budget spreads over distinct
+        # sources (new screens) instead of draining one backlogged page.
+        ("extract", "run_interpret", {"limit": 6}),
         ("score", "run_scoring", {}),
     ],
 }

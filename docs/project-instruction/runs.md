@@ -22,10 +22,20 @@ Starts a background run and returns immediately:
 
 | `kind` | Job (at stage) |
 |---|---|
-| `manual` | **Run now** — forced collect + interpret (up to 3 pending captures) + score |
+| `manual` | **Run now** — forced collect + interpret (up to 6 pending captures) + score |
 | `collect` | `run_collection` at **Checking sources** |
 | `interpret` | `run_interpret` at **Extracting claims** |
 | `scoring` | `run_scoring` at **Scoring and routing** |
+
+### Interpret capture selection is source-diversified
+
+`run_interpret` does **not** drain pending captures in raw id order. It round-robins
+across their sources (`_diversify_by_source`), and drains sources that have **not yet
+produced any signal** first. Within a single source the oldest-first id order is
+preserved. This stops one backlogged source (e.g. hundreds of `sonatype_compare_jfrog`
+snapshots) from monopolising the `limit` budget and starving every other screen — a
+`manual` run now lights up new sources (industry, talent, sentiment) instead of emitting
+another near-duplicate of the same competitor-comparison signal.
 
 Dispatch uses FastAPI `BackgroundTasks` so Starlette's `TestClient` runs the job
 synchronously before the response returns (spy tests), while uvicorn serves the 202

@@ -181,6 +181,27 @@ def run_collection(
     return report
 
 
+def _diversify_by_source(captures: list[RawCapture], signaled_source_ids: set[int]) -> list[RawCapture]:
+    """Round-robin pending captures across their sources so one backlogged source can't
+    starve every other screen. Captures arrive in id order; within a source that order is
+    preserved (oldest first). Sources that have not produced any signal yet are drained
+    first, so a fresh manual run lights up new screens instead of re-chewing the same page."""
+    groups: dict[int, list[RawCapture]] = {}
+    for capture in captures:
+        groups.setdefault(capture.source_id, []).append(capture)
+    # Unsignaled sources first; ties broken by each group's oldest capture id for stability.
+    ordered_source_ids = sorted(
+        groups,
+        key=lambda sid: (sid in signaled_source_ids, groups[sid][0].id),
+    )
+    diversified: list[RawCapture] = []
+    while any(groups[sid] for sid in ordered_source_ids):
+        for sid in ordered_source_ids:
+            if groups[sid]:
+                diversified.append(groups[sid].pop(0))
+    return diversified
+
+
 def run_interpret(session: Session | None = None, limit: int | None = None) -> dict:
     own_session = session is None
     if own_session:
@@ -200,6 +221,8 @@ def run_interpret(session: Session | None = None, limit: int | None = None) -> d
     else:
         query = session.query(RawCapture).order_by(RawCapture.id)
     captures = query.all()
+    signaled_source_ids = {row[0] for row in session.query(Signal.source_id).distinct().all()}
+    captures = _diversify_by_source(captures, signaled_source_ids)
     if limit is not None:
         captures = captures[:limit]
     step(logger, "interpret.batch.start", pending=len(captures), limit=limit)
