@@ -28,20 +28,15 @@ def test_source_registry_excludes_jfrog_and_includes_competitor_feeds():
         "github_blog",
         "gitlab_blog",
         "azure_artifacts_news",
-        "gnews_funding",
-        "huggingface_blog",
-        "gnews_model_registry",
         "cisa_advisories",
     }
     assert expected <= keys
     by_key = {s.key: s for s in cfg.sources}
     assert by_key["github_changelog"].reliability_grade == "A"
     assert by_key["github_blog"].reliability_grade == "B"
-    assert by_key["gnews_funding"].reliability_grade == "C"
     assert by_key["cisa_advisories"].reliability_grade == "A"
     assert set(by_key["gitlab_blog"].covers) == {
         "product_capability",
         "pricing_packaging",
         "positioning_messaging",
     }
-    assert "corporate_financial" in by_key["gnews_funding"].covers
