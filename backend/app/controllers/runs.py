@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 _JOB_BY_KIND = {
     "collect": "run_collection",
-    "interpret": "run_interpret",
     "scoring": "run_scoring",
     "manual": "manual",
 }
@@ -29,17 +28,9 @@ _JOB_BY_KIND = {
 # stage_key → (job function name, kwargs). Used by _execute_run.
 _RUN_STAGE_JOBS: dict[str, list[tuple[str, str, dict]]] = {
     "collect": [("collect", "run_collection", {})],
-    "interpret": [("extract", "run_interpret", {})],
     "scoring": [("score", "run_scoring", {})],
     "manual": [
         ("collect", "run_collection", {"force": True}),
-        # Budget must cover at least one capture per source so every screen (each
-        # competitor column + each industry theme) lights up in a single Run now.
-        # run_interpret drains unsignaled sources first (diversify), so this spreads
-        # across distinct sources rather than draining one backlogged page. Raise
-        # further or run the unlimited scheduled job to deepen coverage; the ceiling
-        # is per-capture LLM latency, so keep it near the source count.
-        ("extract", "run_interpret", {"limit": 20}),
         ("score", "run_scoring", {}),
     ],
 }
@@ -52,12 +43,6 @@ def trigger_collection() -> dict:
         None, datetime.now(UTC)
     )
     return _last_report
-
-
-def trigger_interpret() -> dict:
-    global _last_run_at
-    _last_run_at = datetime.now(UTC)
-    return jobs.run_interpret()
 
 
 def trigger_scoring() -> dict:

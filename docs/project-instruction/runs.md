@@ -22,9 +22,8 @@ Starts a background run and returns immediately:
 
 | `kind` | Job (at stage) |
 |---|---|
-| `manual` | **Run now** — forced collect + interpret (up to 6 pending captures) + score |
+| `manual` | **Run now** — forced collect + score |
 | `collect` | `run_collection` at **Checking sources** |
-| `interpret` | `run_interpret` at **Extracting claims** |
 | `scoring` | `run_scoring` at **Scoring and routing** |
 
 ### Interpret capture selection is source-diversified
