@@ -39,7 +39,7 @@ function StrengthCell({
 
 export function ComparisonGrid({ matrix }: ComparisonGridProps) {
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
-  const dimensionCount = matrix.components.length;
+  const dimensionCount = matrix.dimensions.length;
 
   if (selectedCompetitor) {
     return (
@@ -64,10 +64,10 @@ export function ComparisonGrid({ matrix }: ComparisonGridProps) {
           <div className="comparison-grid__header-cell">
             <span className="mono-label">Competitor</span>
           </div>
-          {matrix.components.map((component) => (
-            <div key={component.key} className="comparison-grid__header-cell">
+          {matrix.dimensions.map((dimension) => (
+            <div key={dimension.key} className="comparison-grid__header-cell">
               <span className="mono-label">
-                {dimensionLabel(component.key, component.name)}
+                {dimensionLabel(dimension.key, dimension.name)}
               </span>
             </div>
           ))}
@@ -116,23 +116,25 @@ export function ComparisonGrid({ matrix }: ComparisonGridProps) {
                   </div>
                 </div>
 
-                {matrix.components.map((component) => {
+                {matrix.dimensions.map((dimension) => {
                   const cell = getCellForCompetitor(
                     matrix,
-                    component.key,
+                    dimension.key,
                     competitor.slug,
                   );
-                  const strength = stanceToStrength(cell?.stance ?? "no_claim");
+                  const strength = stanceToStrength(cell?.stance);
                   const position =
-                    cell?.summary && cell.summary !== "No public claim on record."
+                    cell?.stance !== "none" &&
+                    cell?.summary &&
+                    cell.summary !== "No public claim on record."
                       ? cell.summary
                       : "";
 
                   return (
                     <div
-                      key={component.key}
+                      key={dimension.key}
                       className="comparison-grid__matrix-cell"
-                      data-testid={`matrix-cell-${competitor.slug}-${component.key}`}
+                      data-testid={`matrix-cell-${competitor.slug}-${dimension.key}`}
                     >
                       <StrengthCell strength={strength} position={position} />
                     </div>

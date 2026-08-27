@@ -1,37 +1,99 @@
 {
-  "components": [
+  "dimensions": [
     {
-      "key": "artifactory",
-      "name": "Artifactory",
+      "key": "artifact_management",
+      "name": "Artifact Management",
       "cells": [
+        {
+          "competitor": "github",
+          "competitor_name": "GitHub",
+          "stance": "moderate",
+          "summary": "GitHub Packages covers npm, Maven, and container registries inside GitHub.",
+          "jfrog_position": "Artifactory — universal, 30+ package types, self-hosted + cloud.",
+          "evidence": [
+            {
+              "quote": "GitHub Packages hosts your packages in the same place you host your code.",
+              "source_url": "https://docs.github.com/packages",
+              "source_name": "GitHub Packages docs",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
         {
           "competitor": "sonatype",
           "competitor_name": "Sonatype",
-          "stance": "no_claim",
+          "stance": "strong",
+          "summary": "Nexus Repository is positioned as the enterprise standard for universal artifact management.",
+          "jfrog_position": "Artifactory — universal, 30+ package types, self-hosted + cloud.",
+          "evidence": [
+            {
+              "quote": "Nexus Repository is the universal binary repository for DevOps teams.",
+              "source_url": "https://www.sonatype.com/products/nexus-repository",
+              "source_name": "Sonatype product page",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "snyk",
+          "competitor_name": "Snyk",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "Universal binary repository — 30+ package types under one system of record.",
+          "jfrog_position": "Artifactory — universal, 30+ package types, self-hosted + cloud.",
           "evidence": []
         },
         {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
+          "competitor": "aqua",
+          "competitor_name": "Aqua Security",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "Universal binary repository — 30+ package types under one system of record.",
+          "jfrog_position": "Artifactory — universal, 30+ package types, self-hosted + cloud.",
+          "evidence": []
+        },
+        {
+          "competitor": "checkmarx",
+          "competitor_name": "Checkmarx",
+          "stance": "none",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Artifactory — universal, 30+ package types, self-hosted + cloud.",
           "evidence": []
         }
       ]
     },
     {
-      "key": "xray",
-      "name": "Xray",
+      "key": "sca_sbom",
+      "name": "SCA / SBOM",
       "cells": [
+        {
+          "competitor": "github",
+          "competitor_name": "GitHub",
+          "stance": "moderate",
+          "summary": "Dependabot and code scanning provide dependency and vulnerability alerts in-repo.",
+          "jfrog_position": "Xray + AppTrust — SCA with contextual analysis and SBOM evidence.",
+          "evidence": [
+            {
+              "quote": "Dependabot alerts you to vulnerabilities in your dependencies.",
+              "source_url": "https://docs.github.com/code-security/dependabot",
+              "source_name": "GitHub Dependabot docs",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
         {
           "competitor": "sonatype",
           "competitor_name": "Sonatype",
-          "stance": "comparable",
+          "stance": "moderate",
           "summary": "Claims JFrog malware detection is very limited, not proactive.",
-          "jfrog_position": "Curation blocks malicious packages at the gate; Xray adds contextual analysis to determine applicability.",
+          "jfrog_position": "Xray + AppTrust — SCA with contextual analysis and SBOM evidence.",
           "evidence": [
             {
               "quote": "80% more accurate data than JFrog … JFrog malware detection is very limited, not proactive.",
@@ -45,52 +107,16 @@
           ]
         },
         {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
-          "summary": "No public claim on record.",
-          "jfrog_position": "Curation blocks malicious packages at the gate; Xray adds contextual analysis to determine applicability.",
-          "evidence": []
-        }
-      ]
-    },
-    {
-      "key": "curation",
-      "name": "Curation",
-      "cells": [
-        {
-          "competitor": "sonatype",
-          "competitor_name": "Sonatype",
-          "stance": "no_claim",
-          "summary": "No public claim on record.",
-          "jfrog_position": "",
-          "evidence": []
-        },
-        {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
-          "summary": "No public claim on record.",
-          "jfrog_position": "",
-          "evidence": []
-        }
-      ]
-    },
-    {
-      "key": "apptrust",
-      "name": "AppTrust",
-      "cells": [
-        {
-          "competitor": "sonatype",
-          "competitor_name": "Sonatype",
-          "stance": "comparable",
-          "summary": "Claims JFrog SBOM is export only.",
-          "jfrog_position": "AppTrust provides SBOM generation, management and evidence collection across the release lifecycle.",
+          "competitor": "snyk",
+          "competitor_name": "Snyk",
+          "stance": "strong",
+          "summary": "Snyk Open Source is marketed as developer-first SCA across the SDLC.",
+          "jfrog_position": "Xray + AppTrust — SCA with contextual analysis and SBOM evidence.",
           "evidence": [
             {
-              "quote": "JFrog SBOM is export only.",
-              "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
-              "source_name": "Sonatype comparison page",
+              "quote": "Find and fix vulnerabilities in your open source dependencies.",
+              "source_url": "https://snyk.io/product/open-source-security-management",
+              "source_name": "Snyk Open Source",
               "captured_at": "2026-08-24T00:00:00+00:00",
               "reliability_grade": "A",
               "credibility_score": 3,
@@ -99,62 +125,257 @@
           ]
         },
         {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
+          "competitor": "aqua",
+          "competitor_name": "Aqua Security",
+          "stance": "weak",
+          "summary": "Trivy-based scanning covers container images and IaC with OSS tooling.",
+          "jfrog_position": "Xray + AppTrust — SCA with contextual analysis and SBOM evidence.",
+          "evidence": [
+            {
+              "quote": "Trivy scans container images, filesystems, and Git repositories.",
+              "source_url": "https://aquasecurity.github.io/trivy",
+              "source_name": "Trivy docs",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "B",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "checkmarx",
+          "competitor_name": "Checkmarx",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "AppTrust provides SBOM generation, management and evidence collection across the release lifecycle.",
+          "jfrog_position": "Xray + AppTrust — SCA with contextual analysis and SBOM evidence.",
           "evidence": []
         }
       ]
     },
     {
-      "key": "advanced_security",
-      "name": "Advanced Security",
+      "key": "container_security",
+      "name": "Container Security",
       "cells": [
         {
-          "competitor": "sonatype",
-          "competitor_name": "Sonatype",
-          "stance": "no_claim",
+          "competitor": "github",
+          "competitor_name": "GitHub",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "Runtime Security correlates deployed workloads back to build and package provenance.",
+          "jfrog_position": "Xray container scanning + Advanced Security runtime.",
           "evidence": []
         },
         {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "Runtime Security correlates deployed workloads back to build and package provenance.",
+          "jfrog_position": "Xray container scanning + Advanced Security runtime.",
+          "evidence": []
+        },
+        {
+          "competitor": "snyk",
+          "competitor_name": "Snyk",
+          "stance": "moderate",
+          "summary": "Snyk Container scans images in CI and registries for OS and dependency risks.",
+          "jfrog_position": "Xray container scanning + Advanced Security runtime.",
+          "evidence": [
+            {
+              "quote": "Find and fix vulnerabilities in container images and Kubernetes workloads.",
+              "source_url": "https://snyk.io/product/container-vulnerability-management",
+              "source_name": "Snyk Container",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "aqua",
+          "competitor_name": "Aqua Security",
+          "stance": "strong",
+          "summary": "Aqua positions full lifecycle container security from build to runtime.",
+          "jfrog_position": "Xray container scanning + Advanced Security runtime.",
+          "evidence": [
+            {
+              "quote": "Secure containers, serverless, and VMs from development to production.",
+              "source_url": "https://www.aquasec.com/products/aqua-platform",
+              "source_name": "Aqua Platform",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "checkmarx",
+          "competitor_name": "Checkmarx",
+          "stance": "none",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Xray container scanning + Advanced Security runtime.",
           "evidence": []
         }
       ]
     },
     {
-      "key": "ai_ml",
-      "name": "AI / ML",
+      "key": "cicd_integration",
+      "name": "CI/CD Integration",
       "cells": [
+        {
+          "competitor": "github",
+          "competitor_name": "GitHub",
+          "stance": "strong",
+          "summary": "GitHub Actions is the native CI/CD layer with marketplace integrations.",
+          "jfrog_position": "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline.",
+          "evidence": [
+            {
+              "quote": "Automate your workflow from idea to production with GitHub Actions.",
+              "source_url": "https://github.com/features/actions",
+              "source_name": "GitHub Actions",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
         {
           "competitor": "sonatype",
           "competitor_name": "Sonatype",
-          "stance": "no_claim",
+          "stance": "moderate",
+          "summary": "Lifecycle integrates with Jenkins and GitHub Actions for policy gates.",
+          "jfrog_position": "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline.",
+          "evidence": [
+            {
+              "quote": "Integrate Sonatype Lifecycle into your CI/CD pipelines.",
+              "source_url": "https://www.sonatype.com/products/sonatype-lifecycle",
+              "source_name": "Sonatype Lifecycle",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "snyk",
+          "competitor_name": "Snyk",
+          "stance": "moderate",
+          "summary": "CLI and IDE plugins integrate Snyk checks into developer workflows.",
+          "jfrog_position": "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline.",
+          "evidence": [
+            {
+              "quote": "Integrate security into your existing tools and workflows.",
+              "source_url": "https://snyk.io/integrations",
+              "source_name": "Snyk integrations",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "aqua",
+          "competitor_name": "Aqua Security",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "AI Catalog and JFrog ML provide model and MCP-artifact management alongside binaries.",
+          "jfrog_position": "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline.",
           "evidence": []
         },
         {
-          "competitor": "harbor",
-          "competitor_name": "Harbor",
-          "stance": "no_claim",
+          "competitor": "checkmarx",
+          "competitor_name": "Checkmarx",
+          "stance": "weak",
+          "summary": "Checkmarx One integrates via REST APIs into CI pipelines.",
+          "jfrog_position": "native across Jenkins/GitLab CI/GitHub Actions/Azure DevOps; build-info + promotion across the pipeline.",
+          "evidence": [
+            {
+              "quote": "Embed application security testing into your CI/CD pipeline.",
+              "source_url": "https://checkmarx.com/products/checkmarx-one",
+              "source_name": "Checkmarx One",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "B",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "developer_experience",
+      "name": "Developer Experience",
+      "cells": [
+        {
+          "competitor": "github",
+          "competitor_name": "GitHub",
+          "stance": "strong",
+          "summary": "Developer experience centers on in-repo workflows and Copilot-assisted coding.",
+          "jfrog_position": "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first.",
+          "evidence": [
+            {
+              "quote": "The complete developer platform to build, scale, and deliver secure software.",
+              "source_url": "https://github.com/features",
+              "source_name": "GitHub features",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "none",
           "summary": "No public claim on record.",
-          "jfrog_position": "AI Catalog and JFrog ML provide model and MCP-artifact management alongside binaries.",
+          "jfrog_position": "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first.",
+          "evidence": []
+        },
+        {
+          "competitor": "snyk",
+          "competitor_name": "Snyk",
+          "stance": "strong",
+          "summary": "Developer-first positioning with IDE plugins and fix PRs.",
+          "jfrog_position": "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first.",
+          "evidence": [
+            {
+              "quote": "Developer security platform — find and fix issues as you code.",
+              "source_url": "https://snyk.io/platform",
+              "source_name": "Snyk platform",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "aqua",
+          "competitor_name": "Aqua Security",
+          "stance": "none",
+          "summary": "No public claim on record.",
+          "jfrog_position": "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first.",
+          "evidence": []
+        },
+        {
+          "competitor": "checkmarx",
+          "competitor_name": "Checkmarx",
+          "stance": "none",
+          "summary": "No public claim on record.",
+          "jfrog_position": "universal CLI + IDE plugins, single platform; enterprise-oriented rather than solo-dev-first.",
           "evidence": []
         }
       ]
     }
   ],
   "competitors": [
+    { "slug": "github", "name": "GitHub" },
     { "slug": "sonatype", "name": "Sonatype" },
-    { "slug": "harbor", "name": "Harbor" }
+    { "slug": "snyk", "name": "Snyk" },
+    { "slug": "aqua", "name": "Aqua Security" },
+    { "slug": "checkmarx", "name": "Checkmarx" }
   ]
 }

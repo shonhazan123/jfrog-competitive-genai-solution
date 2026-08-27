@@ -18,17 +18,19 @@ function renderPage(ui) {
 test("the transposed grid renders a row per competitor", () => {
   renderPage(<Comparison />);
   expect(screen.getByTestId("competitor-row-sonatype")).toBeInTheDocument();
-  expect(screen.getByTestId("competitor-row-harbor")).toBeInTheDocument();
-  expect(screen.getByTestId("matrix-cell-sonatype-xray")).toBeInTheDocument();
-  expect(screen.getByTestId("matrix-cell-harbor-artifactory")).toBeInTheDocument();
+  expect(screen.getByTestId("competitor-row-github")).toBeInTheDocument();
+  expect(screen.getByTestId("matrix-cell-sonatype-sca_sbom")).toBeInTheDocument();
+  expect(
+    screen.getByTestId("matrix-cell-github-artifact_management"),
+  ).toBeInTheDocument();
 });
 
 test("clicking a competitor row shows the detail page with dimension cards", async () => {
   const user = userEvent.setup();
-  const xrayComponent = comparisonMatrixFixture.components.find(
-    (component) => component.key === "xray",
+  const scaDimension = comparisonMatrixFixture.dimensions.find(
+    (dimension) => dimension.key === "sca_sbom",
   );
-  const sonatypeCell = xrayComponent?.cells.find(
+  const sonatypeCell = scaDimension?.cells.find(
     (cell) => cell.competitor === "sonatype",
   );
   const evidence = sonatypeCell?.evidence[0];
@@ -37,11 +39,11 @@ test("clicking a competitor row shows the detail page with dimension cards", asy
   await user.click(screen.getByTestId("competitor-row-sonatype"));
 
   expect(screen.getByTestId("competitor-detail")).toBeInTheDocument();
-  const xrayCard = screen.getByTestId("dimension-card-xray");
-  expect(xrayCard).toBeInTheDocument();
-  expect(screen.getByTestId("dimension-card-apptrust")).toBeInTheDocument();
+  const scaCard = screen.getByTestId("dimension-card-sca_sbom");
+  expect(scaCard).toBeInTheDocument();
+  expect(screen.getByTestId("dimension-card-container_security")).toBeInTheDocument();
 
-  const link = within(xrayCard).getByRole("link", {
+  const link = within(scaCard).getByRole("link", {
     name: evidence.source_name,
   });
   expect(link).toHaveAttribute("href", evidence.source_url);

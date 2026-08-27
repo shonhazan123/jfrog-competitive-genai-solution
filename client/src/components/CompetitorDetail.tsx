@@ -67,17 +67,17 @@ export function CompetitorDetail({
       </div>
 
       <div className="competitor-detail__cards">
-        {matrix.components.map((component) => {
-          const cell = getCellForCompetitor(matrix, component.key, competitorSlug);
-          const strength = stanceToStrength(cell?.stance ?? "no_claim");
+        {matrix.dimensions.map((dimension) => {
+          const cell = getCellForCompetitor(matrix, dimension.key, competitorSlug);
+          const strength = stanceToStrength(cell?.stance);
           const evidence = primaryEvidence(cell);
-          const label = dimensionLabel(component.key, component.name);
+          const label = dimensionLabel(dimension.key, dimension.name);
 
           return (
             <article
-              key={component.key}
+              key={dimension.key}
               className="competitor-detail__card"
-              data-testid={`dimension-card-${component.key}`}
+              data-testid={`dimension-card-${dimension.key}`}
             >
               <div className="competitor-detail__card-header">
                 <h2 className="competitor-detail__card-title">{label}</h2>
@@ -87,7 +87,7 @@ export function CompetitorDetail({
                 </div>
               </div>
 
-              {cell?.summary ? (
+              {cell?.stance !== "none" && cell?.summary ? (
                 <p className="competitor-detail__position">{cell.summary}</p>
               ) : null}
 
@@ -100,7 +100,7 @@ export function CompetitorDetail({
                       href={evidence.source_url}
                       target="_blank"
                       rel="noreferrer"
-                      data-testid={`evidence-link-${component.key}`}
+                      data-testid={`evidence-link-${dimension.key}`}
                     >
                       {evidence.source_name}
                     </a>

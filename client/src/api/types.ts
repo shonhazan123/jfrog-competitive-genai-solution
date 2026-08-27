@@ -180,7 +180,7 @@ export interface BattlecardRow {
   no_claim_on_record: boolean;
 }
 
-export type ComparisonStance = "ahead" | "behind" | "comparable" | "no_claim";
+export type ComparisonStance = "strong" | "moderate" | "weak" | "none";
 
 export interface ComparisonMatrixCell {
   competitor: string;
@@ -191,7 +191,7 @@ export interface ComparisonMatrixCell {
   evidence: Evidence[];
 }
 
-export interface ComparisonMatrixComponent {
+export interface ComparisonMatrixDimension {
   key: string;
   name: string;
   cells: ComparisonMatrixCell[];
@@ -203,7 +203,7 @@ export interface ComparisonMatrixCompetitor {
 }
 
 export interface ComparisonMatrix {
-  components: ComparisonMatrixComponent[];
+  dimensions: ComparisonMatrixDimension[];
   competitors: ComparisonMatrixCompetitor[];
 }
 
