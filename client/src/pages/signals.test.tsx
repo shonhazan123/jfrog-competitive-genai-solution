@@ -44,7 +44,9 @@ test("signals room groups cards by signal type with section labels", () => {
   for (const group of fixtureGroups()) {
     const section = screen.getByTestId(`signal-group-${group.signal_type}`);
     expect(
-      within(section).getByText(group.signal_type_label),
+      within(section).getByText(group.signal_type_label, {
+        selector: ".section-label",
+      }),
     ).toBeInTheDocument();
     expect(within(section).getAllByTestId("signal-card").length).toBeGreaterThanOrEqual(
       1,

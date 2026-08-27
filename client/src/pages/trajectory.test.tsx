@@ -15,9 +15,11 @@ function renderPage(ui: ReactElement) {
   );
 }
 
-test("Trajectory sits immediately after Industry in the navigation", () => {
-  const order = NAVIGATION.map((n) => n.path);
-  expect(order[order.indexOf("/industry") + 1]).toBe("/trajectory");
+test("Trajectory is not in navigation but remains reachable by direct URL", () => {
+  const paths = NAVIGATION.map((n) => n.path);
+  expect(paths).not.toContain("/trajectory");
+  renderPage(<Trajectory />);
+  expect(screen.getAllByTestId("timeline-entry").length).toBeGreaterThanOrEqual(1);
 });
 
 test("Trajectory shows how a competitor's argument evolved, with dated captures", () => {

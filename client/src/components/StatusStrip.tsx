@@ -22,7 +22,7 @@ function formatTimestamp(iso: string): string {
 function invalidateDailyQueries(
   queryClient: ReturnType<typeof useQueryClient>,
 ): void {
-  void queryClient.invalidateQueries({ queryKey: ["kits"] });
+  void queryClient.invalidateQueries({ queryKey: ["today"] });
   void queryClient.invalidateQueries({ queryKey: ["signals"] });
   void queryClient.invalidateQueries({ queryKey: ["run-status"] });
   void queryClient.invalidateQueries({ queryKey: ["industry"] });
