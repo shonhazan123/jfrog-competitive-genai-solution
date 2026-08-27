@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
-import type { Persona, ScoreBreakdown, Signal, TraceStep } from "../api/types";
+import type { Persona, Signal, TraceStep } from "../api/types";
 import { Chip } from "./primitives/Chip";
 import { Disclosure } from "./primitives/Disclosure";
 import { Quote } from "./primitives/Quote";
-import { ScoreBadge } from "./primitives/ScoreBadge";
 import { SectionLabel } from "./primitives/SectionLabel";
+import { TierBadge } from "./TierBadge";
 import "./SignalCard.css";
 
 const HUE_TOKENS: Record<string, string> = {
@@ -32,71 +32,12 @@ interface SignalCardProps {
   onAction?: (action: SignalAction) => void;
 }
 
-type NormalizedBreakdown = {
-  total?: number;
-  parts: [string, number][];
-};
-
-function normalizeBreakdown(
-  breakdown: ScoreBreakdown | [string, number][] | null | undefined,
-): NormalizedBreakdown | null {
-  if (!breakdown) return null;
-  if (Array.isArray(breakdown)) {
-    return { parts: breakdown };
-  }
-  if ("parts" in breakdown && Array.isArray(breakdown.parts)) {
-    return { total: breakdown.total, parts: breakdown.parts };
-  }
-  return null;
-}
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
-}
-
-function formatScoreValue(label: string, value: number): string {
-  if (label.toLowerCase().includes("jfrog") && value > 1 && value <= 3) {
-    return `×${value}`;
-  }
-  if (value >= 0) return `+${value}`;
-  return String(value);
-}
-
-function ScoreBreakdownContent({
-  breakdown,
-  score,
-}: {
-  breakdown: Signal["score_breakdown"];
-  score: number;
-}) {
-  const normalized = normalizeBreakdown(breakdown);
-
-  if (!normalized || normalized.parts.length === 0) {
-    return <p>Score breakdown not available for this signal.</p>;
-  }
-
-  const displayTotal = normalized.total ?? score;
-
-  return (
-    <div className="signal-card__score-breakdown">
-      {normalized.parts.map(([label, value]) => (
-        <div key={label} className="signal-card__score-part">
-          <span>{label}</span>
-          <span className="signal-card__score-value">
-            {formatScoreValue(label, value)}
-          </span>
-        </div>
-      ))}
-      <div className="signal-card__score-total">
-        <span>=</span>
-        <span>{Math.round(displayTotal)}</span>
-      </div>
-    </div>
-  );
 }
 
 function TraceContent({ trace }: { trace?: TraceStep[] }) {
@@ -139,12 +80,16 @@ export function SignalCard({ signal, persona, onAction }: SignalCardProps) {
           </span>
         </div>
         <div className="signal-card__header-right">
-          <ScoreBadge value={signal.score} />
+          <TierBadge tier={signal.tier} label={signal.tier_label} />
           <span className="signal-card__persona">{persona.toUpperCase()}</span>
         </div>
       </header>
 
       <h3 className="signal-card__headline">{signal.headline}</h3>
+
+      {signal.why_it_matters ? (
+        <p className="signal-card__why-it-matters">{signal.why_it_matters}</p>
+      ) : null}
 
       {signal.handling === "caution" ? (
         <p className="signal-card__handling" role="note">
@@ -172,13 +117,6 @@ export function SignalCard({ signal, persona, onAction }: SignalCardProps) {
           </p>
         </section>
       ) : null}
-
-      <Disclosure label="Why this score">
-        <ScoreBreakdownContent
-          breakdown={signal.score_breakdown}
-          score={signal.score}
-        />
-      </Disclosure>
 
       <Disclosure label="How this was produced">
         <TraceContent trace={signal.trace} />

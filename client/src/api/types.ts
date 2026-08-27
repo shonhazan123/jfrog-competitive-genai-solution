@@ -13,6 +13,8 @@ export type SignalType =
 
 export type Persona = "sales" | "product" | "exec";
 
+export type Tier = "act_on_it" | "worth_knowing" | "background";
+
 export type ReliabilityGrade = "A" | "B" | "C" | "D" | "E" | "F";
 
 export type CredibilityScore = 1 | 2 | 3 | 4 | 5 | 6;
@@ -78,8 +80,10 @@ export interface Signal {
   occurred_at: string;
   persona: Persona | null;
   so_what: string;
-  score: number;
-  score_breakdown: ScoreBreakdown | null;
+  tier: Tier;
+  tier_label: string;
+  primary_stakeholder: Persona;
+  why_it_matters: string;
   handling: Handling | null;
   awareness_only: boolean;
   evidence: Evidence[];

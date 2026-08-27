@@ -29,6 +29,11 @@
   --sig-corporate:    #C026D3;   --sig-corporate-wash:    #FBEAFD;
   --sig-talent:       #EA580C;   --sig-talent-wash:       #FDEEE4;
 
+  /* ── verdict tiers (calm, non-alarmist) ──────────────── */
+  --tier-act:   #2B59FF;
+  --tier-worth: #0284C7;
+  --tier-bg:    #8A92A6;
+
   /* ── SYSTEM 2 · materiality owns WEIGHT, never hue ───── */
   --mat-low-fg:   var(--ink-muted);    --mat-low-bg:   transparent;
   --mat-mid-fg:   var(--ink-secondary);--mat-mid-bg:   var(--surface-sunk);

@@ -1,4 +1,4 @@
-import type { Persona, SignalType } from "../api/types";
+import type { Persona, SignalType, Tier } from "../api/types";
 
 /** Mirrors config/labels.yaml — human labels for every machine value. */
 const SIGNAL_TYPE_LABELS: Record<SignalType, string> = {
@@ -39,6 +39,12 @@ const ORIGIN_LABELS = {
   authored: "Authored by the CI team",
   archive: "From the web archive",
 } as const;
+
+export const TIER_HUE: Record<Tier, string> = {
+  act_on_it: "var(--tier-act)",
+  worth_knowing: "var(--tier-worth)",
+  background: "var(--tier-bg)",
+};
 
 const HUE_TOKENS: Record<SignalType, string> = {
   product_capability: "var(--sig-product)",

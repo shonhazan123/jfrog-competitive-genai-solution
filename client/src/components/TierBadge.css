@@ -1,0 +1,12 @@
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  font-weight: 600;
+  color: var(--tier-hue);
+  background: color-mix(in srgb, var(--tier-hue) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier-hue) 35%, transparent);
+}
