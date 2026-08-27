@@ -51,50 +51,6 @@ sources:
     check_frequency_minutes: 1440
     covers: [positioning_messaging]
 
-  # --- Developer sentiment via the free Hacker News (Algolia) API -------------------------
-  # The ToS-clean substitute for scraping review sites. The query encodes the subject, so the
-  # same adapter collects "what developers say" symmetrically about each product.
-  - key: hn_jfrog
-    entity: industry
-    url: https://hn.algolia.com/api/v1/search_by_date?query=JFrog%20Artifactory&tags=story
-    kind: api
-    mode: api
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-    adapter: hn
-    covers: [customer_evidence]
-
-  - key: hn_sonatype
-    entity: industry
-    url: https://hn.algolia.com/api/v1/search_by_date?query=Sonatype%20Nexus&tags=story
-    kind: api
-    mode: api
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-    adapter: hn
-    covers: [customer_evidence]
-
-  # --- Tech press (secondary, industry lane) ----------------------------------------------
-  - key: thenewstack_rss
-    entity: industry
-    url: https://thenewstack.io/feed/
-    kind: rss
-    mode: feed
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-
-  - key: infoq_rss
-    entity: industry
-    url: https://feed.infoq.com/
-    kind: rss
-    mode: feed
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-
   # --- Talent / roadmap leading indicator (public job board JSON) -------------------------
   # `talent_org` is the only predictive signal type — a hiring surge is roadmap intelligence
   # 6-12 months early. Sonatype uses Lever (verified 2026-08-26: api.lever.co returns 6+
@@ -144,36 +100,6 @@ sources:
   - key: azure_artifacts_news
     entity: azure_artifacts
     url: "https://news.google.com/rss/search?q=%22Azure%20Artifacts%22%20OR%20%22Azure%20DevOps%20Artifacts%22"
-    kind: rss
-    mode: feed
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-    covers: [product_capability]
-
-  - key: gnews_funding
-    entity: industry
-    url: "https://news.google.com/rss/search?q=%28Sonatype%20OR%20GitLab%20OR%20Harbor%20OR%20%22GitHub%20Packages%22%29%20%28acquisition%20OR%20funding%20OR%20raises%20OR%20series%29"
-    kind: rss
-    mode: feed
-    reliability_grade: C
-    is_primary: false
-    check_frequency_minutes: 720
-    covers: [corporate_financial]
-
-  - key: huggingface_blog
-    entity: industry
-    url: https://huggingface.co/blog/feed.xml
-    kind: rss
-    mode: feed
-    reliability_grade: B
-    is_primary: false
-    check_frequency_minutes: 720
-    covers: [product_capability]
-
-  - key: gnews_model_registry
-    entity: industry
-    url: "https://news.google.com/rss/search?q=%22model%20registry%22%20OR%20MLOps%20artifact"
     kind: rss
     mode: feed
     reliability_grade: C
