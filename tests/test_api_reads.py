@@ -43,6 +43,18 @@ def test_list_endpoints_use_the_items_total_cursor_envelope(client_with_data):
     assert {"items", "total", "cursor"} <= set(body)
 
 
+def test_signal_payload_uses_tier_not_numeric_score(client_with_data):
+    body = client_with_data.get("/signals?persona=sales").json()
+    assert body["items"], "expected at least one signal in fixture data"
+    row = body["items"][0]
+    assert row["tier"] in {"act_on_it", "worth_knowing", "background"}
+    assert "tier_label" in row
+    assert "primary_stakeholder" in row
+    assert "why_it_matters" in row
+    assert "score" not in row
+    assert "score_breakdown" not in row
+
+
 def test_timestamps_carry_a_utc_offset(client_with_data):
     body = client_with_data.get("/runs/latest").json()
     assert body["started_at"].endswith("+00:00")
@@ -151,6 +163,7 @@ def client_with_data(session):
             so_what_sales="Sales framing for the signal.",
             so_what_product="Product framing for the signal.",
             so_what_exec="Executive framing for the signal.",
+            why_it_matters="Directly targets Artifactory's SBOM story.",
             handling=handling,
         )
         session.add(signal)

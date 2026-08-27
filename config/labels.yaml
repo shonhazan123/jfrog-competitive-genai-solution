@@ -10,11 +10,10 @@ signal_types:
   market_regulatory:     Industry & regulation
   talent_org:            Hiring signal
 
-priority_bands:
-  - { max: 39,  label: Watch }
-  - { max: 59,  label: Notable }
-  - { max: 79,  label: High }
-  - { max: 100, label: Critical }
+tiers:
+  act_on_it:     Act on it
+  worth_knowing: Worth knowing
+  background:    Background
 
 states:
   interrupt:   Needs attention today

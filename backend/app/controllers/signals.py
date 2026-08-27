@@ -14,6 +14,7 @@ from app.serializers.common import (
     signal_type_label,
     state_label,
 )
+from app.services.scoring.materiality import primary_stakeholder, tier_for
 
 
 def _entity_map(session: Session) -> dict[int, Entity]:
@@ -77,15 +78,20 @@ def _serialize_signal(
     subject = entities.get(signal.subject_entity_id) if signal.subject_entity_id else None
     asserting = entities.get(entity.id)
     breakdown = signal.score_breakdown or {}
-    score_breakdown = None
-    if isinstance(breakdown.get("total"), (int, float)) and isinstance(breakdown.get("parts"), list):
-        score_breakdown = {"total": float(breakdown["total"]), "parts": breakdown["parts"]}
 
     flavour = None
     if signal.signal_type == "positioning_messaging":
         flavour = breakdown.get("flavour")
 
     active_persona = persona or "sales"
+    scores = {
+        "sales": float(signal.score_sales),
+        "product": float(signal.score_product),
+        "exec": float(signal.score_exec),
+    }
+    stakeholder = primary_stakeholder(scores)
+    overall = scores[stakeholder]
+    tier = tier_for(overall, cfg)
     return {
         "id": f"sig_{signal.id}",
         "entity": entity_ref(entity),
@@ -99,8 +105,10 @@ def _serialize_signal(
         "occurred_at": fmt_ts(signal.occurred_at),
         "persona": active_persona,
         "so_what": getattr(signal, f"so_what_{active_persona}") or "",
-        "score": float(getattr(signal, f"score_{active_persona}")),
-        "score_breakdown": score_breakdown,
+        "tier": tier,
+        "tier_label": cfg.labels.tiers[tier],
+        "primary_stakeholder": stakeholder,
+        "why_it_matters": signal.why_it_matters or "",
         "handling": signal.handling,
         "handling_label": state_label(signal.handling, cfg),
         "awareness_only": bool(breakdown.get("awareness_only")),

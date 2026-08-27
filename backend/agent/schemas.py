@@ -18,6 +18,7 @@ class Contextualisation(BaseModel):
     so_what_sales: str = Field(max_length=600)
     so_what_product: str = Field(max_length=600)
     so_what_exec: str = Field(max_length=600)
+    why_it_matters: str = Field(max_length=140)
     relevance_adjustment: float = Field(ge=-1.0, le=1.0, default=0.0)
     adjustment_reason: str = ""
 

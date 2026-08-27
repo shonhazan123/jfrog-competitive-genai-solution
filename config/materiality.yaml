@@ -28,3 +28,7 @@ candidates:
 cluster:
   window_days: 3
   title_similarity: 88
+
+tiers:
+  act_on_it: 60
+  worth_knowing: 35

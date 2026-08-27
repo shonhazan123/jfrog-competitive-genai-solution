@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 class EntityConfig(BaseModel):
     slug: str
@@ -80,6 +80,7 @@ class MaterialityConfig(BaseModel):
     interrupt: InterruptConfig
     candidates: CandidateConfig
     cluster: ClusterConfig
+    tiers: dict[str, float]
 
 class WatchlistConfig(BaseModel):
     terms: list[str]
@@ -135,10 +136,59 @@ class PriorityBand(BaseModel):
 
 class LabelsConfig(BaseModel):
     signal_types: dict[str, str]
-    priority_bands: list[PriorityBand]
+    tiers: dict[str, str]
     states: dict[str, str]
     personas: dict[str, str]
     origins: dict[str, str]
+
+ReasoningEffort = Literal["minimal", "low", "medium", "high"]
+
+
+class LlmDefaults(BaseModel):
+    """Fallback settings applied to every LLM call that does not override them."""
+
+    provider: Literal["openai"] = "openai"
+    temperature: float | None = 0.0
+    timeout_seconds: float = Field(default=60, gt=0)
+    max_retries: int = Field(default=2, ge=0)
+    max_tokens: int | None = Field(default=None, ge=1)
+    reasoning_effort: ReasoningEffort | None = None
+
+
+class LlmCallConfig(BaseModel):
+    """Tunable settings for a single named LLM call (see config/llm.yaml)."""
+
+    description: str = ""
+    provider: Literal["openai"] = "openai"
+    model: str
+    temperature: float | None = 0.0
+    timeout_seconds: float = Field(default=60, gt=0)
+    max_retries: int = Field(default=2, ge=0)
+    max_tokens: int | None = Field(default=None, ge=1)
+    reasoning_effort: ReasoningEffort | None = None
+
+
+class LlmConfig(BaseModel):
+    defaults: LlmDefaults = Field(default_factory=LlmDefaults)
+    calls: dict[str, LlmCallConfig]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _apply_defaults(cls, data):
+        # Merge `defaults` into each call so a call only needs to specify what it
+        # overrides. An explicit value on a call (even null) always wins.
+        if not isinstance(data, dict):
+            return data
+        defaults = dict(data.get("defaults") or {})
+        calls = data.get("calls") or {}
+        merged: dict[str, dict] = {}
+        for name, call in calls.items():
+            call = dict(call or {})
+            for key, value in defaults.items():
+                call.setdefault(key, value)
+            merged[name] = call
+        return {"defaults": defaults, "calls": merged}
+
 
 class AppConfig(BaseModel):
     entities: list[EntityConfig]
@@ -155,3 +205,4 @@ class AppConfig(BaseModel):
     retrieval: RetrievalConfig
     kits: KitsConfig
     labels: LabelsConfig
+    llm: LlmConfig

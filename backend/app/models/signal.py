@@ -30,6 +30,7 @@ class Signal(Base, TimestampMixin):
     so_what_sales: Mapped[str | None] = mapped_column(Text, nullable=True)
     so_what_product: Mapped[str | None] = mapped_column(Text, nullable=True)
     so_what_exec: Mapped[str | None] = mapped_column(Text, nullable=True)
+    why_it_matters: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     handling: Mapped[str | None] = mapped_column(String(16), nullable=True)  # caution
     status: Mapped[str] = mapped_column(String(16), default="active")

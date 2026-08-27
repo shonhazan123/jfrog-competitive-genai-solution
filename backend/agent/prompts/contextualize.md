@@ -17,3 +17,7 @@ Rules:
   never around exploiting the specific vulnerability.
 - `relevance_adjustment` may nudge ranking within ±1 and REQUIRES a written
   reason. Leave it at 0 unless the categories genuinely miss something.
+- `why_it_matters` is ONE plain sentence naming the JFrog consequence, at most 140
+  characters, no numbers and no jargon. Pattern: "<what it does> to <JFrog area>".
+  Example: "Directly targets Artifactory's SBOM story." If nothing material, say
+  so plainly: "Background — no direct JFrog overlap."

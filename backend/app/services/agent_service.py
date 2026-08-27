@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from agent.graphs.interpret.graph import build_interpret_graph
 from agent.llm import get_checkpointer, get_model, prompt as load_prompt
+from agent.log import get_logger, step
 from agent.schemas import Contextualisation, build_extraction_model
 from app.config.loader import load_config
 from app.models.capture import RawCapture
@@ -20,6 +21,7 @@ from app.services.signals.clustering import cluster_key
 from app.services.verification import verify_quote
 
 PROMPT_VERSION = 1
+logger = get_logger("app.agent_service")
 
 @dataclass
 class InterpretResult:
@@ -94,6 +96,7 @@ def _persist_signal(session: Session, capture: RawCapture, source: Source, final
         so_what_sales=contextualization.get("so_what_sales"),
         so_what_product=contextualization.get("so_what_product"),
         so_what_exec=contextualization.get("so_what_exec"),
+        why_it_matters=contextualization.get("why_it_matters"),
     )
     session.add(signal)
     session.flush()
@@ -123,6 +126,7 @@ def _production_deps(session: Session):
 
     class ContextualizeAdapter:
         def invoke(self, state):
+            capture_id = state.get("capture_id")
             extraction = state.get("extraction") or {}
             verification = state.get("verification") or {}
             verified = verification.get("verified_claims") or extraction.get("claims") or []
@@ -138,6 +142,13 @@ def _production_deps(session: Session):
                     for tag in dict.fromkeys(capability_tags)
                 },
             }
+            step(
+                logger,
+                "interpret.contextualize.payload",
+                capture_id=capture_id,
+                verified_claims=len(verified),
+                capability_tags=len(capability_tags),
+            )
             prompt_text = (
                 load_prompt("contextualize")
                 + "\n\nDATA:\n"
@@ -169,33 +180,65 @@ def interpret_capture(capture_id: int, *, session: Session, deps=None) -> Interp
         deps = _production_deps(session)
 
     thread_id = thread_id_for(capture_id)
-    graph = build_interpret_graph(deps)
-    final = graph.invoke(
-        {
-            "capture_id": capture_id,
-            "raw_text": capture.extracted_text,
-            "source_meta": {"source_key": source.key, "entity_id": source.entity_id},
-            "repair_attempts": 0,
-            "_max_repairs": deps.max_repairs,
-        },
-        config={"configurable": {"thread_id": thread_id}},
+    step(
+        logger,
+        "interpret.capture.start",
+        capture_id=capture_id,
+        source_key=source.key,
+        thread_id=thread_id,
+        text_chars=len(capture.extracted_text or ""),
     )
+    graph = build_interpret_graph(deps)
+    try:
+        final = graph.invoke(
+            {
+                "capture_id": capture_id,
+                "raw_text": capture.extracted_text,
+                "source_meta": {"source_key": source.key, "entity_id": source.entity_id},
+                "repair_attempts": 0,
+                "_max_repairs": deps.max_repairs,
+            },
+            config={"configurable": {"thread_id": thread_id}},
+        )
+    except Exception:
+        logger.exception(
+            "interpret.capture.failed capture_id=%s thread_id=%s",
+            capture_id,
+            thread_id,
+        )
+        raise
 
     status = final.get("status", "ok")
     if status == "quarantined":
+        failures = final.get("verification", {}).get("failures", [])
+        step(
+            logger,
+            "interpret.capture.quarantined",
+            capture_id=capture_id,
+            thread_id=thread_id,
+            failures=len(failures),
+        )
         session.add(AnalystQueue(
             thread_id=thread_id,
             capture_id=capture_id,
             reason="verification_failed",
             payload={
                 "extraction": final.get("extraction"),
-                "failures": final.get("verification", {}).get("failures", []),
+                "failures": failures,
             },
         ))
         session.flush()
         return InterpretResult(status="quarantined", thread_id=thread_id)
 
     signal = _persist_signal(session, capture, source, final)
+    step(
+        logger,
+        "interpret.capture.done",
+        capture_id=capture_id,
+        thread_id=thread_id,
+        signal_id=signal.id,
+        headline=signal.headline,
+    )
     return InterpretResult(status="ok", signal_id=signal.id, thread_id=thread_id)
 
 def resume_queue_item(thread_id: str, decision: dict, *, session: Session, deps=None) -> InterpretResult:

@@ -45,3 +45,19 @@ def score(facets: dict, persona: str, config: AppConfig) -> ScoreBreakdown:
         parts.append(("recency", decay))
 
     return ScoreBreakdown(total=sum(v for _, v in parts), parts=parts)
+
+
+_TIE_ORDER = {"exec": 3, "product": 2, "sales": 1}
+
+
+def tier_for(total: float, config: AppConfig) -> str:
+    t = config.materiality.tiers
+    if total >= t["act_on_it"]:
+        return "act_on_it"
+    if total >= t["worth_knowing"]:
+        return "worth_knowing"
+    return "background"
+
+
+def primary_stakeholder(scores: dict[str, float]) -> str:
+    return max(scores, key=lambda p: (scores[p], _TIE_ORDER[p]))
