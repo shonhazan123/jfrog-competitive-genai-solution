@@ -48,3 +48,4 @@ Numeric scoring and change-detection (backfill / `ClaimVersion` / Trajectory /
 | [llm.md](./llm.md) | Per-call LLM tuning via `config/llm.yaml`, `get_model` wiring, env overrides |
 | [client.md](./client.md) | React client: verdict-first IA, fixture/live switch, tokens, SignalCard rule, live-wiring contract drift |
 | [industry.md](./industry.md) | Industry feed + stable themes (`/industry/themes`), JFrog-relevance lines |
+| [maintenance.md](./maintenance.md) | `python -m app.services.maintenance` — purge findings, keep registry + captures |
