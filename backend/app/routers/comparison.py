@@ -13,3 +13,8 @@ def list_comparison(
     competitor: str = Query("sonatype"),
 ) -> dict:
     return comparison.list_comparison(session, competitor=competitor)
+
+
+@router.get("/matrix")
+def list_comparison_matrix(session: Session = Depends(get_session)) -> dict:
+    return comparison.list_comparison_matrix(session)

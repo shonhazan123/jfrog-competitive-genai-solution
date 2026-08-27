@@ -2,6 +2,7 @@ import analystActionFixture from "../fixtures/analyst_action.json";
 import askTranscriptFixture from "../fixtures/ask_transcript.json";
 import claimsAboutJfrogFixture from "../fixtures/claims_about_jfrog.json";
 import claimsHistoryTimelineFixture from "../fixtures/claims_history_timeline.json";
+import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
 import comparisonSonatypeFixture from "../fixtures/comparison_sonatype.json";
 import coverageMatrixFixture from "../fixtures/coverage_matrix.json";
 import digestExecWeeklyFixture from "../fixtures/digest_exec_weekly.json";
@@ -27,6 +28,7 @@ import type {
   AskResponse,
   BattlecardRow,
   Claim,
+  ComparisonMatrix,
   CoverageMatrix,
   EmailPreview,
   ExecWeekly,
@@ -156,6 +158,7 @@ export const FIXTURES = {
   getSignal: signalTraceFixture,
   postAction: analystActionFixture,
   getComparison: comparisonSonatypeFixture,
+  getComparisonMatrix: comparisonMatrixFixture,
   getClaims: claimsAboutJfrogFixture,
   getClaimHistory: claimsHistoryTimelineFixture,
   getIndustry: industryFeedFixture,
@@ -228,6 +231,13 @@ export const api = {
     return fixtureOrLive(
       comparisonSonatypeFixture as ListResponse<BattlecardRow>,
       paths.comparisonPath(params),
+    );
+  },
+
+  getComparisonMatrix(): Promise<ComparisonMatrix> {
+    return fixtureOrLive(
+      comparisonMatrixFixture as ComparisonMatrix,
+      "/comparison/matrix",
     );
   },
 

@@ -164,6 +164,33 @@ export interface BattlecardRow {
   no_claim_on_record: boolean;
 }
 
+export type ComparisonStance = "ahead" | "behind" | "comparable" | "no_claim";
+
+export interface ComparisonMatrixCell {
+  competitor: string;
+  competitor_name: string;
+  stance: ComparisonStance;
+  summary: string;
+  jfrog_position: string;
+  evidence: Evidence[];
+}
+
+export interface ComparisonMatrixComponent {
+  key: string;
+  name: string;
+  cells: ComparisonMatrixCell[];
+}
+
+export interface ComparisonMatrixCompetitor {
+  slug: string;
+  name: string;
+}
+
+export interface ComparisonMatrix {
+  components: ComparisonMatrixComponent[];
+  competitors: ComparisonMatrixCompetitor[];
+}
+
 export interface ClaimVersion {
   changed_at: string;
   change_kind: ChangeKind;

@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { BattlecardRow, ListResponse } from "../api/types";
-import { ComparisonTable } from "../components/ComparisonTable";
+import type { ComparisonMatrix } from "../api/types";
+import { ComparisonGrid } from "../components/ComparisonGrid";
 import { Panel } from "../components/primitives/Panel";
-import comparisonFixture from "../fixtures/comparison_sonatype.json";
+import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
 
 export function Comparison() {
   const { data } = useQuery({
-    queryKey: ["comparison"],
-    queryFn: () => api.getComparison(),
-    initialData: comparisonFixture as ListResponse<BattlecardRow>,
+    queryKey: ["comparison-matrix"],
+    queryFn: () => api.getComparisonMatrix(),
+    initialData: comparisonMatrixFixture as ComparisonMatrix,
   });
 
   return (
@@ -22,7 +22,7 @@ export function Comparison() {
       }}
     >
       <header>
-        <h1 className="page-heading">Comparison — JFrog vs Sonatype</h1>
+        <h1 className="page-heading">Competitors</h1>
         <p
           style={{
             marginTop: "var(--sp-2)",
@@ -31,13 +31,13 @@ export function Comparison() {
             color: "var(--ink-secondary)",
           }}
         >
-          Derived from the claim ledger. ⚠ marks a dimension whose claim changed
-          recently.
+          JFrog product line mapped against rival public claims. Click a cell for
+          sourced evidence.
         </p>
       </header>
 
       <Panel>
-        <ComparisonTable rows={data.items} />
+        <ComparisonGrid matrix={data} />
       </Panel>
     </div>
   );

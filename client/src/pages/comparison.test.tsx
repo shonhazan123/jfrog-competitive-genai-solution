@@ -1,9 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
-import { ComparisonTable } from "../components/ComparisonTable";
-import comparisonFixture from "../fixtures/comparison_sonatype.json";
+import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
 import { AboutUs } from "./AboutUs";
 import { Comparison } from "./Comparison";
 
@@ -15,38 +15,28 @@ function renderPage(ui) {
   );
 }
 
-test("JFrog cells are marked authored and carry no grade", () => {
+test("the grid renders component rows and competitor columns", () => {
   renderPage(<Comparison />);
-  const cell = screen.getAllByTestId("jfrog-cell")[0];
-  expect(cell).toHaveAttribute("data-origin", "authored");
-  expect(within(cell).queryByTestId("grade-chip")).toBeNull();
+  expect(screen.getByTestId("component-row-xray")).toBeInTheDocument();
+  expect(screen.getByTestId("competitor-column-sonatype")).toBeInTheDocument();
+  expect(screen.getByTestId("competitor-column-harbor")).toBeInTheDocument();
 });
 
-test("competitor cells carry a grade and link to evidence", () => {
-  renderPage(<Comparison />);
-  const cell = screen.getAllByTestId("competitor-cell")[0];
-  expect(within(cell).getByTestId("grade-chip")).toBeInTheDocument();
-});
-
-test("an absent claim reads as no public claim, not as a graded judgement", () => {
-  renderPage(<Comparison />);
-  const absent = screen.getByTestId("competitor-cell-runtime_security");
-  expect(absent).toHaveTextContent(/no public claim/i);
-  expect(within(absent).queryByTestId("grade-chip")).toBeNull();
-});
-
-test("comparison snapshot omits change-detection fields", () => {
-  const rows = comparisonFixture.items.map(
-    ({ changed_recently, last_changed_at, change, ...snapshot }) => snapshot,
+test("expanding a cell shows evidence as a linked source", async () => {
+  const user = userEvent.setup();
+  const xrayComponent = comparisonMatrixFixture.components.find(
+    (component) => component.key === "xray",
   );
-  rows.forEach((row) => {
-    expect(row).not.toHaveProperty("changed_recently");
-    expect(row).not.toHaveProperty("last_changed_at");
-    expect(row).not.toHaveProperty("change");
-  });
-  render(<ComparisonTable rows={rows} />);
-  expect(screen.queryByText("Last changed")).toBeNull();
-  expect(screen.queryAllByTestId("changed-flag")).toHaveLength(0);
+  const sonatypeCell = xrayComponent?.cells.find(
+    (cell) => cell.competitor === "sonatype",
+  );
+  const evidence = sonatypeCell?.evidence[0];
+
+  renderPage(<Comparison />);
+  await user.click(screen.getByTestId("matrix-cell-xray-sonatype"));
+
+  const link = screen.getByRole("link", { name: evidence.source_name });
+  expect(link).toHaveAttribute("href", evidence.source_url);
 });
 
 test("the claim timeline renders was-now, never a code diff", () => {

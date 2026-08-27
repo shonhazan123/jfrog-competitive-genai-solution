@@ -1,0 +1,160 @@
+{
+  "components": [
+    {
+      "key": "artifactory",
+      "name": "Artifactory",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Universal binary repository — 30+ package types under one system of record.",
+          "evidence": []
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Universal binary repository — 30+ package types under one system of record.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "key": "xray",
+      "name": "Xray",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "comparable",
+          "summary": "Claims JFrog malware detection is very limited, not proactive.",
+          "jfrog_position": "Curation blocks malicious packages at the gate; Xray adds contextual analysis to determine applicability.",
+          "evidence": [
+            {
+              "quote": "80% more accurate data than JFrog … JFrog malware detection is very limited, not proactive.",
+              "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+              "source_name": "Sonatype comparison page",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Curation blocks malicious packages at the gate; Xray adds contextual analysis to determine applicability.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "key": "curation",
+      "name": "Curation",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "",
+          "evidence": []
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "key": "apptrust",
+      "name": "AppTrust",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "comparable",
+          "summary": "Claims JFrog SBOM is export only.",
+          "jfrog_position": "AppTrust provides SBOM generation, management and evidence collection across the release lifecycle.",
+          "evidence": [
+            {
+              "quote": "JFrog SBOM is export only.",
+              "source_url": "https://www.sonatype.com/compare/sonatype-nexus-versus-jfrog-artifactory",
+              "source_name": "Sonatype comparison page",
+              "captured_at": "2026-08-24T00:00:00+00:00",
+              "reliability_grade": "A",
+              "credibility_score": 3,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "AppTrust provides SBOM generation, management and evidence collection across the release lifecycle.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "key": "advanced_security",
+      "name": "Advanced Security",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Runtime Security correlates deployed workloads back to build and package provenance.",
+          "evidence": []
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "Runtime Security correlates deployed workloads back to build and package provenance.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "key": "ai_ml",
+      "name": "AI / ML",
+      "cells": [
+        {
+          "competitor": "sonatype",
+          "competitor_name": "Sonatype",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "AI Catalog and JFrog ML provide model and MCP-artifact management alongside binaries.",
+          "evidence": []
+        },
+        {
+          "competitor": "harbor",
+          "competitor_name": "Harbor",
+          "stance": "no_claim",
+          "summary": "No public claim on record.",
+          "jfrog_position": "AI Catalog and JFrog ML provide model and MCP-artifact management alongside binaries.",
+          "evidence": []
+        }
+      ]
+    }
+  ],
+  "competitors": [
+    { "slug": "sonatype", "name": "Sonatype" },
+    { "slug": "harbor", "name": "Harbor" }
+  ]
+}

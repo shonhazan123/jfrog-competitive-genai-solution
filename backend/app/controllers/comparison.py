@@ -3,14 +3,10 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.capture import RawCapture
-from app.models.ledger import Claim, Evidence
-from app.models.registry import Source
-from app.serializers.common import (
-    authored_citation,
-    evidence_from_capture,
-)
+from app.models.ledger import Claim
+from app.serializers.common import authored_citation
 from app.services.comparison import build_comparison
+from app.services.comparison_matrix import build_comparison_matrix, evidence_for_claim
 
 
 _DIMENSION_LABELS = {
@@ -32,34 +28,6 @@ def _claim_ids_for_dimension(session: Session, competitor_id: int, dimension: st
         )
     ).scalars().all()
     return [f"claim_{claim.id}" for claim in claims]
-
-
-def _evidence_for_claim(session: Session, claim: Claim | None) -> list[dict]:
-    if claim is None:
-        return []
-    from app.config.loader import load_config
-
-    cfg = load_config()
-    row = session.execute(
-        select(Evidence, RawCapture, Source)
-        .join(RawCapture, Evidence.capture_id == RawCapture.id)
-        .join(Source, RawCapture.source_id == Source.id)
-        .where(Evidence.claim_id == claim.id)
-        .limit(1)
-    ).first()
-    if row is None:
-        return []
-    evidence, capture, source = row
-    return [
-        evidence_from_capture(
-            quote=evidence.quote,
-            capture=capture,
-            source=source,
-            reliability_grade=claim.reliability_grade,
-            credibility_score=3,
-            cfg=cfg,
-        )
-    ]
 
 
 def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
@@ -97,9 +65,13 @@ def list_comparison(session: Session, competitor: str = "sonatype") -> dict:
                 ),
                 "reliability_grade": row.competitor.grade if not no_claim else "C",
                 "credibility_score": 4 if no_claim else 2,
-                "evidence": _evidence_for_claim(session, claim),
+                "evidence": evidence_for_claim(session, claim),
                 "no_claim_on_record": no_claim,
             }
         )
 
     return {"items": items, "total": len(items), "cursor": None}
+
+
+def list_comparison_matrix(session: Session) -> dict:
+    return build_comparison_matrix(session)
