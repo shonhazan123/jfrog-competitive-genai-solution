@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import type { ListResponse, Signal, SignalType } from "../api/types";
 import { SignalAccordionRow } from "../components/SignalAccordionRow";
@@ -35,6 +35,7 @@ function groupByType(
 }
 
 export function Signals() {
+  const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ["signals", "all"],
     queryFn: () => api.getSignals({}),
@@ -43,6 +44,26 @@ export function Signals() {
 
   const [selectedFilter, setSelectedFilter] = useState<FilterValue>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
+
+  const handleRunThisPage = async () => {
+    if (isRunning) return;
+    setRunError(null);
+    setIsRunning(true);
+    try {
+      const result = await api.runSurface("signals");
+      if (result.status === "done") {
+        void queryClient.invalidateQueries({ queryKey: ["signals"] });
+      } else if (result.status === "failed") {
+        setRunError(result.message || "The signals run could not complete.");
+      }
+    } catch {
+      setRunError("Couldn't start the run — is the API reachable?");
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   const typeCounts = useMemo(() => countByType(data.items), [data.items]);
   const presentTypes = SIGNAL_TYPE_ORDER.filter(
@@ -100,6 +121,32 @@ export function Signals() {
           digging in on that direction, not for tracking what changed since your
           last visit.
         </p>
+        <button
+          type="button"
+          data-testid="run-this-page"
+          onClick={() => void handleRunThisPage()}
+          disabled={isRunning}
+          aria-busy={isRunning}
+          style={{
+            marginTop: "var(--sp-3)",
+            padding: "var(--sp-1) var(--sp-3)",
+            fontSize: "var(--fs-meta)",
+            fontWeight: 500,
+            color: isRunning ? "var(--ink-muted)" : "var(--accent)",
+            background: isRunning ? "var(--surface-sunk)" : "var(--accent-wash)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--r-sm)",
+            cursor: isRunning ? "not-allowed" : "pointer",
+            opacity: isRunning ? 0.7 : 1,
+          }}
+        >
+          {isRunning ? "Running…" : "Run this page"}
+        </button>
+        {runError ? (
+          <p data-testid="run-error" role="alert" className="signals-page__run-error">
+            {runError}
+          </p>
+        ) : null}
       </header>
 
       <div

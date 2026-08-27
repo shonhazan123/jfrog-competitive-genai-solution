@@ -12,6 +12,11 @@
   color: var(--ink-secondary);
 }
 
+.signals-page__run-error {
+  margin-top: var(--sp-2);
+  color: var(--interrupt);
+}
+
 .signals-page__filters {
   padding-bottom: var(--sp-5);
   border-bottom: 1px solid var(--border);
