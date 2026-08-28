@@ -69,3 +69,49 @@ def test_not_usable_is_unresolved():
     )
     verdict, draft = deps.assess(_t(), [{"x": 1}], attempts=1)
     assert verdict == "unresolved" and draft is None
+
+
+def test_fabricated_web_source_url_does_not_resolve():
+    from agent.tools.web_search import SearchHit
+
+    deps = SignalsDeps(
+        [_t("pricing")],
+        structured_fn=lambda t: None,
+        search_fn=lambda t: [SearchHit("t", "https://x/real", "s")],
+        gate_model=StubGate(True),
+    )
+    verdict, draft = deps.assess(
+        _t("pricing"),
+        [SearchHit("t", "https://x/real", "s")],
+        attempts=1,
+    )
+    assert verdict == "unresolved" and draft is None
+
+
+def test_grounded_web_source_url_resolves():
+    from agent.tools.web_search import SearchHit
+
+    class GroundedGate:
+        def invoke(self, _p):
+            return SignalCard(
+                usable=True,
+                headline="h",
+                so_what="s",
+                why_it_matters="w",
+                tags=[],
+                source_url="https://x/real",
+            )
+
+    deps = SignalsDeps(
+        [_t("pricing")],
+        structured_fn=lambda t: None,
+        search_fn=lambda t: [SearchHit("t", "https://x/real", "s")],
+        gate_model=GroundedGate(),
+    )
+    verdict, draft = deps.assess(
+        _t("pricing"),
+        [SearchHit("t", "https://x/real", "s")],
+        attempts=1,
+    )
+    assert verdict == "resolved"
+    assert draft["source_url"] == "https://x/real"

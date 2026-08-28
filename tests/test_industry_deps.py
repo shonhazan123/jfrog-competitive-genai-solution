@@ -57,3 +57,19 @@ def test_absent_draft_is_empty_items():
         "signal_type": "security_trust",
         "items": [],
     }
+
+
+def test_fabricated_source_url_is_filtered_out():
+    from agent.graphs.research.industry.deps import IndustryItem
+
+    items = [
+        IndustryItem(
+            headline="Malicious model on HF",
+            body="b",
+            why_it_matters="w",
+            source_url="https://x/fabricated",
+        )
+    ]
+    deps = IndustryDeps([_bucket()], gate_model=StubGate(items), search=lambda t: [])
+    verdict, draft = deps.assess(_bucket(), [SearchHit("t", "https://x/a", "s")], attempts=1)
+    assert verdict == "unresolved" and draft is None

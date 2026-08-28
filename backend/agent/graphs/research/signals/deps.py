@@ -4,6 +4,7 @@ import json
 
 from pydantic import BaseModel
 
+from agent.graphs.research.grounding import source_url_grounded
 from agent.llm import prompt as load_prompt
 
 
@@ -44,6 +45,8 @@ class SignalsDeps:
         prompt_text = load_prompt("research_signals") + "\n\nDATA:\n" + json.dumps(payload)
         card: SignalCard = self._gate.invoke(prompt_text)
         if card.usable and card.source_url and card.why_it_matters:
+            if not source_url_grounded(card.source_url, material):
+                return "unresolved", None
             return "resolved", {
                 "competitor": target["competitor"],
                 "signal_type": target["signal_type"],

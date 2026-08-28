@@ -4,6 +4,7 @@ import json
 
 from pydantic import BaseModel
 
+from agent.graphs.research.grounding import hit_urls
 from agent.llm import prompt as load_prompt
 from agent.tools.web_search import SearchHit, web_search
 
@@ -47,6 +48,9 @@ class IndustryDeps:
         prompt_text = load_prompt("research_industry") + "\n\nDATA:\n" + json.dumps(payload)
         result: IndustryAssessment = self._gate.invoke(prompt_text)
         kept = [i for i in result.kept if i.source_url]
+        urls = hit_urls(hits)
+        if urls is not None:
+            kept = [i for i in kept if i.source_url in urls]
         if kept:
             return "resolved", {
                 "bucket": target["key"], "signal_type": target["signal_type"],
