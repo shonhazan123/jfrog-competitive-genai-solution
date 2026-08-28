@@ -1,3 +1,5 @@
+import threading
+
 from agent.graphs.research.skeleton import run_research
 
 
@@ -6,6 +8,7 @@ class FakeDeps:
 
     def __init__(self):
         self.search_calls = {}
+        self._lock = threading.Lock()
 
     def plan(self):
         return [
@@ -18,11 +21,12 @@ class FakeDeps:
     def collect(self, target):
         return {"structured": True} if target["id"] == "hit_first_try" else None
 
-    def search(self, target):
-        self.search_calls[target["id"]] = self.search_calls.get(target["id"], 0) + 1
+    def search(self, target, *, attempt=1):
+        with self._lock:
+            self.search_calls[target["id"]] = self.search_calls.get(target["id"], 0) + 1
         if target["id"] == "empty_search":
             return []
-        return {"web": target["id"]}
+        return {"web": target["id"], "attempt": attempt}
 
     def assess(self, target, material, attempts):
         if target["id"] == "hit_first_try":
@@ -50,3 +54,35 @@ def test_resolved_absent_and_cap():
     assert "hit_first_try" not in deps.search_calls        # structured hit never searched
     assert by_id["empty_search"]["absent"] is True
     assert deps.search_calls["empty_search"] == 1          # empty hits -> absent, no retry loop
+
+
+class RetryBroadenDeps:
+    max_attempts = 3
+
+    def __init__(self):
+        self.queries: list[int] = []
+
+    def plan(self):
+        return [{"id": "retry"}]
+
+    def collect(self, target):
+        return None
+
+    def search(self, target, *, attempt=1):
+        self.queries.append(attempt)
+        return [{"hit": attempt}]
+
+    def assess(self, target, material, attempts):
+        if attempts >= 3:
+            return "resolved", {"id": target["id"], "attempts": attempts}
+        return "unresolved", None
+
+    def absent_draft(self, target):
+        return {"id": target["id"], "absent": True}
+
+
+def test_retries_use_distinct_search_attempts():
+    deps = RetryBroadenDeps()
+    draft = run_research(deps)[0]
+    assert draft["attempts"] == 3
+    assert deps.queries == [1, 2, 3]
