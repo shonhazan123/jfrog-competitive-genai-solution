@@ -74,3 +74,23 @@ calls:
     model: gpt-5
     temperature: 0
     reasoning_effort: null
+
+  # Chat agent — planner. Reads the user turn + recent window and emits a JSON
+  # plan (expanded query + ordered retrieve steps). Deterministic, structured.
+  chat_plan:
+    description: >-
+      Plans a chat run: restates the user's question with context resolved and
+      emits ordered retrieve steps. Never answers or invents facts.
+    model: gpt-5
+    temperature: 0
+    reasoning_effort: null
+
+  # Chat agent — drafter. Assembles a grounded answer using ONLY retrieved
+  # evidence and refuses when the evidence does not support an answer.
+  chat_draft:
+    description: >-
+      Writes a grounded, cited answer strictly from retrieved evidence, or
+      refuses. Extractive-only; introduces no unretrieved material.
+    model: gpt-5
+    temperature: 0
+    reasoning_effort: null

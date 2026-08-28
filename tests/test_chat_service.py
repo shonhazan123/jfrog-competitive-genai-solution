@@ -145,3 +145,13 @@ def test_post_chat_endpoint_returns_the_payload(session, seeded_corpus, monkeypa
         assert len(body["sources"]) == 1
     finally:
         app.dependency_overrides.pop(get_session, None)
+
+
+def test_chat_llm_roles_are_configured():
+    from app.config.loader import load_config
+
+    calls = load_config().llm.calls
+    assert "chat_plan" in calls
+    assert "chat_draft" in calls
+    assert calls["chat_plan"].temperature == 0
+    assert calls["chat_draft"].temperature == 0
