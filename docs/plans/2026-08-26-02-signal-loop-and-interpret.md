@@ -19,7 +19,7 @@
 > docker compose run --rm api pytest -v  # entire suite green, zero skips
 > curl http://localhost:8000/stats       # captures >= 10 AND claim_versions > 0
 > grep -rE "openai|langchain|langgraph" backend/app/   # must return NOTHING
-> ```
+> ``` 
 >
 > If any check fails, **stop and report**. Do not "fix Plan 1 along the way."
 
