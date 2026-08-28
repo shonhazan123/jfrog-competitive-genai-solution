@@ -37,18 +37,87 @@ class _OpenAIWebSearchClient:
         return _extract_results(resp, k)
 
 
+def _annotation_type(annotation) -> str | None:
+    ann_type = getattr(annotation, "type", None)
+    if ann_type is None and isinstance(annotation, dict):
+        ann_type = annotation.get("type")
+    return ann_type
+
+
+def _annotation_field(annotation, field: str, default=""):
+    value = getattr(annotation, field, None)
+    if value is None and isinstance(annotation, dict):
+        value = annotation.get(field)
+    return value if value is not None else default
+
+
+def _content_parts(item) -> list:
+    content = getattr(item, "content", None)
+    if content is None and isinstance(item, dict):
+        content = item.get("content")
+    return list(content or [])
+
+
 def _extract_results(resp, k: int) -> list[dict]:
+    """Walk Responses API output: message → output_text → url_citation annotations."""
     results: list[dict] = []
+    seen: set[str] = set()
+
+    def add(url: str, title: str = "", snippet: str = "") -> None:
+        if not url or url in seen:
+            return
+        seen.add(url)
+        results.append({
+            "title": title or url,
+            "url": url,
+            "snippet": snippet,
+            "published_at": None,
+        })
+
     for item in getattr(resp, "output", []) or []:
-        for citation in getattr(item, "annotations", []) or []:
-            url = getattr(citation, "url", "") or ""
-            if url:
-                results.append({
-                    "title": getattr(citation, "title", "") or url,
-                    "url": url,
-                    "snippet": getattr(citation, "text", "") or "",
-                    "published_at": None,
-                })
+        item_type = getattr(item, "type", None)
+        if item_type is None and isinstance(item, dict):
+            item_type = item.get("type")
+
+        if item_type == "web_search_call":
+            action = getattr(item, "action", None)
+            if action is None and isinstance(item, dict):
+                action = item.get("action")
+            for source in getattr(action, "sources", None) or []:
+                url = getattr(source, "url", "") or ""
+                title = getattr(source, "title", "") or ""
+                add(url, title)
+            continue
+
+        if item_type != "message":
+            continue
+
+        for part in _content_parts(item):
+            part_type = getattr(part, "type", None)
+            if part_type is None and isinstance(part, dict):
+                part_type = part.get("type")
+            if part_type != "output_text":
+                continue
+
+            text = getattr(part, "text", "") or ""
+            if not text and isinstance(part, dict):
+                text = part.get("text", "") or ""
+
+            annotations = getattr(part, "annotations", None)
+            if annotations is None and isinstance(part, dict):
+                annotations = part.get("annotations")
+            for annotation in annotations or []:
+                if _annotation_type(annotation) != "url_citation":
+                    continue
+                url = _annotation_field(annotation, "url")
+                title = _annotation_field(annotation, "title", url)
+                start = _annotation_field(annotation, "start_index", None)
+                end = _annotation_field(annotation, "end_index", None)
+                snippet = ""
+                if text and start is not None and end is not None:
+                    snippet = text[int(start):int(end)]
+                add(url, title, snippet)
+
     return results[:k]
 
 
