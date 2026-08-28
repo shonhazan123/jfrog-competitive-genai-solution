@@ -16,6 +16,7 @@ from app.services.collection.fetcher import StaticFetcher
 from app.services.research.competitors import load_competitors
 from app.services.research.provenance import index_finding, record_finding
 from app.services.scoring.materiality import score
+from agent.graphs.research.query import broaden_query, dedupe_names
 
 _SUB_TYPES: dict[str, str] = {
     "hiring": "talent_org",
@@ -58,64 +59,78 @@ def build_targets() -> list[dict]:
     return targets
 
 
-def _query(target: dict) -> str:
-    name = target["name"]
-    aliases = target.get("aliases") or []
-    alias_str = " ".join(aliases)
+def _query(target: dict, attempt: int = 1) -> str:
+    names = dedupe_names(target["name"], target.get("aliases") or [])
+    primary = names[0] if names else target["name"]
+    alias_str = " ".join(names[1:])
     sub = target["sub_type"]
     if sub == "hiring":
-        return f"{name} careers {alias_str} enterprise sales OR security engineer"
-    if sub == "pricing":
-        return f"{name} pricing plans per-seat"
-    if sub == "funding":
-        return f"{name} funding round OR acquisition 2026"
+        base = f"{primary} careers {alias_str} enterprise sales OR security engineer".strip()
+    elif sub == "pricing":
+        base = f"{primary} pricing plans per-seat"
+    elif sub == "funding":
+        base = f"{primary} funding round OR acquisition 2026"
+    elif sub == "security_advisory":
+        base = f"{primary} {alias_str} security advisory CVE vulnerability".strip()
+    else:
+        base = primary
+    return broaden_query(base, attempt)
+
+
+def _structured_collect(session: Session, target: dict, fetcher) -> list[dict] | None:
+    sub = target["sub_type"]
+    slug = target["competitor"]
+    entity = session.query(Entity).filter_by(slug=slug).one_or_none()
+    if entity is None:
+        return None
+
+    if sub == "hiring":
+        source = (
+            session.query(Source)
+            .filter(
+                Source.entity_id == entity.id,
+                Source.adapter.in_(["lever", "greenhouse"]),
+                Source.enabled.is_(True),
+            )
+            .first()
+        )
+        if source is None:
+            return None
+        adapter = _ADAPTERS.get(source.adapter or "")
+        if adapter is None:
+            return None
+        return [_api_record_to_dict(r) for r in adapter.collect(source, fetcher)]
+
     if sub == "security_advisory":
-        return f"{name} {alias_str} security advisory CVE vulnerability"
-    return name
+        source = (
+            session.query(Source)
+            .filter(
+                Source.entity_id == entity.id,
+                Source.adapter == "osv",
+                Source.enabled.is_(True),
+            )
+            .first()
+        )
+        if source is None:
+            return None
+        return [_api_record_to_dict(r) for r in OsvAdapter().collect(source, fetcher)]
+
+    return None
 
 
-def structured_for(session: Session, fetcher=None):
+def structured_for(session: Session | None = None, fetcher=None):
+    """Return a structured-source collector for one target.
+
+    When session is omitted, each call opens its own SessionLocal so the
+    skeleton can resolve targets concurrently without sharing SQLAlchemy state.
+    """
     fetcher = fetcher or StaticFetcher()
 
     def fn(target: dict) -> list[dict] | None:
-        sub = target["sub_type"]
-        slug = target["competitor"]
-        entity = session.query(Entity).filter_by(slug=slug).one_or_none()
-        if entity is None:
-            return None
-
-        if sub == "hiring":
-            source = (
-                session.query(Source)
-                .filter(
-                    Source.entity_id == entity.id,
-                    Source.adapter.in_(["lever", "greenhouse"]),
-                    Source.enabled.is_(True),
-                )
-                .first()
-            )
-            if source is None:
-                return None
-            adapter = _ADAPTERS.get(source.adapter or "")
-            if adapter is None:
-                return None
-            return [_api_record_to_dict(r) for r in adapter.collect(source, fetcher)]
-
-        if sub == "security_advisory":
-            source = (
-                session.query(Source)
-                .filter(
-                    Source.entity_id == entity.id,
-                    Source.adapter == "osv",
-                    Source.enabled.is_(True),
-                )
-                .first()
-            )
-            if source is None:
-                return None
-            return [_api_record_to_dict(r) for r in OsvAdapter().collect(source, fetcher)]
-
-        return None
+        if session is not None:
+            return _structured_collect(session, target, fetcher)
+        with SessionLocal() as own_session:
+            return _structured_collect(own_session, target, fetcher)
 
     return fn
 
@@ -195,8 +210,8 @@ def run_signals() -> dict:
 
     gate = get_model("gate").with_structured_output(SignalCard, strict=True)
     with SessionLocal() as session:
-        structured = structured_for(session)
-        search_fn = lambda t: web_search(_query(t), k=6)
+        structured = structured_for()
+        search_fn = lambda t, attempt=1: web_search(_query(t, attempt), k=6)
         deps = SignalsDeps(build_targets(), structured, search_fn, gate)
         drafts = run_research(deps)
         n = persist_signals(session, drafts)
