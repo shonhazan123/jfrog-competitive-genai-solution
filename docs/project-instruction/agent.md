@@ -20,6 +20,10 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
   `assess`, `absent_draft`
 - Pure graph — no DB; persistence lives in `app/services/research/*_agent.py` and
   `provenance.py`
+- **`provenance.record_finding`:** creates a `RawCapture` under synthetic `*_research`
+  source (`internal://{agent}_research`); the web-search hit URL is stored on
+  `capture.blob_path` with `provenance="web_search"`. Consumer serializers resolve citation
+  links from `blob_path`, not the synthetic source URL.
 
 ## Industry agent
 

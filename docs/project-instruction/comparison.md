@@ -13,6 +13,10 @@ No numbers, no `was → now` diffing.
 - Competitor allowlist: `config/competitors.yaml` (github, sonatype, snyk, aqua, checkmarx)
 - Persist: upsert `Claim` (subject=jfrog, asserting=competitor, `dimension`, `stance`, `claim_text`) + `Evidence` + `index_finding`; skip `stance == "none"`
 - Registry-less rivals correctly resolve to `none` for dimensions they do not publicly claim
+- **Citation URLs:** web-search findings are stored via `record_finding()` under a synthetic
+  `comparison_research` source (`internal://…`), but the fetched page URL lives on
+  `RawCapture.blob_path`. Serializers (`evidence_from_capture`) expose that real URL in
+  `evidence.source_url` / `citation.source_url` (label = page hostname, e.g. `sonatype.com`).
 
 ## Endpoints
 

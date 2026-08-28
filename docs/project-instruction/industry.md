@@ -7,6 +7,8 @@
 - Config: `config/industry_buckets.yaml` (four fixed buckets with `include`/`exclude` lists)
 - Persist: `Signal` on the `industry` entity with `theme_key` = bucket key, `why_it_matters`, capture stub + `SignalEvidence(match_method="synthesis")`, indexed via `index_finding`
 - Empty bucket is valid — gate may keep nothing for a bucket
+- **Citation URLs:** same as comparison — synthetic `industry_research` source for grouping,
+  real fetched URL on `RawCapture.blob_path`; API evidence links use the live page URL.
 
 ## Endpoints
 

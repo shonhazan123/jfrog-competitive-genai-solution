@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from urllib.parse import urlparse
 
 from app.config.loader import load_config
 from app.config.schema import AppConfig
@@ -37,6 +38,30 @@ def state_label(state: str | None, cfg: AppConfig | None = None) -> str | None:
     return _labels_cfg(cfg).labels.states.get(state)
 
 
+def _synthetic_research_source(source: Source) -> bool:
+    return source.url.startswith("internal://") or source.key.endswith("_research")
+
+
+def _capture_source_url(capture: RawCapture, source: Source) -> str:
+    """Resolve the live page URL for evidence — web-search findings store it on the capture."""
+    blob = capture.blob_path or ""
+    if capture.provenance == "web_search" and blob.startswith("http"):
+        return blob
+    if _synthetic_research_source(source) and blob.startswith("http"):
+        return blob
+    return source.url
+
+
+def _capture_source_name(source: Source, source_url: str) -> str:
+    default = source.key.replace("_", " ").title()
+    if source_url == source.url or not source_url.startswith("http"):
+        return default
+    host = urlparse(source_url).netloc
+    if host.startswith("www."):
+        host = host[4:]
+    return host or default
+
+
 def evidence_from_capture(
     *,
     quote: str,
@@ -47,9 +72,11 @@ def evidence_from_capture(
     is_primary: bool = True,
     cfg: AppConfig | None = None,
 ) -> dict:
+    source_url = _capture_source_url(capture, source)
+    source_name = _capture_source_name(source, source_url)
     record = DeliveryRecord(
-        source_name=source.key.replace("_", " ").title(),
-        source_url=source.url,
+        source_name=source_name,
+        source_url=source_url,
         fetched_at=capture.fetched_at,
         provenance=capture.provenance,
         reliability_grade=reliability_grade,
@@ -57,8 +84,8 @@ def evidence_from_capture(
     citation = build_citation(record)
     return {
         "quote": quote,
-        "source_url": source.url,
-        "source_name": source.key.replace("_", " ").title(),
+        "source_url": source_url,
+        "source_name": source_name,
         "captured_at": fmt_ts(capture.fetched_at),
         "reliability_grade": reliability_grade,
         "credibility_score": credibility_score,
