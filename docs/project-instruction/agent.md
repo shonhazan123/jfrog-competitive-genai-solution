@@ -36,6 +36,17 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
 - `WebSearch.search(query, k)` → `list[SearchHit]`; stubbable via injected client
 - Live path uses OpenAI Responses API (`tools=[{"type": "web_search"}]`); requires
   `OPENAI_API_KEY` at runtime (tests use `FakeClient`, no network)
+- `_extract_results` walks `response.output`: `message` items → `content` parts of
+  type `output_text` → `annotations` of type `url_citation` (`.url`, `.title`,
+  optional `.start_index`/`.end_index` for snippet text). Optional `web_search_call`
+  items may also carry `action.sources` URLs.
+
+## Grounding guard (research gates)
+
+- Code: `backend/agent/graphs/research/grounding.py`
+- Industry, Signals (web-search path), and Comparison `assess()` only resolve when the
+  gate's `source_url` is present among the search-hit URLs passed in. Structured-source
+  signals (hiring/OSV adapters) skip this check — material has no `SearchHit.url`.
 
 ## Ask graph
 

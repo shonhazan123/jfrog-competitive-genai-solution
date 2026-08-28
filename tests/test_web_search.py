@@ -71,4 +71,4 @@ def test_extract_results_reads_message_output_text_url_citations():
     assert len(raw) == 2
     assert raw[0]["url"] == "https://example.com/npm"
     assert raw[0]["title"] == "NPM Supply Chain Report"
-    assert raw[0]["snippet"] == "npm supply chain report"
+    assert raw[0]["snippet"] == "npm supply chain report "

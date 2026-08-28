@@ -104,9 +104,11 @@ def test_new_items_from_report_sums_surface_counts():
 
 def test_manual_run_invokes_collection_and_scoring(monkeypatch):
     from app.controllers import runs as runs_controller
+    from app.models.run import create_run, get_run
     import worker.jobs as jobs
 
     called: list[str] = []
+    run = create_run()
 
     def stub_run_collection(**kwargs):
         called.append("run_collection")
@@ -120,6 +122,7 @@ def test_manual_run_invokes_collection_and_scoring(monkeypatch):
     monkeypatch.setattr(jobs, "run_collection", stub_run_collection)
     monkeypatch.setattr(jobs, "run_scoring", stub_run_scoring)
 
-    runs_controller._execute_run("run_manual_test", "manual")
+    runs_controller._execute_run(run.id, "manual")
 
     assert called == ["run_collection", "run_scoring"]
+    assert get_run(run.id).status == "done"

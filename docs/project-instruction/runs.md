@@ -28,9 +28,9 @@ Starts a background run and returns immediately:
 | `industry` | `run_industry` — Industry research agent (four DevSecOps buckets) |
 | `signals` | `run_signals` — Signals research agent (competitor sub-types + OSV) |
 | `comparison` | `run_comparison` — Comparison grid agent (25 cells, Claim+stance) |
-| `manual` | forced collect + score (legacy path) |
+| `manual` | forced `run_collection` + `run_scoring` at **Checking sources** (`collect` stage) |
 | `collect` | `run_collection` at **Checking sources** |
-| `scoring` | `run_scoring` at legacy score stage |
+| `scoring` | `run_scoring` at **Writing findings** (`synthesize` stage) |
 
 ## `POST /runs/all`
 
