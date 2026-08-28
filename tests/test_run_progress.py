@@ -126,3 +126,18 @@ def test_manual_run_invokes_collection_and_scoring(monkeypatch):
 
     assert called == ["run_collection", "run_scoring"]
     assert get_run(run.id).status == "done"
+
+
+def test_surface_run_advances_to_done_stage(monkeypatch):
+    from app.controllers import runs as runs_controller
+    from app.models.run import create_run, get_run
+    import worker.jobs as jobs
+
+    monkeypatch.setattr(jobs, "run_comparison", lambda: {"comparison_items": 3})
+    run = create_run()
+    runs_controller._run_surface(run.id, "comparison")
+    finished = get_run(run.id)
+    stages = load_run_stages()
+    assert finished.status == "done"
+    assert finished.stage_key == stages[-1]["key"]
+    assert finished.new_items == 3

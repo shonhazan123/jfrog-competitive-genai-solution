@@ -140,10 +140,30 @@ _SURFACE_JOBS = {
 
 
 def _run_surface(run_id: str, kind: str) -> None:
+    stages = load_run_stages()
+    new_items = 0
     try:
+        update_run(run_id, stage_key=stages[0]["key"], current=0, total=len(stages))
+        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[0]["key"], stages[0]["label"])
+
+        update_run(run_id, stage_key=stages[1]["key"], current=1, total=len(stages))
+        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[1]["key"], stages[1]["label"])
         report = getattr(jobs, _SURFACE_JOBS[kind])()
-        update_run(run_id, status="done", new_items=_new_items_from_report(report),
-                   finished_at=datetime.now(UTC))
+        new_items = _new_items_from_report(report)
+        logger.info("run.job.done run_id=%s job=%s report=%s", run_id, _SURFACE_JOBS[kind], report)
+
+        update_run(run_id, stage_key=stages[2]["key"], current=2, total=len(stages))
+        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[2]["key"], stages[2]["label"])
+
+        update_run(
+            run_id,
+            stage_key=stages[-1]["key"],
+            current=len(stages) - 1,
+            status="done",
+            new_items=new_items,
+            finished_at=datetime.now(UTC),
+        )
+        logger.info("run.done run_id=%s kind=%s new_items=%s", run_id, kind, new_items)
     except Exception as exc:  # one surface failing must not fail the others
         logger.exception("run.surface.failed run_id=%s kind=%s", run_id, kind)
         update_run(run_id, status="failed", message=_readable_error(exc),

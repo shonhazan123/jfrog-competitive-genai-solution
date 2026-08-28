@@ -7,8 +7,19 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
 - Code: `backend/agent/graphs/research/skeleton.py`
 - Entry: `run_research(deps)` — plans targets, resolves each to a draft or absent
   (max 3 attempts, falls back to web search on `unresolved`)
-- `ResearchDeps` protocol: `plan`, `collect`, `search`, `assess`, `absent_draft`
-- Pure graph — no DB; persistence lives in `app/services/research/*_agent.py` and `provenance.py`
+- **Concurrency:** after `plan()`, targets resolve in a bounded `ThreadPoolExecutor`
+  (`RESEARCH_MAX_WORKERS` env, default `4`). Per-target semantics are unchanged;
+  output `drafts` preserve `plan()` order. Only `search()` + `assess()` retry loops
+  run in worker threads — persistence stays serial on the caller's session after
+  `run_research` returns.
+- **Retry broadening:** on `unresolved` with real hits, retries pass `attempt=2|3`
+  into `search()`; `query.broaden_query` appends fixed suffixes (attempt 2:
+  `overview OR review OR capabilities`; attempt 3: `alternative OR comparison OR
+  documentation`) so identical queries are not repeated verbatim.
+- `ResearchDeps` protocol: `plan`, `collect`, `search(target, *, attempt=1)`,
+  `assess`, `absent_draft`
+- Pure graph — no DB; persistence lives in `app/services/research/*_agent.py` and
+  `provenance.py`
 
 ## Industry agent
 
@@ -20,7 +31,10 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
 - `run_signals()` → `signals_agent.py` — targets = allowlisted competitors × sub-types
   (`hiring`, `pricing`, `funding`, `security_advisory`)
 - Tiered flow: structured source (Lever/Greenhouse jobs, OSV advisories) → gate → web search fallback
-- `structured_for(session)` in app service (DB + adapters); graph deps stay DB-free
+- `structured_for(session)` in app service (DB + adapters); graph deps stay DB-free.
+  Production `run_signals()` passes no session — each `collect()` opens its own
+  `SessionLocal()` so parallel skeleton workers do not share SQLAlchemy state.
+  Tests may pass a shared session for deterministic DB fixtures.
 - Sub-type → `signal_type`: hiring→`talent_org`, pricing→`pricing_packaging`,
   funding→`corporate_financial`, security_advisory→`security_trust`
 - Persist: competitor `Signal` with `why_it_matters`, `capability_tags`, so_what_* lines, indexed

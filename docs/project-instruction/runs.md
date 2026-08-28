@@ -45,6 +45,11 @@ Each surface run is tracked independently; one failure does not fail the others.
 Human stage labels come from `config/run_stages.yaml` (research-oriented stages:
 collect → research → synthesize → done).
 
+Surface runs (`industry`, `signals`, `comparison`) advance through the same stages:
+**Checking sources** → **Researching** (agent job) → **Writing findings** → **Done**.
+The UI polls `GET /runs/{id}` and should reach `stage_label: "Done"` with
+`status: "done"` when the surface job finishes.
+
 ## Worker jobs — collection and scoring
 
 `run_collection` and `run_scoring` live in `worker.jobs`. Tests pass an
