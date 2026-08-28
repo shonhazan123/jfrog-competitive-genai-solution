@@ -29,23 +29,38 @@ class ResearchDeps(Protocol):
     def absent_draft(self, target: dict) -> dict: ...
 
 
+def _target_identity(target: dict) -> str:
+    for key in ("name", "key", "id", "competitor"):
+        if key in target:
+            return str(target[key])
+    return repr(target)
+
+
 def _resolve_one(deps: ResearchDeps, target: dict, max_attempts: int) -> dict:
     """Resolve one target to a draft (filled) or absent draft, bounded by max_attempts."""
-    material = deps.collect(target)
-    attempts = 0
-    if material is None:
-        material = deps.search(target, attempt=1)
-        attempts = 1
-    while True:
-        verdict, draft = deps.assess(target, material, attempts)
-        if verdict == "resolved" and draft is not None:
-            return draft
-        if verdict == "absent" or attempts >= max_attempts:
-            return deps.absent_draft(target)
-        if isinstance(material, list) and len(material) == 0:
-            return deps.absent_draft(target)
-        material = deps.search(target, attempt=attempts + 1)
-        attempts += 1
+    try:
+        material = deps.collect(target)
+        attempts = 0
+        if material is None:
+            material = deps.search(target, attempt=1)
+            attempts = 1
+        while True:
+            verdict, draft = deps.assess(target, material, attempts)
+            if verdict == "resolved" and draft is not None:
+                return draft
+            if verdict == "absent" or attempts >= max_attempts:
+                return deps.absent_draft(target)
+            if isinstance(material, list) and len(material) == 0:
+                return deps.absent_draft(target)
+            material = deps.search(target, attempt=attempts + 1)
+            attempts += 1
+    except Exception as exc:
+        logger.warning(
+            "research.target.failed target=%s error=%s",
+            _target_identity(target),
+            exc,
+        )
+        return deps.absent_draft(target)
 
 
 def run_research(deps: ResearchDeps, *, max_workers: int | None = None) -> list[dict]:
@@ -62,9 +77,21 @@ def run_research(deps: ResearchDeps, *, max_workers: int | None = None) -> list[
         return index, _resolve_one(deps, target, deps.max_attempts)
 
     with ThreadPoolExecutor(max_workers=pool_size) as pool:
-        futures = [pool.submit(_job, i, target) for i, target in enumerate(targets)]
-        for future in as_completed(futures):
-            index, draft = future.result()
-            drafts[index] = draft
+        future_targets = {
+            pool.submit(_job, i, target): (i, target)
+            for i, target in enumerate(targets)
+        }
+        for future in as_completed(future_targets):
+            index, target = future_targets[future]
+            try:
+                resolved_index, draft = future.result()
+                drafts[resolved_index] = draft
+            except Exception as exc:
+                logger.warning(
+                    "research.target.failed target=%s error=%s",
+                    _target_identity(target),
+                    exc,
+                )
+                drafts[index] = deps.absent_draft(target)
 
     return [d for d in drafts if d is not None]

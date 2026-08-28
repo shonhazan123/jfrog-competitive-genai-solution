@@ -50,6 +50,10 @@ Surface runs (`industry`, `signals`, `comparison`) advance through the same stag
 The UI polls `GET /runs/{id}` and should reach `stage_label: "Done"` with
 `status: "done"` when the surface job finishes.
 
+Per-target research failures (unreachable structured source, search error, etc.) do
+**not** fail the whole surface run — the skeleton logs `research.target.failed` and
+records an absent draft for that target only; other targets still resolve and persist.
+
 ## Worker jobs — collection and scoring
 
 `run_collection` and `run_scoring` live in `worker.jobs`. Tests pass an

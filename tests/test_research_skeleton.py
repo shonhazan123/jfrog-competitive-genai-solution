@@ -86,3 +86,38 @@ def test_retries_use_distinct_search_attempts():
     draft = run_research(deps)[0]
     assert draft["attempts"] == 3
     assert deps.queries == [1, 2, 3]
+
+
+class FailingCollectDeps:
+    max_attempts = 3
+
+    def plan(self):
+        return [
+            {"id": "ok_first"},
+            {"id": "boom"},
+            {"id": "ok_last"},
+        ]
+
+    def collect(self, target):
+        if target["id"] == "boom":
+            raise ConnectionError("[Errno -2] Name or service not known")
+        return {"structured": target["id"]}
+
+    def search(self, target, *, attempt=1):
+        raise AssertionError("search should not run when collect succeeds")
+
+    def assess(self, target, material, attempts):
+        return "resolved", {"id": target["id"], "resolved": True}
+
+    def absent_draft(self, target):
+        return {"id": target["id"], "absent": True}
+
+
+def test_collect_failure_isolated_per_target():
+    deps = FailingCollectDeps()
+    drafts = run_research(deps)
+
+    assert len(drafts) == 3
+    assert drafts[0] == {"id": "ok_first", "resolved": True}
+    assert drafts[1] == {"id": "boom", "absent": True}
+    assert drafts[2] == {"id": "ok_last", "resolved": True}

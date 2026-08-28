@@ -12,6 +12,10 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
   output `drafts` preserve `plan()` order. Only `search()` + `assess()` retry loops
   run in worker threads — persistence stays serial on the caller's session after
   `run_research` returns.
+- **Per-target resilience:** a failure in one target's `collect`, `search`, or
+  `assess` (e.g. DNS error on a structured ATS URL) is logged as
+  `research.target.failed` and yields that target's `absent_draft` — the surface
+  run continues for all other targets.
 - **Retry broadening:** on `unresolved` with real hits, retries pass `attempt=2|3`
   into `search()`; `query.broaden_query` appends fixed suffixes (attempt 2:
   `overview OR review OR capabilities`; attempt 3: `alternative OR comparison OR
@@ -87,4 +91,5 @@ see which model each `get_model(role)` call builds (`agent.llm`).
 | Log line | Meaning |
 |---|---|
 | `run.failed` | Background run job threw — see traceback |
+| `research.target.failed` | One research target failed (collect/search/assess); absent draft used |
 | `ask.grounding.refuse` | No hits or citations not grounded |
