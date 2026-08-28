@@ -235,6 +235,7 @@ export const FIXTURES = {
   getThemes: industryThemesFixture,
   getThemeDetail: industryThemeDetailFixture,
   postAsk: (askTranscriptFixture as { exchanges: AskResponse[] }).exchanges[0],
+  postChat: selectChatFixture({ message: "", history: [] }),
   getSources: sourcesFixture,
   patchSource: (sourcesFixture as ListResponse<Source>).items[0],
   getMateriality: materialityWeightsFixture,
