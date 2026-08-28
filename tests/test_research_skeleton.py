@@ -8,13 +8,20 @@ class FakeDeps:
         self.search_calls = {}
 
     def plan(self):
-        return [{"id": "hit_first_try"}, {"id": "needs_search"}, {"id": "never"}]
+        return [
+            {"id": "hit_first_try"},
+            {"id": "needs_search"},
+            {"id": "never"},
+            {"id": "empty_search"},
+        ]
 
     def collect(self, target):
         return {"structured": True} if target["id"] == "hit_first_try" else None
 
     def search(self, target):
         self.search_calls[target["id"]] = self.search_calls.get(target["id"], 0) + 1
+        if target["id"] == "empty_search":
+            return []
         return {"web": target["id"]}
 
     def assess(self, target, material, attempts):
@@ -41,3 +48,5 @@ def test_resolved_absent_and_cap():
     assert by_id["never"]["absent"] is True                # exhausted -> absent, not fabricated
     assert deps.search_calls["never"] == deps.max_attempts # capped at 3 searches
     assert "hit_first_try" not in deps.search_calls        # structured hit never searched
+    assert by_id["empty_search"]["absent"] is True
+    assert deps.search_calls["empty_search"] == 1          # empty hits -> absent, no retry loop

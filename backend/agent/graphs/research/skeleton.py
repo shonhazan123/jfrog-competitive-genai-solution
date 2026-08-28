@@ -51,6 +51,9 @@ def build_research_graph(deps: ResearchDeps):
             if verdict == "absent" or attempts >= state["max_attempts"]:
                 drafts.append(deps.absent_draft(target))
                 break
+            if isinstance(material, list) and len(material) == 0:
+                drafts.append(deps.absent_draft(target))
+                break
             material = deps.search(target)  # unresolved -> fall back and retry
             attempts += 1
         return {"drafts": drafts, "cursor": state["cursor"] + 1, "attempts": 0}
