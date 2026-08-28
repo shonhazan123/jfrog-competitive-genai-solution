@@ -28,10 +28,10 @@ _JOB_BY_KIND = {
 # stage_key → (job function name, kwargs). Used by _execute_run.
 _RUN_STAGE_JOBS: dict[str, list[tuple[str, str, dict]]] = {
     "collect": [("collect", "run_collection", {})],
-    "scoring": [("score", "run_scoring", {})],
+    "scoring": [("synthesize", "run_scoring", {})],
     "manual": [
         ("collect", "run_collection", {"force": True}),
-        ("score", "run_scoring", {}),
+        ("collect", "run_scoring", {}),
     ],
 }
 
@@ -65,11 +65,11 @@ def _new_items_from_report(report: dict) -> int:
     return total
 
 
-def _stage_jobs_for_kind(kind: str) -> dict[str, tuple[str, dict]]:
-    return {
-        stage_key: (job_name, kwargs)
-        for stage_key, job_name, kwargs in _RUN_STAGE_JOBS[kind]
-    }
+def _stage_jobs_for_kind(kind: str) -> dict[str, list[tuple[str, dict]]]:
+    jobs_by_stage: dict[str, list[tuple[str, dict]]] = {}
+    for stage_key, job_name, kwargs in _RUN_STAGE_JOBS[kind]:
+        jobs_by_stage.setdefault(stage_key, []).append((job_name, kwargs))
+    return jobs_by_stage
 
 
 def _readable_error(exc: BaseException) -> str:
@@ -101,12 +101,12 @@ def _execute_run(run_id: str, kind: str) -> None:
             )
 
             if key in stage_jobs:
-                job_name, job_kwargs = stage_jobs[key]
-                _last_run_at = datetime.now(UTC)
-                report = getattr(jobs, job_name)(**job_kwargs)
-                _last_report = report
-                new_items += _new_items_from_report(report)
-                logger.info("run.job.done run_id=%s job=%s report=%s", run_id, job_name, report)
+                for job_name, job_kwargs in stage_jobs[key]:
+                    _last_run_at = datetime.now(UTC)
+                    report = getattr(jobs, job_name)(**job_kwargs)
+                    _last_report = report
+                    new_items += _new_items_from_report(report)
+                    logger.info("run.job.done run_id=%s job=%s report=%s", run_id, job_name, report)
                 _next_run_at = CronTrigger(hour=6, minute=0, timezone="UTC").get_next_fire_time(
                     None, datetime.now(UTC)
                 )

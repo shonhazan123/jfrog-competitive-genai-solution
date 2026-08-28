@@ -100,3 +100,26 @@ def test_new_items_from_report_sums_surface_counts():
     }
     assert _new_items_from_report(report) == 14
     assert _new_items_from_report({"scored": 7}) == 7
+
+
+def test_manual_run_invokes_collection_and_scoring(monkeypatch):
+    from app.controllers import runs as runs_controller
+    import worker.jobs as jobs
+
+    called: list[str] = []
+
+    def stub_run_collection(**kwargs):
+        called.append("run_collection")
+        assert kwargs.get("force") is True
+        return {"captures": 1}
+
+    def stub_run_scoring(**kwargs):
+        called.append("run_scoring")
+        return {"scored": 2}
+
+    monkeypatch.setattr(jobs, "run_collection", stub_run_collection)
+    monkeypatch.setattr(jobs, "run_scoring", stub_run_scoring)
+
+    runs_controller._execute_run("run_manual_test", "manual")
+
+    assert called == ["run_collection", "run_scoring"]
