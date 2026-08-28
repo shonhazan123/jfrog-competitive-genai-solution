@@ -4,6 +4,7 @@ import json
 
 from pydantic import BaseModel
 
+from agent.graphs.research.grounding import source_url_grounded
 from agent.llm import prompt as load_prompt
 from agent.tools.web_search import web_search
 
@@ -25,7 +26,11 @@ class ComparisonDeps:
 
     def _query(self, target):
         product = " OR ".join([target["name"], *target["aliases"]])
-        return f'({product}) {target["label"]} ({" OR ".join(target.get("probe_keywords", []))})'
+        probes = [
+            kw.replace("<rival>", target["name"])
+            for kw in target.get("probe_keywords", [])
+        ]
+        return f'({product}) {target["label"]} ({" OR ".join(probes)})'
 
     def plan(self):
         return list(self._cells)
@@ -46,7 +51,12 @@ class ComparisonDeps:
         }
         prompt_text = load_prompt("research_comparison") + "\n\nDATA:\n" + json.dumps(payload)
         v: CellVerdict = self._gate.invoke(prompt_text)
-        if v.found and v.source_url and v.stance in {"strong", "moderate", "weak"}:
+        if (
+            v.found
+            and v.source_url
+            and v.stance in {"strong", "moderate", "weak"}
+            and source_url_grounded(v.source_url, hits)
+        ):
             return "resolved", {
                 "competitor": target["competitor"],
                 "dimension": target["dimension"],

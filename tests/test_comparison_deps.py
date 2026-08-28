@@ -46,3 +46,25 @@ def test_no_capability_is_unresolved_then_absent_none():
         "dimension": "artifact_management",
         "stance": "none",
     }
+
+
+def test_query_substitutes_rival_and_has_no_placeholders():
+    deps = ComparisonDeps([_cell()], search_fn=lambda t: [], gate_model=StubGate(False))
+    query = deps._query(_cell())
+    assert "Sonatype" in query
+    assert "<rival>" not in query
+    assert "<" not in query
+
+
+def test_fabricated_source_url_does_not_resolve():
+    deps = ComparisonDeps(
+        [_cell()],
+        search_fn=lambda t: [SearchHit("t", "https://x/real", "s")],
+        gate_model=StubGate(True, "moderate"),
+    )
+    verdict, draft = deps.assess(
+        _cell(),
+        [SearchHit("t", "https://x/real", "s")],
+        attempts=1,
+    )
+    assert verdict == "unresolved" and draft is None
