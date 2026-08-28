@@ -8,6 +8,7 @@ from app.logging_config import setup_logging
 from app.routers import (
     activity,
     ask,
+    chat,
     claims,
     comparison,
     config,
@@ -58,3 +59,4 @@ app.include_router(config.router)
 app.include_router(coverage.router)
 app.include_router(email_preview.router)
 app.include_router(ask.router)
+app.include_router(chat.router)

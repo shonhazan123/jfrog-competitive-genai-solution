@@ -114,3 +114,34 @@ def test_seeded_finding_is_retrievable_by_the_chat_path(session, seeded_corpus, 
     out = answer_chat(session, "did sonatype ship a malware firewall?")
     assert out["grounded"] is True
     assert any("malware firewall" in s["quote"] for s in out["sources"])
+
+
+def test_post_chat_endpoint_returns_the_payload(session, seeded_corpus, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.db.session import get_session
+    from app.main import app
+    from app.services import chat_service
+
+    plan = {"expanded_query": "How is Sonatype Nexus priced?",
+            "steps": [{"tool": "retrieve", "query": "nexus pricing tiers", "preset": "ask_ledger",
+                       "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
+    monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
+    monkeypatch.setattr(chat_service, "_build_draft_model", lambda: _CitesFirstHit())
+
+    app.dependency_overrides[get_session] = lambda: session
+    try:
+        client = TestClient(app)
+        resp = client.post("/chat", json={
+            "message": "how is it priced?",
+            "history": [{"role": "user", "content": "Tell me about Sonatype Nexus"}],
+            "conversation_id": "conv-1",
+        })
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["grounded"] is True
+        assert body["conversation_id"] == "conv-1"
+        assert body["plan"]["expanded_query"] == "How is Sonatype Nexus priced?"
+        assert len(body["sources"]) == 1
+    finally:
+        app.dependency_overrides.pop(get_session, None)
