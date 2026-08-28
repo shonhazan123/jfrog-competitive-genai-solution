@@ -155,3 +155,22 @@ def test_chat_llm_roles_are_configured():
     assert "chat_draft" in calls
     assert calls["chat_plan"].temperature == 0
     assert calls["chat_draft"].temperature == 0
+
+
+def test_ask_still_answers_in_its_legacy_shape(session, seeded_corpus, monkeypatch):
+    from app.services import chat_service
+    from app.services.ask_service import answer_question
+
+    plan = {"expanded_query": "How is Sonatype Nexus priced?",
+            "steps": [{"tool": "retrieve", "query": "nexus pricing tiers", "preset": "ask_ledger",
+                       "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
+    monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
+    monkeypatch.setattr(chat_service, "_build_draft_model", lambda: _CitesFirstHit())
+
+    out = answer_question(session, "how is sonatype nexus priced?")
+    # legacy keys the current /ask consumers rely on
+    assert out["grounded"] is True
+    assert out["question"] == "how is sonatype nexus priced?"
+    assert isinstance(out["evidence"], list) and len(out["evidence"]) == 1
+    assert out["refusal_reason"] is None
+    assert "nearby_evidence" in out
