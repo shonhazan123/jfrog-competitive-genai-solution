@@ -320,6 +320,38 @@ export interface AskRequest {
   persona?: Persona | null;
 }
 
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+  citations?: unknown[];
+}
+
+export interface ChatRequest {
+  message: string;
+  history: ChatTurn[];
+  persona?: Persona | null;
+  conversation_id?: string | null;
+}
+
+export interface ChatResponse {
+  conversation_id: string | null;
+  answer: string;
+  sources: AskEvidence[];
+  grounded: boolean;
+  plan: {
+    expanded_query?: string;
+    steps?: {
+      tool: string;
+      query: string;
+      preset: string;
+      filters: { entity: string | null; signal_type: string | null };
+      reason: string;
+    }[];
+  };
+  reason: string | null;
+  nearby_evidence: NearbyItem[];
+}
+
 export interface Source {
   id: string;
   name: string;

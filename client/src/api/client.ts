@@ -32,6 +32,8 @@ import type {
   ArchiveTimeline,
   AskRequest,
   AskResponse,
+  ChatRequest,
+  ChatResponse,
   BattlecardRow,
   Claim,
   ComparisonMatrix,
@@ -119,6 +121,30 @@ function selectAskFixture(body: AskRequest): AskResponse {
     }
   }
   return exchanges[0];
+}
+
+function selectChatFixture(body: ChatRequest): ChatResponse {
+  const exchange = selectAskFixture({ question: body.message });
+  return {
+    conversation_id: body.conversation_id ?? null,
+    answer: exchange.answer,
+    sources: exchange.evidence,
+    grounded: exchange.grounded,
+    plan: {
+      expanded_query: exchange.question,
+      steps: [
+        {
+          tool: "retrieve",
+          query: exchange.question,
+          preset: "ask_ledger",
+          filters: { entity: null, signal_type: null },
+          reason: "fixture",
+        },
+      ],
+    },
+    reason: exchange.refusal_reason,
+    nearby_evidence: exchange.nearby_evidence,
+  };
 }
 
 const FIXTURE_RUN_ID = "fixture-run";
@@ -334,6 +360,18 @@ export const api = {
     return fixtureOrLive(
       selectAskFixture(body),
       paths.askPath(),
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    );
+  },
+
+  postChat(body: ChatRequest): Promise<ChatResponse> {
+    return fixtureOrLive(
+      selectChatFixture(body),
+      paths.chatPath(),
       {
         method: "POST",
         headers: { "content-type": "application/json" },

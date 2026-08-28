@@ -97,6 +97,10 @@ export function askPath(): string {
   return "/ask";
 }
 
+export function chatPath(): string {
+  return "/chat";
+}
+
 export function sourcesPath(params?: {
   entity?: string | null;
   include_excluded?: boolean;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
-import type { AskResponse } from "../api/types";
+import type { AskResponse, ChatResponse } from "../api/types";
+import { appendExchange, loadHistory } from "../lib/chatHistory";
 import { AskTranscript } from "../components/AskTranscript";
 import "./Ask.css";
 
@@ -90,8 +91,28 @@ export function Ask() {
     setInput("");
 
     try {
-      const response = await api.postAsk({ question: trimmed });
-      setExchanges((prev) => [...prev, response]);
+      const history = loadHistory();
+      const chat: ChatResponse = await api.postChat({
+        message: trimmed,
+        history,
+      });
+      const exchange: AskResponse = {
+        question: trimmed,
+        grounded: chat.grounded,
+        answer: chat.answer,
+        evidence: chat.sources,
+        refusal_reason: chat.reason,
+        nearby_evidence: chat.nearby_evidence,
+      };
+      setExchanges((prev) => [...prev, exchange]);
+      appendExchange(
+        { role: "user", content: trimmed },
+        {
+          role: "assistant",
+          content: chat.answer,
+          citations: chat.sources.map((s) => s.citation ?? null),
+        },
+      );
     } finally {
       setPending(false);
       setPendingQuestion(null);
