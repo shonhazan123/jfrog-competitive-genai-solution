@@ -5,6 +5,7 @@ import json
 from pydantic import BaseModel
 
 from agent.graphs.research.grounding import source_url_grounded
+from agent.graphs.research.query import broaden_query, dedupe_names
 from agent.llm import prompt as load_prompt
 from agent.tools.web_search import web_search
 
@@ -22,15 +23,18 @@ class ComparisonDeps:
     def __init__(self, cells, search_fn=None, gate_model=None):
         self._cells = cells
         self._gate = gate_model
-        self._search = search_fn or (lambda t: web_search(self._query(t), k=5))
+        self._search = search_fn or (
+            lambda t, attempt=1: web_search(self._query(t, attempt), k=5)
+        )
 
-    def _query(self, target):
-        product = " OR ".join([target["name"], *target["aliases"]])
+    def _query(self, target, attempt: int = 1):
+        product = " OR ".join(dedupe_names(target["name"], target.get("aliases") or []))
         probes = [
             kw.replace("<rival>", target["name"])
             for kw in target.get("probe_keywords", [])
         ]
-        return f'({product}) {target["label"]} ({" OR ".join(probes)})'
+        base = f'({product}) {target["label"]} ({" OR ".join(probes)})'
+        return broaden_query(base, attempt)
 
     def plan(self):
         return list(self._cells)
@@ -38,8 +42,8 @@ class ComparisonDeps:
     def collect(self, target):
         return None  # search-first
 
-    def search(self, target):
-        return self._search(target)
+    def search(self, target, *, attempt: int = 1):
+        return self._search(target, attempt=attempt)
 
     def assess(self, target, hits, attempts):
         payload = {

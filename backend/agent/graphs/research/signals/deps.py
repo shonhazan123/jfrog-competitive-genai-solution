@@ -32,8 +32,8 @@ class SignalsDeps:
     def collect(self, target):
         return self._structured(target)  # None when no structured source exists
 
-    def search(self, target):
-        return self._search(target)
+    def search(self, target, *, attempt: int = 1):
+        return self._search(target, attempt=attempt)
 
     def assess(self, target, material, attempts):
         payload = {

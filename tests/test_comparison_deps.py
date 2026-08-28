@@ -49,11 +49,31 @@ def test_no_capability_is_unresolved_then_absent_none():
 
 
 def test_query_substitutes_rival_and_has_no_placeholders():
-    deps = ComparisonDeps([_cell()], search_fn=lambda t: [], gate_model=StubGate(False))
+    deps = ComparisonDeps([_cell()], search_fn=lambda t, attempt=1: [], gate_model=StubGate(False))
     query = deps._query(_cell())
     assert "Sonatype" in query
     assert "<rival>" not in query
     assert "<" not in query
+
+
+def test_query_dedupes_name_equal_to_alias():
+    cell = {
+        **_cell(),
+        "name": "GitHub Packages",
+        "aliases": ["GitHub Packages", "GHCR"],
+    }
+    deps = ComparisonDeps([cell], search_fn=lambda t, attempt=1: [], gate_model=StubGate(False))
+    query = deps._query(cell)
+    assert query.count("GitHub Packages") == 1
+    assert "GHCR" in query
+
+
+def test_query_broadens_on_later_attempts():
+    deps = ComparisonDeps([_cell()], search_fn=lambda t, attempt=1: [], gate_model=StubGate(False))
+    first = deps._query(_cell(), attempt=1)
+    second = deps._query(_cell(), attempt=2)
+    assert first != second
+    assert "overview" in second.lower()
 
 
 def test_fabricated_source_url_does_not_resolve():
