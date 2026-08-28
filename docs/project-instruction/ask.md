@@ -1,3 +1,5 @@
+> **Note:** The single-turn `classify_intent → tool_loop → grounding_gate` graph has been **replaced** by the chat path (see [chat.md](chat.md)); `/ask` now calls `chat_service.answer_chat(history=[])`.
+
 # Ask graph — routing and state
 
 Graph: `classify_intent → tool_loop (max 4) → grounding_gate → answer | refuse`.
