@@ -277,6 +277,9 @@ export const FIXTURES = {
   startRun: { run_id: FIXTURE_RUN_ID },
   getRun: FIXTURE_RUN_PROGRESS,
   runSurface: FIXTURE_RUN_PROGRESS,
+  startAllRuns: FIXTURE_START_ALL,
+  getRunProgress: FIXTURE_SURFACE_PROGRESS,
+  getActiveBatch: { batch_id: null, runs: [] },
 } as const;
 
 export const api = {
