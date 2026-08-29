@@ -15,6 +15,7 @@
 - **Plain language only** in every user-facing string. Never surface "embedding", "chunking", "gate", "vector", "index" to the user. The one exception is behind the opt-in "Show what the system is doing" toggle.
 - **Non-blocking:** the run keeps going if the card is minimized or the user navigates away. State must survive a route change and a page reload.
 - **One global run at a time** (Run now disables while a batch is active). Per-page "Run this page" buttons are out of scope here.
+- **Run now MUST fire all three research agents concurrently.** It calls `POST /runs/all` (the `start_all` fan-out) — NOT the legacy `kind:"manual"` collect+score run the button uses today. And `start_all` MUST run the three surfaces in parallel threads (each agent opens its own DB session), never as sequential FastAPI `BackgroundTasks` (which run one-after-another).
 - **Four lane states:** running, done (new items), empty (done, 0 items — calm, not an error), trouble (failed — amber, never a stack trace).
 - **Bottom-centre** dock bar; theme-aware (light + dark); honor `prefers-reduced-motion`.
 - Backend is the single source of truth for step text; the client displays `step_label`/`step_detail` verbatim.
@@ -33,7 +34,7 @@
 ## File map
 
 **Backend — modified:** `backend/app/models/run.py` (Run fields + progress_body), `backend/app/controllers/runs.py` (reporter, batch, `active_batch`), `backend/app/routers/runs.py` (`GET /runs/active`), `backend/agent/graphs/research/skeleton.py` (progress hook), `backend/app/services/research/{industry,signals,comparison}_agent.py` (thread progress). **Created:** `config/surface_steps.yaml`.
-**Frontend — created:** `client/src/state/runStore.tsx`, `client/src/components/RunStatusCard.tsx` (+`.css`), `client/src/components/TodayRunBar.tsx` (+`.css`), `client/src/utils/runPresentation.ts`. **Modified:** `client/src/api/client.ts`, `client/src/pages/Today.tsx`, `client/src/App.tsx` (mount the store provider + bar).
+**Frontend — created:** `client/src/state/runStore.tsx`, `client/src/components/RunStatusCard.tsx` (+`.css`), `client/src/components/TodayRunBar.tsx` (+`.css`), `client/src/utils/runPresentation.ts`. **Modified:** `client/src/api/client.ts`, `client/src/components/StatusStrip.tsx` (Run now → batch fan-out; the button lives here, not Today.tsx), `client/src/App.tsx` (mount the store provider + card + bar at shell level).
 
 ---
 
@@ -243,9 +244,37 @@ def test_start_all_tags_a_batch_and_active_batch_recovers_it(monkeypatch):
 
 - [ ] **Step 2: Run → FAIL.**
 
-- [ ] **Step 3: Implement batch tagging + recovery**
+- [ ] **Step 3: Implement batch tagging + CONCURRENT fan-out + recovery**
 
-In `start_all`, create `batch_id = uuid.uuid4().hex[:8]`; for each surface set `update_run(run.id, surface=kind, batch_id=batch_id)` after `create_run()`; return `{"batch_id": batch_id, "run_ids": run_ids}`. Add:
+Rewrite `start_all` so the three surfaces run **in parallel threads** (each agent already opens its own `SessionLocal`, so this is thread-safe), instead of three sequential `BackgroundTasks`:
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def _run_all_concurrent(batch: dict[str, str]) -> None:
+    # batch: {surface: run_id}. Threads run the three agents at the same time.
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = [pool.submit(_run_surface, run_id, kind) for kind, run_id in batch.items()]
+        for f in futures:
+            f.result()  # surface-level errors are already caught inside _run_surface
+
+def start_all(background_tasks=None) -> dict:
+    batch_id = uuid.uuid4().hex[:8]
+    run_ids: dict[str, str] = {}
+    for kind in _SURFACE_JOBS:
+        run = create_run()
+        update_run(run.id, surface=kind, batch_id=batch_id)
+        run_ids[kind] = run.id
+    if background_tasks is not None:
+        background_tasks.add_task(_run_all_concurrent, run_ids)  # ONE task; it fans out to threads
+    else:
+        _run_all_concurrent(run_ids)
+    return {"batch_id": batch_id, "run_ids": run_ids}
+```
+
+Also add a concurrency test: dispatch `start_all` (synchronous path) with each `_run_surface` stubbed to block on a shared `threading.Barrier(3)`; if the barrier releases within the timeout, the three ran concurrently (mirror `tests/test_jobs.py::test_two_domains_fetch_concurrently`).
+
+Then add the recovery helper:
 ```python
 def active_batch() -> dict | None:
     from app.models.run import _store, progress_body
@@ -331,15 +360,19 @@ test("lane state derivation", () => {
 
 ---
 
-### Task 8: Wire it into Today + the app shell
+### Task 8: Repoint the Run now button + mount the card/bar in the app shell
 
-**Files:** Modify `client/src/App.tsx` (wrap in `RunProvider`, mount `<RunStatusCard/>` + `<TodayRunBar/>` at the shell level so they persist across routes), `client/src/pages/Today.tsx` (Run now → `store.startAll()`, disable while `active`). Test: update `client/src/pages/today.test.tsx`.
+**The Run now button lives in `client/src/components/StatusStrip.tsx`, not Today.tsx.** Today it calls `api.startRun()` (no kind → `manual` → collect+score). This task repoints it at the batch fan-out and hands its progress display to the new card/bar.
 
-- [ ] **Step 1: Update the Today test** — clicking `Run now` calls `startAllRuns` (mock the client) and disables the button while a batch is active.
+**Files:** Modify `client/src/components/StatusStrip.tsx` (Run now → `store.startAll()`), `client/src/App.tsx` (wrap in `RunProvider`; mount `<RunStatusCard/>` + `<TodayRunBar/>` at shell level so they persist across routes). Test: `client/src/components/runprogress.test.tsx` (or a new `statusstrip.test.tsx`).
 
-- [ ] **Step 2: Implement** — mount the provider and the two components in `App.tsx` (not inside Today, so the bar survives navigation); point Today's `Run now` at `store.startAll`.
+- [ ] **Step 1: Update the test** — clicking `Run now` calls `startAllRuns` (mock the client) and posts to `/runs/all`, **not** `startRun("manual")`; the button disables while a batch is active.
 
-- [ ] **Step 3: Run `npm test` → PASS. Commit** `feat(client): wire Run now to the status card + persistent bar`.
+- [ ] **Step 2: Implement**
+  - In `StatusStrip.tsx`, replace `handleRunNow`'s `await api.startRun()` + single-run polling with `store.startAll()`. Remove the strip's own single-run `RunProgress` for the *global* run (the card/bar now own that display); keep the "Last run / Next run" text. The per-page "Run this page" buttons (`runSurface`) are untouched.
+  - In `App.tsx`, wrap the app in `RunProvider` and mount `<RunStatusCard/>` and `<TodayRunBar/>` once at the shell level (so the bar survives navigation).
+
+- [ ] **Step 3: Run `npm test` → PASS. Commit** `feat(client): Run now fires all agents via the status card + persistent bar`.
 
 ---
 
