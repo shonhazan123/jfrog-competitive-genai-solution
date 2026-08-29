@@ -1,0 +1,64 @@
+.run-card {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-4);
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - var(--sp-5)));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  padding: var(--sp-4);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.run-card__head { display: flex; align-items: center; gap: var(--sp-2); }
+.run-card__title { font-weight: 600; color: var(--ink); }
+.run-card__eta { margin-left: auto; color: var(--ink-muted); font-size: var(--fs-meta); }
+.run-card__min {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink-secondary);
+}
+.run-card__overall { height: 4px; background: var(--surface-sunk); border-radius: 999px; overflow: hidden; }
+.run-card__overall-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+.run-card__lanes { display: flex; flex-direction: column; gap: var(--sp-3); }
+.run-lane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  background: var(--surface-sunk);
+}
+.run-lane__head { display: flex; align-items: baseline; gap: var(--sp-2); }
+.run-lane__name { font-weight: 500; color: var(--ink); }
+.run-lane__detail { margin-left: auto; color: var(--ink-muted); font-size: var(--fs-meta); }
+.run-lane__step { color: var(--ink-secondary); font-size: var(--fs-meta); }
+.run-lane__bar { height: 4px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.run-lane__bar-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+.run-lane--done { background: var(--brand-jfrog-wash); }
+.run-lane__done { color: var(--brand-jfrog); font-weight: 500; text-decoration: none; }
+.run-lane__empty { color: var(--ink-muted); font-size: var(--fs-meta); }
+.run-lane--trouble { background: var(--caution-wash); }
+.run-lane__trouble { color: var(--caution); font-size: var(--fs-meta); }
+.run-lane__tech { color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--fs-mono); }
+.run-card__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--ink-muted);
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .run-card__overall-fill,
+  .run-lane__bar-fill { transition: none; }
+}
