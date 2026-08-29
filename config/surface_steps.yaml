@@ -1,0 +1,15 @@
+industry:
+  plan: "Deciding what to look into"
+  research: "Searching the web for the latest"
+  writing: "Writing why each item matters"
+  saving: "Making it searchable in Ask"
+signals:
+  plan: "Lining up each competitor"
+  research: "Checking hiring, pricing & funding"
+  writing: "Writing the takeaways"
+  saving: "Saving it for later"
+comparison:
+  plan: "Setting up the comparison grid"
+  research: "Researching each rival's strengths"
+  writing: "Rating them against JFrog"
+  saving: "Filling in the grid"

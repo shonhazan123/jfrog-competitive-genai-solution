@@ -1,6 +1,12 @@
 from datetime import UTC, datetime, timedelta
 import logging
 import time
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
+from pathlib import Path
+
+import yaml
 
 import worker.jobs as jobs
 from apscheduler.triggers.cron import CronTrigger
@@ -13,11 +19,34 @@ from app.models.registry import Source
 from app.models.run import create_run, get_run, load_run_stages, progress_body, update_run
 from app.models.signal import Signal
 from app.serializers.common import fmt_ts
+from app.settings import settings
 
 _last_run_at: datetime | None = None
 _next_run_at: datetime | None = None
 _last_report: dict = {}
 logger = logging.getLogger(__name__)
+
+@lru_cache(maxsize=1)
+def _surface_steps() -> dict:
+    return yaml.safe_load(
+        (Path(settings.config_dir) / "surface_steps.yaml").read_text(encoding="utf-8")
+    )
+
+
+def make_reporter(run_id: str, surface: str):
+    labels = _surface_steps().get(surface, {})
+
+    def report(step_key: str, current: int | None = None, total: int | None = None) -> None:
+        fields = {"step_label": labels.get(step_key, step_key)}
+        if current is not None and total is not None:
+            fields["step_detail"] = f"{current} of {total}"
+            fields["current"] = current
+            fields["total"] = total
+        else:
+            fields["step_detail"] = None
+        update_run(run_id, **fields)
+
+    return report
 
 _JOB_BY_KIND = {
     "collect": "run_collection",
