@@ -63,9 +63,19 @@ def _resolve_one(deps: ResearchDeps, target: dict, max_attempts: int) -> dict:
         return deps.absent_draft(target)
 
 
-def run_research(deps: ResearchDeps, *, max_workers: int | None = None) -> list[dict]:
+def run_research(
+    deps: ResearchDeps,
+    *,
+    max_workers: int | None = None,
+    progress=None,
+) -> list[dict]:
+    if progress is None:
+        def progress(*_args, **_kwargs):
+            return None
+
     targets = deps.plan()
     step(logger, "research.plan", targets=len(targets))
+    progress("plan", 0, len(targets))
     if not targets:
         return []
 
@@ -76,6 +86,7 @@ def run_research(deps: ResearchDeps, *, max_workers: int | None = None) -> list[
     def _job(index: int, target: dict) -> tuple[int, dict]:
         return index, _resolve_one(deps, target, deps.max_attempts)
 
+    completed = 0
     with ThreadPoolExecutor(max_workers=pool_size) as pool:
         future_targets = {
             pool.submit(_job, i, target): (i, target)
@@ -93,5 +104,7 @@ def run_research(deps: ResearchDeps, *, max_workers: int | None = None) -> list[
                     exc,
                 )
                 drafts[index] = deps.absent_draft(target)
+            completed += 1
+            progress("research", completed, len(targets))
 
     return [d for d in drafts if d is not None]

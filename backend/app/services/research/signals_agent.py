@@ -203,18 +203,24 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
     return written
 
 
-def run_signals() -> dict:
+def run_signals(progress=None) -> dict:
     from agent.graphs.research.signals.deps import SignalCard, SignalsDeps
     from agent.graphs.research.skeleton import run_research
     from agent.llm import get_model
     from agent.tools.web_search import web_search
+
+    if progress is None:
+        def progress(*_args, **_kwargs):
+            return None
 
     gate = get_model("gate").with_structured_output(SignalCard, strict=True)
     with SessionLocal() as session:
         structured = structured_for()
         search_fn = lambda t, attempt=1: web_search(_query(t, attempt), k=6)
         deps = SignalsDeps(build_targets(), structured, search_fn, gate)
-        drafts = run_research(deps)
+        drafts = run_research(deps, progress=progress)
+        progress("writing")
+        progress("saving")
         n = persist_signals(session, drafts)
         session.commit()
     return {"signals_items": n}

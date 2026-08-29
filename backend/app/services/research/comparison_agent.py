@@ -105,15 +105,21 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
     return written
 
 
-def run_comparison() -> dict:
+def run_comparison(progress=None) -> dict:
     from agent.graphs.research.comparison.deps import CellVerdict, ComparisonDeps
     from agent.graphs.research.skeleton import run_research
     from agent.llm import get_model
 
+    if progress is None:
+        def progress(*_args, **_kwargs):
+            return None
+
     gate = get_model("gate").with_structured_output(CellVerdict, strict=True)
     deps = ComparisonDeps(build_cells(), gate_model=gate)
-    drafts = run_research(deps)
+    drafts = run_research(deps, progress=progress)
+    progress("writing")
     with SessionLocal() as session:
+        progress("saving")
         n = persist_comparison(session, drafts)
         session.commit()
     return {"comparison_items": n}

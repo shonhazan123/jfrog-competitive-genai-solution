@@ -89,15 +89,21 @@ def persist_industry(session: Session, drafts: list[dict]) -> int:
     return written
 
 
-def run_industry() -> dict:
+def run_industry(progress=None) -> dict:
     from agent.graphs.research.industry.deps import IndustryAssessment, IndustryDeps
     from agent.graphs.research.skeleton import run_research
     from agent.llm import get_model
 
+    if progress is None:
+        def progress(*_args, **_kwargs):
+            return None
+
     gate = get_model("gate").with_structured_output(IndustryAssessment, strict=True)
     deps = IndustryDeps(load_buckets(), gate_model=gate)
-    drafts = run_research(deps)
+    drafts = run_research(deps, progress=progress)
+    progress("writing")
     with SessionLocal() as session:
+        progress("saving")
         n = persist_industry(session, drafts)
         session.commit()
     return {"industry_items": n}

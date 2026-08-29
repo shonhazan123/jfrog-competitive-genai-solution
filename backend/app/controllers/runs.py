@@ -169,25 +169,12 @@ _SURFACE_JOBS = {
 
 
 def _run_surface(run_id: str, kind: str) -> None:
-    stages = load_run_stages()
-    new_items = 0
     try:
-        update_run(run_id, stage_key=stages[0]["key"], current=0, total=len(stages))
-        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[0]["key"], stages[0]["label"])
-
-        update_run(run_id, stage_key=stages[1]["key"], current=1, total=len(stages))
-        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[1]["key"], stages[1]["label"])
-        report = getattr(jobs, _SURFACE_JOBS[kind])()
+        reporter = make_reporter(run_id, kind)
+        report = getattr(jobs, _SURFACE_JOBS[kind])(progress=reporter)
         new_items = _new_items_from_report(report)
-        logger.info("run.job.done run_id=%s job=%s report=%s", run_id, _SURFACE_JOBS[kind], report)
-
-        update_run(run_id, stage_key=stages[2]["key"], current=2, total=len(stages))
-        logger.info("run.stage run_id=%s stage=%s label=%r", run_id, stages[2]["key"], stages[2]["label"])
-
         update_run(
             run_id,
-            stage_key=stages[-1]["key"],
-            current=len(stages) - 1,
             status="done",
             new_items=new_items,
             finished_at=datetime.now(UTC),
