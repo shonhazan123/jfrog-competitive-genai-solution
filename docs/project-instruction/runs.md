@@ -34,21 +34,20 @@ Starts a background run and returns immediately:
 
 ## `POST /runs/all`
 
-Fans out three surface runs concurrently — one `run_id` per surface:
+Fans out three surface runs **concurrently** (one background task → `ThreadPoolExecutor` with three threads):
 
 ```json
-{ "run_ids": { "industry": "...", "signals": "...", "comparison": "..." } }
+{
+  "batch_id": "a1b2c3d4",
+  "run_ids": { "industry": "...", "signals": "...", "comparison": "..." }
+}
 ```
 
-Each surface run is tracked independently; one failure does not fail the others.
+Each run is tagged with `surface` and shares `batch_id`. One surface failing does not fail the others.
 
-Human stage labels come from `config/run_stages.yaml` (research-oriented stages:
-collect → research → synthesize → done).
+Human step labels come from `config/surface_steps.yaml` (per-surface keys: `plan`, `research`, `writing`, `saving`). The progress reporter (`make_reporter`) writes `step_label`, optional `step_detail` (`"N of M"`), and `current`/`total` counters into the run store. Research agents call `progress` at plan/research/writing/saving boundaries via `run_research` in the skeleton.
 
-Surface runs (`industry`, `signals`, `comparison`) advance through the same stages:
-**Checking sources** → **Researching** (agent job) → **Writing findings** → **Done**.
-The UI polls `GET /runs/{id}` and should reach `stage_label: "Done"` with
-`status: "done"` when the surface job finishes.
+Legacy `stage_label` / `run_stages.yaml` keys remain on the `Run` model for collect/scoring/manual runs; surface runs expose `surface`, `step_label`, and `step_detail` in `GET /runs/{id}`.
 
 Per-target research failures (unreachable structured source, search error, etc.) do
 **not** fail the whole surface run — the skeleton logs `research.target.failed` and
@@ -88,16 +87,31 @@ Poll progress for the current run:
   "run_id": "run_2026-08-26T06:00Z",
   "status": "running",
   "stage_label": "Researching",
-  "progress": { "current": 1, "total": 4 },
+  "surface": "comparison",
+  "step_label": "Researching each rival's strengths",
+  "step_detail": "12 of 30",
+  "progress": { "current": 12, "total": 30 },
   "new_items": 0,
   "message": ""
 }
 ```
 
-- `stage_label` is always a human label from `run_stages.yaml` (never a key like `collect`).
+- `stage_label` is a human label from `run_stages.yaml` (collect/scoring/manual runs).
+- Surface runs also expose `surface`, `step_label`, and `step_detail` from `surface_steps.yaml`.
 - `status`: `running` | `done` | `failed`
 - On `done`, `new_items` reflects captures / scored counts from the job report.
 - On `failed`, `message` is plain language (no tracebacks).
+
+## `GET /runs/active`
+
+Recovery endpoint for the UI after refresh. Returns the most recent batch that still has any `running` surface, or `{ "batch_id": null, "runs": [] }`:
+
+```json
+{
+  "batch_id": "a1b2c3d4",
+  "runs": [ /* progress_body per surface */ ]
+}
+```
 
 ## Debugging with logs
 

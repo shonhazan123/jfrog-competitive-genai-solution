@@ -140,16 +140,16 @@ def test_progress_body_exposes_human_step_and_detail():
     assert body["progress"] == {"current": 12, "total": 30}
 
 
-def test_surface_run_advances_to_done_stage(monkeypatch):
+def test_surface_run_advances_to_done(monkeypatch):
     from app.controllers import runs as runs_controller
     from app.models.run import create_run, get_run
     import worker.jobs as jobs
 
-    monkeypatch.setattr(jobs, "run_comparison", lambda: {"comparison_items": 3})
+    # _run_surface now drives human step labels via a reporter and passes it as
+    # progress=; the surface job must accept that kwarg.
+    monkeypatch.setattr(jobs, "run_comparison", lambda progress=None: {"comparison_items": 3})
     run = create_run()
     runs_controller._run_surface(run.id, "comparison")
     finished = get_run(run.id)
-    stages = load_run_stages()
     assert finished.status == "done"
-    assert finished.stage_key == stages[-1]["key"]
     assert finished.new_items == 3
