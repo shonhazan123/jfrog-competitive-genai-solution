@@ -32,6 +32,10 @@ def status() -> dict:
 def latest(session: Session = Depends(get_session)) -> dict:
     return runs.get_latest_run(session)
 
+@router.get("/active")
+def active() -> dict:
+    return runs.active_batch() or {"batch_id": None, "runs": []}
+
 @router.get("/{run_id}")
 def get_run_progress(run_id: str) -> dict:
     progress = runs.get_run_progress(run_id)

@@ -186,6 +186,28 @@ def _run_surface(run_id: str, kind: str) -> None:
                    finished_at=datetime.now(UTC))
 
 
+def _run_all_concurrent(batch: dict[str, str]) -> None:
+    # batch: {surface: run_id}. Threads run the three agents at the same time.
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = [pool.submit(_run_surface, run_id, kind) for kind, run_id in batch.items()]
+        for f in futures:
+            f.result()  # surface-level errors are already caught inside _run_surface
+
+
+def active_batch() -> dict | None:
+    from app.models.run import _store, progress_body
+    batches: dict[str, list] = {}
+    for run in _store.values():
+        if run.batch_id:
+            batches.setdefault(run.batch_id, []).append(run)
+    for bid, runs_ in sorted(
+        batches.items(), key=lambda kv: max(r.started_at for r in kv[1]), reverse=True
+    ):
+        if any(r.status == "running" for r in runs_):
+            return {"batch_id": bid, "runs": [progress_body(r) for r in runs_]}
+    return None
+
+
 def start_surface_run(kind: str, background_tasks=None) -> dict:
     if kind not in _SURFACE_JOBS:
         raise ValueError(f"Unknown surface run: {kind}")
@@ -198,15 +220,17 @@ def start_surface_run(kind: str, background_tasks=None) -> dict:
 
 
 def start_all(background_tasks=None) -> dict:
+    batch_id = uuid.uuid4().hex[:8]
     run_ids: dict[str, str] = {}
     for kind in _SURFACE_JOBS:
         run = create_run()
+        update_run(run.id, surface=kind, batch_id=batch_id)
         run_ids[kind] = run.id
-        if background_tasks is not None:
-            background_tasks.add_task(_run_surface, run.id, kind)
-        else:
-            _run_surface(run.id, kind)
-    return {"run_ids": run_ids}
+    if background_tasks is not None:
+        background_tasks.add_task(_run_all_concurrent, run_ids)  # ONE task; it fans out to threads
+    else:
+        _run_all_concurrent(run_ids)
+    return {"batch_id": batch_id, "run_ids": run_ids}
 
 
 def start_run(
