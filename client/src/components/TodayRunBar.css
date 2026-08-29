@@ -1,0 +1,16 @@
+.today-run-bar {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-4);
+  transform: translateX(-50%);
+  z-index: 50;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: var(--sp-2) var(--sp-4);
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+  font-size: var(--fs-meta);
+}
+.today-run-bar__trouble { color: var(--caution); }
