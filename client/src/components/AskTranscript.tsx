@@ -7,6 +7,8 @@ interface AskTranscriptProps {
   exchanges: AskResponse[];
   pending?: boolean;
   pendingQuestion?: string | null;
+  streamingQuestion?: string | null;
+  streamingAnswer?: string;
 }
 
 function AssistantAvatar() {
@@ -60,6 +62,32 @@ function AssistantExchange({ exchange }: { exchange: AskResponse }) {
   );
 }
 
+function StreamingExchange({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string;
+}) {
+  return (
+    <>
+      <UserBubble content={question} />
+      <div className="ask-assistant">
+        <AssistantAvatar />
+        <div className="ask-assistant__body">
+          <div className="ask-assistant__label">Intel Assistant</div>
+          <p className="ask-assistant__answer">
+            {answer}
+            <span className="ask-assistant__caret" aria-hidden="true">
+              ▌
+            </span>
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function AskLoader() {
   return (
     <div className="ask-loader" aria-live="polite" aria-busy="true">
@@ -77,8 +105,13 @@ export function AskTranscript({
   exchanges,
   pending = false,
   pendingQuestion = null,
+  streamingQuestion = null,
+  streamingAnswer = "",
 }: AskTranscriptProps) {
+  const isStreaming = Boolean(streamingQuestion);
+  const showStreamingAnswer = isStreaming && streamingAnswer.length > 0;
   const showPendingUser =
+    !isStreaming &&
     pendingQuestion &&
     !exchanges.some((exchange) => exchange.question === pendingQuestion);
 
@@ -89,8 +122,22 @@ export function AskTranscript({
           <AssistantExchange exchange={exchange} />
         </div>
       ))}
-      {showPendingUser ? <UserBubble content={pendingQuestion} /> : null}
-      {pending ? <AskLoader /> : null}
+      {showStreamingAnswer ? (
+        <StreamingExchange
+          question={streamingQuestion as string}
+          answer={streamingAnswer}
+        />
+      ) : isStreaming ? (
+        <>
+          <UserBubble content={streamingQuestion as string} />
+          <AskLoader />
+        </>
+      ) : (
+        <>
+          {showPendingUser ? <UserBubble content={pendingQuestion} /> : null}
+          {pending ? <AskLoader /> : null}
+        </>
+      )}
     </div>
   );
 }

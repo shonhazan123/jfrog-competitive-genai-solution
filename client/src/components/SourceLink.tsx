@@ -9,6 +9,10 @@ interface SourceLinkProps {
   variant?: "default" | "name";
 }
 
+function isLive(href: string | null | undefined): href is string {
+  return typeof href === "string" && /^https?:\/\//.test(href);
+}
+
 function ExternalLink({
   href,
   children,
@@ -16,6 +20,11 @@ function ExternalLink({
   href: string;
   children: ReactNode;
 }) {
+  // Never render a dead anchor: an empty/relative href resolves to the current
+  // page. Fall back to plain text when there is no live URL to link to.
+  if (!isLive(href)) {
+    return <span className="source-link__anchor">{children}</span>;
+  }
   return (
     <a
       className="source-link__anchor"

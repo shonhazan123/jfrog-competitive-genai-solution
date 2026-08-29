@@ -16,6 +16,7 @@ class Hit:
     score: float
     source_id: int
     reliability_grade: str
+    url: str | None = None
 
 
 def _build_prefilter(filters: dict, preset: str, rcfg) -> tuple[str, dict] | None:
@@ -40,13 +41,14 @@ def _row_to_dict(row) -> dict:
         "text": row.text,
         "source_id": row.source_id,
         "reliability_grade": row.reliability_grade,
+        "url": row.url,
     }
 
 
 def _lexical_candidates(session, *, query: str, where_clause: str, params: dict, limit: int) -> list[dict]:
     sql = text(
         f"""
-        SELECT id, record_type, record_id, text, source_id, reliability_grade,
+        SELECT id, record_type, record_id, text, source_id, reliability_grade, url,
                ts_rank(tsv, plainto_tsquery('english', :query)) AS rank_score
         FROM chunk
         WHERE {where_clause}
@@ -66,10 +68,12 @@ def _format_vector(vec: list[float]) -> str:
 def _semantic_candidates(
     session, *, query: str, where_clause: str, params: dict, limit: int, qvec: list[float], hnsw_ef_search: int
 ) -> list[dict]:
-    session.execute(text("SET LOCAL hnsw.ef_search = :ef_search"), {"ef_search": hnsw_ef_search})
+    # Postgres SET does not accept bind parameters; inline the integer (guarded
+    # by int()) instead of passing it as a query parameter.
+    session.execute(text(f"SET LOCAL hnsw.ef_search = {int(hnsw_ef_search)}"))
     sql = text(
         f"""
-        SELECT id, record_type, record_id, text, source_id, reliability_grade,
+        SELECT id, record_type, record_id, text, source_id, reliability_grade, url,
                (embedding <=> CAST(:qvec AS vector)) AS distance
         FROM chunk
         WHERE {where_clause}
@@ -117,6 +121,7 @@ def _to_hits(scored: list[tuple[dict, float]]) -> list[Hit]:
             score=score,
             source_id=row["source_id"] or 0,
             reliability_grade=row["reliability_grade"] or "",
+            url=row.get("url"),
         )
         for row, score in scored
     ]

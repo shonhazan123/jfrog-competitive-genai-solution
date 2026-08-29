@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
-import type { AskResponse, ChatResponse } from "../api/types";
+import type { AskResponse } from "../api/types";
 import { appendExchange, loadHistory } from "../lib/chatHistory";
 import { AskTranscript } from "../components/AskTranscript";
 import "./Ask.css";
 
 const SUGGESTED_QUESTIONS = [
-  "What has Sonatype changed about how it describes JFrog's malware detection?",
-  "On AI and model artifacts, where does Sonatype stand versus JFrog right now?",
-  "How many net-new enterprise customers did Sonatype win from JFrog last quarter?",
+  "How does Sonatype's Nexus Repository compare to JFrog?",
+  "What roles is Sonatype hiring for right now?",
+  "What are the latest software supply chain security themes?",
+  "What has Sonatype changed recently in its product?",
 ];
 
 function SuggestedQuestions({ onSelect }: { onSelect: (question: string) => void }) {
@@ -61,15 +62,17 @@ export function Ask() {
   const [exchanges, setExchanges] = useState<AskResponse[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
-  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
+  const [streamingQuestion, setStreamingQuestion] = useState<string | null>(null);
+  const [streamingAnswer, setStreamingAnswer] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const showEmpty = exchanges.length === 0 && !pending && !pendingQuestion;
+  const showEmpty =
+    exchanges.length === 0 && !pending && !streamingQuestion;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView?.({ behavior: "smooth" });
-  }, [exchanges, pending, pendingQuestion]);
+  }, [exchanges, pending, streamingQuestion, streamingAnswer]);
 
   const resizeTextarea = useCallback(() => {
     const el = textareaRef.current;
@@ -87,35 +90,53 @@ export function Ask() {
     if (!trimmed || pending) return;
 
     setPending(true);
-    setPendingQuestion(trimmed);
+    setStreamingQuestion(trimmed);
+    setStreamingAnswer("");
     setInput("");
 
     try {
       const history = loadHistory();
-      const chat: ChatResponse = await api.postChat({
-        message: trimmed,
-        history,
-      });
-      const exchange: AskResponse = {
-        question: trimmed,
-        grounded: chat.grounded,
-        answer: chat.answer,
-        evidence: chat.sources,
-        refusal_reason: chat.reason,
-        nearby_evidence: chat.nearby_evidence,
-      };
-      setExchanges((prev) => [...prev, exchange]);
-      appendExchange(
-        { role: "user", content: trimmed },
+      await api.postChatStream(
+        { message: trimmed, history },
         {
-          role: "assistant",
-          content: chat.answer,
-          citations: chat.sources.map((s) => s.citation ?? null),
+          onToken: (token) => setStreamingAnswer((prev) => prev + token),
+          onDone: (event) => {
+            const exchange: AskResponse = {
+              question: trimmed,
+              grounded: event.grounded,
+              answer: event.answer,
+              evidence: event.sources,
+              refusal_reason: event.reason,
+              nearby_evidence: event.nearby_evidence,
+            };
+            setExchanges((prev) => [...prev, exchange]);
+            if (event.grounded) {
+              appendExchange(
+                { role: "user", content: trimmed },
+                {
+                  role: "assistant",
+                  content: event.answer,
+                  citations: event.sources.map((s) => s.citation ?? null),
+                },
+              );
+            }
+          },
         },
       );
+    } catch {
+      const exchange: AskResponse = {
+        question: trimmed,
+        grounded: false,
+        answer: "Something went wrong while answering. Please try again.",
+        evidence: [],
+        refusal_reason: null,
+        nearby_evidence: [],
+      };
+      setExchanges((prev) => [...prev, exchange]);
     } finally {
       setPending(false);
-      setPendingQuestion(null);
+      setStreamingQuestion(null);
+      setStreamingAnswer("");
     }
   }, [pending]);
 
@@ -143,7 +164,8 @@ export function Ask() {
           <AskTranscript
             exchanges={exchanges}
             pending={pending}
-            pendingQuestion={pendingQuestion}
+            streamingQuestion={streamingQuestion}
+            streamingAnswer={streamingAnswer}
           />
         )}
         <div ref={bottomRef} />

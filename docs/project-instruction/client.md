@@ -112,10 +112,13 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
 - **`POST /ask`** returns a single `AskResponse`; the client fixture
   `ask_transcript.json` is a `{ exchanges: [...] }` demo transcript with no matching
   single endpoint. The Ask screen (`/ask`) is an interactive chat: empty state shows
-  numbered suggested questions (static prompts aligned to fixture exchanges); each submit
-  calls `POST /ask` and appends a user bubble + grounded answer (green citation badges via
-  `<CitationCard>` / `<Cited>` / `<SourceLink>`) or a `<RefusalNotice>`. Fixture mode
-  matches questions to canned exchanges in `selectAskFixture`.
+  numbered suggested questions — grounded prompts aligned to the collected signal
+  categories (competitor cards, industry themes, hiring signals, changelog entries), so
+  they resolve against data we actually hold. Each submit calls `POST /chat/stream`
+  (`api.postChatStream`), rendering answer tokens live and then appending a user bubble +
+  grounded answer (green citation badges via `<CitationCard>` / `<Cited>` /
+  `<SourceLink>`, whose links point to the finding's origin URL) or a `<RefusalNotice>`.
+  Fixture mode matches questions to canned exchanges in `selectAskFixture`.
 - **No fixture / no client method** for `GET /digests/{persona}` (sales/product);
   digest header counts are not wired for sales/product.
 - **Non-blocking run indicator:** `StatusStrip` in the AppShell header (persists

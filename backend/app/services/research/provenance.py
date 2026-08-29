@@ -38,10 +38,11 @@ def record_finding(session: Session, agent_key: str, url: str, text: str,
 
 
 def index_finding(session: Session, *, record_type: str, record_id: int, text: str,
-                  entity_id, signal_type, published_at, reliability_grade) -> int:
+                  entity_id, signal_type, published_at, reliability_grade,
+                  url: str | None = None) -> int:
     return index_chunks(
         session, [{"text": text, "prefix": None, "section_path": [], "token_count": 0}],
         record_type=record_type, record_id=record_id, embedder=get_embedder(),
         entity_id=entity_id, signal_type=signal_type,
-        published_at=published_at, reliability_grade=reliability_grade,
+        published_at=published_at, reliability_grade=reliability_grade, url=url,
     )

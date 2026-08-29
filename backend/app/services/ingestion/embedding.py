@@ -26,6 +26,7 @@ def index_chunks(
     signal_type=None,
     published_at=None,
     reliability_grade=None,
+    url=None,
     embed_model="text-embedding-3-small",
     embed_version=1,
 ) -> int:
@@ -74,6 +75,7 @@ def index_chunks(
             Chunk(
                 record_type=record_type,
                 record_id=record_id,
+                url=url,
                 text=item["text"],
                 prefix=item["prefix"],
                 section_path=section_path or [],

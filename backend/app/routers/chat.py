@@ -1,4 +1,7 @@
+import json
+
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -27,3 +30,19 @@ def post_chat(body: ChatRequest, session: Session = Depends(get_session)) -> dic
         session, body.message, history=history,
         persona=body.persona, conversation_id=body.conversation_id,
     )
+
+
+@router.post("/stream")
+def post_chat_stream(body: ChatRequest, session: Session = Depends(get_session)) -> StreamingResponse:
+    history = [turn.model_dump() for turn in body.history]
+
+    def event_source():
+        events = chat_controller.chat_stream(
+            session, body.message, history=history,
+            persona=body.persona, conversation_id=body.conversation_id,
+        )
+        for event in events:
+            yield f"data: {json.dumps(event, default=str)}\n\n"
+
+    return StreamingResponse(event_source(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

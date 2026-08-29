@@ -352,6 +352,25 @@ export interface ChatResponse {
   nearby_evidence: NearbyItem[];
 }
 
+export type ChatStreamEvent =
+  | { type: "plan"; expanded_query: string; steps: number }
+  | { type: "token"; text: string }
+  | {
+      type: "done";
+      grounded: boolean;
+      answer: string;
+      sources: AskEvidence[];
+      reason: string | null;
+      nearby_evidence: NearbyItem[];
+      conversation_id: string | null;
+    };
+
+export interface ChatStreamHandlers {
+  onPlan?: (event: Extract<ChatStreamEvent, { type: "plan" }>) => void;
+  onToken?: (text: string) => void;
+  onDone?: (event: Extract<ChatStreamEvent, { type: "done" }>) => void;
+}
+
 export interface Source {
   id: string;
   name: string;

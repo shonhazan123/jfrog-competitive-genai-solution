@@ -101,6 +101,10 @@ export function chatPath(): string {
   return "/chat";
 }
 
+export function chatStreamPath(): string {
+  return "/chat/stream";
+}
+
 export function sourcesPath(params?: {
   entity?: string | null;
   include_excluded?: boolean;

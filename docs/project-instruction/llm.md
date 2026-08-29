@@ -13,8 +13,8 @@ touching code.
 | `gate` | Industry / Signals / Comparison research graphs | Per-box relevance or usability gate; cheap structured verdict (`gpt-5-mini`, low reasoning). |
 | `synthesize` | reserved for richer card synthesis | Optional heavier synthesis pass; not wired in initial agent landing. |
 | `ask` | Ask endpoint — `app/services/ask_service.py` | Answers analyst questions strictly from retrieved ledger evidence and refuses when unsupported. Read-only. |
-| `chat_plan` | Chat endpoint — `app/services/chat_service.py` | Emits the JSON run plan (expanded query + ordered retrieve steps). Deterministic. |
-| `chat_draft` | Chat endpoint — `app/services/chat_service.py` | Extractive-only grounded answer over retrieved evidence; refuses when unsupported. |
+| `chat_plan` | Chat endpoint — `app/services/chat_service.py` | Emits the JSON run plan (expanded query + ordered retrieve steps). Deterministic. `gpt-5-mini`, `reasoning_effort: minimal` (planning is a light structured task; full gpt-5 reasoning cost ~15–45s/turn). |
+| `chat_draft` | Chat endpoint — `app/services/chat_service.py` | Extractive-only grounded answer over retrieved evidence; refuses when unsupported. `gpt-5-mini`, `reasoning_effort: low`. Streamed on `/chat/stream` via a TypedDict schema. |
 
 Each call is bound to its output contract by the caller (`.with_structured_output(...)`),
 not by config — config only controls the tunable model parameters below.

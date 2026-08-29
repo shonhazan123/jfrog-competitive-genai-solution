@@ -197,6 +197,7 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
             signal_type=draft["signal_type"],
             published_at=now,
             reliability_grade="C",
+            url=capture.blob_path,
         )
         written += 1
     return written

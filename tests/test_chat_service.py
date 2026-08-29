@@ -44,10 +44,18 @@ class _CitesFirstHit:
         return {"answer": "Nexus uses tiered pricing.", "citations": [hits[0]["id"]]}
 
 
+class _FakeEmbedder:
+    """Zero-vector embedder so the semantic retrieval arm runs offline (no OpenAI)."""
+
+    def embed(self, texts):
+        return [[0.0] * 1536 for _ in texts]
+
+
 def _patch_models(monkeypatch, plan, draft):
     from app.services import chat_service
     monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
     monkeypatch.setattr(chat_service, "_build_draft_model", lambda: draft)
+    monkeypatch.setattr(chat_service, "_build_embedder", lambda: _FakeEmbedder())
 
 
 def test_answer_chat_returns_grounded_answer_with_real_sources(session, seeded_corpus, monkeypatch):
@@ -128,6 +136,7 @@ def test_post_chat_endpoint_returns_the_payload(session, seeded_corpus, monkeypa
                        "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
     monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
     monkeypatch.setattr(chat_service, "_build_draft_model", lambda: _CitesFirstHit())
+    monkeypatch.setattr(chat_service, "_build_embedder", lambda: _FakeEmbedder())
 
     app.dependency_overrides[get_session] = lambda: session
     try:
@@ -145,6 +154,114 @@ def test_post_chat_endpoint_returns_the_payload(session, seeded_corpus, monkeypa
         assert len(body["sources"]) == 1
     finally:
         app.dependency_overrides.pop(get_session, None)
+
+
+def test_citation_links_to_chunk_origin_url(session, seeded_corpus, monkeypatch):
+    """A research chunk (no Source row) cites the live URL it was gathered from,
+    with a domain-derived source name — not an empty link back to our own app."""
+    from app.services.chat_service import answer_chat
+
+    session.add(
+        Chunk(record_type="signal", record_id=555, source_id=None,
+              url="https://www.example.com/news/sonatype-firewall",
+              entity_id=seeded_corpus["sonatype"].id,
+              text="Sonatype launched a new malware firewall for open source.",
+              prefix="security", reliability_grade="B", content_hash="chat-url-1"),
+    )
+    session.flush()
+
+    plan = {"expanded_query": "sonatype malware firewall",
+            "steps": [{"tool": "retrieve", "query": "sonatype malware firewall", "preset": "ask_ledger",
+                       "filters": {"entity": "sonatype", "signal_type": None}, "reason": "security"}]}
+
+    class _CitesUrlChunk:
+        def draft(self, question, hits, persona, transcript):
+            match = next(h for h in hits if "malware firewall" in h["text"])
+            return {"answer": "Sonatype shipped a malware firewall.", "citations": [match["id"]]}
+
+    _patch_models(monkeypatch, plan, _CitesUrlChunk())
+    out = answer_chat(session, "did sonatype ship a firewall?")
+    assert out["grounded"] is True
+    src = out["sources"][0]
+    assert src["source_url"] == "https://www.example.com/news/sonatype-firewall"
+    assert src["source_name"] == "example.com"
+    assert src["citation"]["source_url"] == "https://www.example.com/news/sonatype-firewall"
+
+
+def test_retrieve_passes_embedder_so_semantic_arm_runs(session, seeded_corpus, monkeypatch):
+    """Regression: retrieval must run the semantic arm. Without an embedder every
+    turn refused with no_hits on paraphrased queries."""
+    from app.services import chat_service
+
+    calls = {"embed": 0}
+
+    class _SpyEmbedder:
+        def embed(self, texts):
+            calls["embed"] += 1
+            return [[0.0] * 1536 for _ in texts]
+
+    monkeypatch.setattr(chat_service, "_build_embedder", lambda: _SpyEmbedder())
+    deps = chat_service._build_deps(session)
+    deps.retrieve(query="how sonatype prices nexus", preset="ask_ledger",
+                  filters={"entity_ids": [seeded_corpus["sonatype"].id]})
+    assert calls["embed"] >= 1
+
+
+class _StreamsThenCites:
+    """Fake streaming draft model: yields answer token deltas then a final citation."""
+
+    def __init__(self, chunks, cite_first=True):
+        self._chunks = chunks
+        self._cite_first = cite_first
+
+    def stream(self, question, hits, persona, transcript):
+        for c in self._chunks:
+            yield ("token", c)
+        cites = [hits[0]["id"]] if self._cite_first else ["not-a-real-id"]
+        yield ("final", {"answer": "".join(self._chunks), "citations": cites})
+
+
+def _patch_stream(monkeypatch, plan, stream_model):
+    from app.services import chat_service
+    monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
+    monkeypatch.setattr(chat_service, "_build_draft_stream_model", lambda: stream_model)
+    monkeypatch.setattr(chat_service, "_build_embedder", lambda: _FakeEmbedder())
+
+
+def test_answer_chat_stream_emits_tokens_then_grounded_done(session, seeded_corpus, monkeypatch):
+    from app.services.chat_service import answer_chat_stream
+
+    plan = {"expanded_query": "How is Sonatype Nexus priced?",
+            "steps": [{"tool": "retrieve", "query": "nexus pricing tiers", "preset": "ask_ledger",
+                       "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
+    _patch_stream(monkeypatch, plan, _StreamsThenCites(["Nexus ", "uses ", "tiered pricing."]))
+
+    events = list(answer_chat_stream(session, "how is it priced?", conversation_id="c1"))
+    kinds = [e["type"] for e in events]
+    assert kinds[0] == "plan"
+    assert "token" in kinds
+    tokens = "".join(e["text"] for e in events if e["type"] == "token")
+    assert tokens == "Nexus uses tiered pricing."
+    done = events[-1]
+    assert done["type"] == "done"
+    assert done["grounded"] is True
+    assert len(done["sources"]) == 1
+    assert done["conversation_id"] == "c1"
+
+
+def test_answer_chat_stream_refuses_when_citations_not_grounded(session, seeded_corpus, monkeypatch):
+    from app.services.chat_service import answer_chat_stream
+
+    plan = {"expanded_query": "Sonatype pricing",
+            "steps": [{"tool": "retrieve", "query": "nexus pricing tiers", "preset": "ask_ledger",
+                       "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
+    _patch_stream(monkeypatch, plan, _StreamsThenCites(["It ", "is ", "$1B."], cite_first=False))
+
+    done = list(answer_chat_stream(session, "what is it priced?"))[-1]
+    assert done["type"] == "done"
+    assert done["grounded"] is False
+    assert done["sources"] == []
+    assert done["reason"]
 
 
 def test_chat_llm_roles_are_configured():
@@ -166,6 +283,7 @@ def test_ask_still_answers_in_its_legacy_shape(session, seeded_corpus, monkeypat
                        "filters": {"entity": "sonatype", "signal_type": None}, "reason": "pricing"}]}
     monkeypatch.setattr(chat_service, "_build_plan_model", lambda: _CannedPlan(plan))
     monkeypatch.setattr(chat_service, "_build_draft_model", lambda: _CitesFirstHit())
+    monkeypatch.setattr(chat_service, "_build_embedder", lambda: _FakeEmbedder())
 
     out = answer_question(session, "how is sonatype nexus priced?")
     # legacy keys the current /ask consumers rely on

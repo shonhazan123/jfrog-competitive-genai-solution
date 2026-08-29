@@ -7,6 +7,10 @@ logger = get_logger("agent.chat")
 
 _REFUSAL = "I don't have grounded evidence to answer that."
 
+# Cap the retrieve fan-out. The planner occasionally decomposes a broad question
+# into many steps (10+ observed); each step is a retrieval round trip, so bound it.
+_MAX_STEPS = 5
+
 
 def _hit_id(hit) -> str:
     return hit["id"] if isinstance(hit, dict) else hit.id
@@ -38,7 +42,7 @@ def _valid_steps(plan: dict, presets: list[str]) -> list[dict]:
         if not s.get("query"):
             continue
         steps.append(s)
-    return steps
+    return steps[:_MAX_STEPS]
 
 
 def plan_node(state: ChatState, deps) -> dict:
@@ -53,11 +57,12 @@ def plan_node(state: ChatState, deps) -> dict:
     return {"plan": plan, "expanded_query": expanded}
 
 
-def execute_node(state: ChatState, deps) -> dict:
-    plan = state.get("plan", {})
+def execute_steps(deps, steps: list[dict]) -> list:
+    """Run the plan's retrieve steps, dedupe hits by id. Shared by the graph's
+    execute_node and the streaming path so retrieval behaves identically."""
     hits: list = []
     seen: set = set()
-    for s in plan.get("steps", []):
+    for s in steps:
         filters = s.get("filters") or {}
         entity_slug = filters.get("entity")
         retrieval_filters: dict = {}
@@ -73,6 +78,12 @@ def execute_node(state: ChatState, deps) -> dict:
             if hid not in seen:
                 seen.add(hid)
                 hits.append(h)
+    return hits
+
+
+def execute_node(state: ChatState, deps) -> dict:
+    plan = state.get("plan", {})
+    hits = execute_steps(deps, plan.get("steps", []))
     step(logger, "chat.execute.done", hits=len(hits))
     return {"hits": hits}
 

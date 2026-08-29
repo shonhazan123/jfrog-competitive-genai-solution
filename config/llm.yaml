@@ -77,20 +77,25 @@ calls:
 
   # Chat agent — planner. Reads the user turn + recent window and emits a JSON
   # plan (expanded query + ordered retrieve steps). Deterministic, structured.
+  # Planning is a light structured task, not a reasoning problem: a full gpt-5
+  # reasoning pass here cost ~15-45s per request. gpt-5-mini + minimal reasoning
+  # keeps it fast while still resolving pronouns and decomposing steps.
   chat_plan:
     description: >-
       Plans a chat run: restates the user's question with context resolved and
       emits ordered retrieve steps. Never answers or invents facts.
-    model: gpt-5
+    model: gpt-5-mini
     temperature: 0
-    reasoning_effort: null
+    reasoning_effort: minimal
 
   # Chat agent — drafter. Assembles a grounded answer using ONLY retrieved
-  # evidence and refuses when the evidence does not support an answer.
+  # evidence and refuses when the evidence does not support an answer. Extractive
+  # synthesis over supplied evidence does not need heavy reasoning; gpt-5-mini
+  # (low) answers fast and streams.
   chat_draft:
     description: >-
       Writes a grounded, cited answer strictly from retrieved evidence, or
       refuses. Extractive-only; introduces no unretrieved material.
-    model: gpt-5
+    model: gpt-5-mini
     temperature: 0
-    reasoning_effort: null
+    reasoning_effort: low

@@ -34,6 +34,8 @@ import type {
   AskResponse,
   ChatRequest,
   ChatResponse,
+  ChatStreamHandlers,
+  ChatStreamEvent,
   BattlecardRow,
   Claim,
   ComparisonMatrix,
@@ -236,6 +238,7 @@ export const FIXTURES = {
   getThemeDetail: industryThemeDetailFixture,
   postAsk: (askTranscriptFixture as { exchanges: AskResponse[] }).exchanges[0],
   postChat: selectChatFixture({ message: "", history: [] }),
+  postChatStream: selectChatFixture({ message: "", history: [] }),
   getSources: sourcesFixture,
   patchSource: (sourcesFixture as ListResponse<Source>).items[0],
   getMateriality: materialityWeightsFixture,
@@ -379,6 +382,70 @@ export const api = {
         body: JSON.stringify(body),
       },
     );
+  },
+
+  async postChatStream(
+    body: ChatRequest,
+    handlers: ChatStreamHandlers,
+  ): Promise<void> {
+    if (getMode() === "fixture") {
+      const fx = selectChatFixture(body);
+      handlers.onPlan?.({
+        type: "plan",
+        expanded_query: fx.plan.expanded_query ?? body.message,
+        steps: fx.plan.steps?.length ?? 0,
+      });
+      for (const word of fx.answer.split(/(\s+)/)) {
+        if (word) handlers.onToken?.(word);
+      }
+      handlers.onDone?.({
+        type: "done",
+        grounded: fx.grounded,
+        answer: fx.answer,
+        sources: fx.sources,
+        reason: fx.reason,
+        nearby_evidence: fx.nearby_evidence,
+        conversation_id: fx.conversation_id,
+      });
+      return;
+    }
+
+    const response = await fetch(`${getBaseUrl()}${paths.chatStreamPath()}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(response.statusText || "chat stream failed");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    const dispatch = (event: ChatStreamEvent) => {
+      if (event.type === "plan") handlers.onPlan?.(event);
+      else if (event.type === "token") handlers.onToken?.(event.text);
+      else if (event.type === "done") handlers.onDone?.(event);
+    };
+
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let boundary = buffer.indexOf("\n\n");
+      while (boundary !== -1) {
+        const frame = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const dataLine = frame
+          .split("\n")
+          .find((line) => line.startsWith("data:"));
+        if (dataLine) {
+          const payload = dataLine.slice(5).trim();
+          if (payload) dispatch(JSON.parse(payload) as ChatStreamEvent);
+        }
+        boundary = buffer.indexOf("\n\n");
+      }
+    }
   },
 
   getSources(params?: {

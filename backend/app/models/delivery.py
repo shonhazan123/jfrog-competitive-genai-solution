@@ -38,6 +38,10 @@ class Chunk(Base, TimestampMixin):
     record_type: Mapped[str] = mapped_column(String(32))
     record_id: Mapped[int] = mapped_column(Integer)
     source_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Origin URL the underlying finding was gathered from (e.g. the web-search
+    # result). Carried on the chunk so retrieval returns it and citations can
+    # link to the live internet source rather than an internal record.
+    url: Mapped[str | None] = mapped_column(Text, nullable=True)
     text: Mapped[str] = mapped_column(Text)
     prefix: Mapped[str | None] = mapped_column(Text, nullable=True)
     section_path: Mapped[list] = mapped_column(JSON, default=list)

@@ -15,11 +15,18 @@ function renderPage(ui) {
   );
 }
 
+const REFUSAL_QUESTION =
+  "How many net-new enterprise customers did Sonatype win from JFrog last quarter?";
+
+async function ask(question: string) {
+  await userEvent.type(screen.getByRole("textbox"), `${question}{Enter}`);
+}
+
 test("an answer renders its citations beneath it", async () => {
   renderPage(<Ask />);
   await userEvent.click(
     screen.getByRole("button", {
-      name: /what has sonatype changed about how it describes jfrog's malware detection/i,
+      name: /how does sonatype's nexus repository compare to jfrog/i,
     }),
   );
   await waitFor(() => {
@@ -29,11 +36,7 @@ test("an answer renders its citations beneath it", async () => {
 
 test("a refusal is rendered as a distinct, prominent state", async () => {
   renderPage(<Ask />);
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: /how many net-new enterprise customers did sonatype win from jfrog last quarter/i,
-    }),
-  );
+  await ask(REFUSAL_QUESTION);
   await waitFor(() => {
     const refusal = screen.getByTestId("refusal");
     expect(refusal).toBeVisible();
@@ -43,11 +46,7 @@ test("a refusal is rendered as a distinct, prominent state", async () => {
 
 test("a refusal offers what the ledger does hold nearby", async () => {
   renderPage(<Ask />);
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: /how many net-new enterprise customers did sonatype win from jfrog last quarter/i,
-    }),
-  );
+  await ask(REFUSAL_QUESTION);
   await waitFor(() => {
     expect(
       within(screen.getByTestId("refusal")).getByText(/here's what i do have/i),

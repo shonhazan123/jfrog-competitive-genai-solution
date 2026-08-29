@@ -58,6 +58,23 @@
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   color: var(--ink);
+  white-space: pre-wrap;
+}
+
+.ask-assistant__caret {
+  display: inline-block;
+  margin-left: 1px;
+  animation: ask-caret-blink 1s step-end infinite;
+}
+
+@keyframes ask-caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .ask-assistant__citations {

@@ -99,6 +99,7 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
             signal_type="positioning_messaging",
             published_at=now,
             reliability_grade="C",
+            url=capture.blob_path,
         )
         written += 1
     return written
