@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -40,7 +40,8 @@ test("Run now fires the batch fan-out, not the legacy manual run", async () => {
   });
 
   renderApp();
-  await user.click(screen.getByRole("button", { name: /run now/i }));
+  const strip = within(screen.getByRole("banner", { name: "Run status" }));
+  await user.click(strip.getByRole("button", { name: /run now/i }));
   expect(startAll).toHaveBeenCalledTimes(1);
   expect(startRun).not.toHaveBeenCalled();
 });
@@ -57,6 +58,7 @@ test("Run now disables the button while a batch is active", async () => {
   });
 
   renderApp();
-  await user.click(screen.getByRole("button", { name: /run now/i }));
-  expect(await screen.findByRole("button", { name: /running/i })).toBeDisabled();
+  const strip = within(screen.getByRole("banner", { name: "Run status" }));
+  await user.click(strip.getByRole("button", { name: /run now/i }));
+  expect(await strip.findByRole("button", { name: /running/i })).toBeDisabled();
 });

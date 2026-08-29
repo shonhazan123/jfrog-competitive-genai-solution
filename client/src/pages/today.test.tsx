@@ -1,14 +1,18 @@
+import type { ReactElement } from "react";
 import { render, screen } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
+import { RunProvider } from "../state/runStore";
 import todayFixture from "../fixtures/today.json";
 import { Today } from "./Today";
 
-function renderPage(ui: JSX.Element) {
+function renderPage(ui: ReactElement) {
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>{ui}</MemoryRouter>
+      <RunProvider>
+        <MemoryRouter>{ui}</MemoryRouter>
+      </RunProvider>
     </QueryClientProvider>,
   );
 }
@@ -20,13 +24,11 @@ test("the headline verdict banner renders", () => {
   expect(banner).toHaveTextContent(todayFixture.headline);
 });
 
-test("at most five signal cards render in a responsive grid", () => {
+test("signal cards render inside a Competitors rail", () => {
   renderPage(<Today />);
-  const grid = screen.getByTestId("card-grid");
-  expect(getComputedStyle(grid).display).toBe("grid");
+  expect(screen.getByTestId("rail-competitors")).toBeInTheDocument();
   const cards = screen.getAllByTestId("signal-card");
   expect(cards.length).toBeGreaterThan(0);
-  expect(cards.length).toBeLessThanOrEqual(5);
 });
 
 test("nothing on Today shows a raw score or a machine label", () => {

@@ -236,5 +236,102 @@
       "primary_stakeholder": "product",
       "why_it_matters": "SLSA provenance in default CI raises the bar for supply-chain stories from shallow-coverage competitors."
     }
+  ],
+  "industry": [
+    {
+      "id": "ind_supply_npm_pypi",
+      "signal_type": "security_trust",
+      "headline": "Malicious packages surge across npm and PyPI registries",
+      "summary": "A fresh wave of typosquatted and dependency-confusion packages is landing in public registries at record volume.",
+      "why_it_matters": "Registry-level provenance and SBOM checks move up the buying agenda for platforms that own the artifact path.",
+      "occurred_at": "2026-08-28T00:00:00+00:00",
+      "evidence": [
+        {
+          "quote": "Researchers flagged hundreds of malicious packages published to npm and PyPI over the past week.",
+          "source_url": "https://thehackernews.com/2026/08/malicious-packages-surge.html",
+          "source_name": "The Hacker News",
+          "captured_at": "2026-08-28T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ]
+    },
+    {
+      "id": "ind_supply_buildsystem",
+      "signal_type": "security_trust",
+      "headline": "New build-system compromise technique disclosed",
+      "summary": "A disclosed technique poisons artifacts during the build step, before signing, evading downstream scanners.",
+      "why_it_matters": "Raises the bar for artifact signing and pipeline integrity across the toolchain.",
+      "occurred_at": "2026-08-27T00:00:00+00:00",
+      "evidence": [
+        {
+          "quote": "The attack injects tampered outputs during compilation, ahead of any provenance attestation.",
+          "source_url": "https://www.bleepingcomputer.com/news/security/build-system-compromise/",
+          "source_name": "BleepingComputer",
+          "captured_at": "2026-08-27T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ]
+    },
+    {
+      "id": "ind_ai_secure_dev",
+      "signal_type": "product_capability",
+      "headline": "Guidance lands on securing AI-assisted development",
+      "summary": "New guidance frames model and dependency provenance as part of the AppSec scope for AI-generated code.",
+      "why_it_matters": "Model and dependency provenance become part of AppSec scope for teams shipping AI-assisted code.",
+      "occurred_at": "2026-08-27T00:00:00+00:00",
+      "evidence": [
+        {
+          "quote": "The guidance recommends tracking provenance for both models and the packages AI tools pull in.",
+          "source_url": "https://www.csoonline.com/article/ai-assisted-development-security.html",
+          "source_name": "CSO Online",
+          "captured_at": "2026-08-27T00:00:00+00:00",
+          "reliability_grade": "B",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ]
+    },
+    {
+      "id": "ind_pipeline_consolidation",
+      "signal_type": "partnership_ecosystem",
+      "headline": "Buyers push to consolidate scanning into the pipeline",
+      "summary": "Enterprises are folding point scanners into platforms that already own the artifact and CI/CD path.",
+      "why_it_matters": "Favors platforms that own artifact plus CI/CD, not standalone point tools.",
+      "occurred_at": "2026-08-26T00:00:00+00:00",
+      "evidence": [
+        {
+          "quote": "Procurement teams increasingly prefer a single vendor across build, scan and distribute.",
+          "source_url": "https://devops.com/pipeline-consolidation-2026/",
+          "source_name": "DevOps.com",
+          "captured_at": "2026-08-26T00:00:00+00:00",
+          "reliability_grade": "C",
+          "credibility_score": 3,
+          "is_primary": true
+        }
+      ]
+    },
+    {
+      "id": "ind_reg_sbom_federal",
+      "signal_type": "market_regulatory",
+      "headline": "SBOM mandates tighten for federal software suppliers",
+      "summary": "Updated federal guidance turns SBOM generation from a recommendation into a procurement gate.",
+      "why_it_matters": "Turns SBOM generation from nice-to-have into a hard requirement for suppliers in scope.",
+      "occurred_at": "2026-08-25T00:00:00+00:00",
+      "evidence": [
+        {
+          "quote": "Agencies must obtain a software bill of materials before authorizing new deployments.",
+          "source_url": "https://www.cisa.gov/sbom-guidance",
+          "source_name": "CISA",
+          "captured_at": "2026-08-25T00:00:00+00:00",
+          "reliability_grade": "A",
+          "credibility_score": 1,
+          "is_primary": true
+        }
+      ]
+    }
   ]
 }

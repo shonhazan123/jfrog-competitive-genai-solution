@@ -1,16 +1,44 @@
-.today-run-bar {
-  position: fixed;
-  left: 50%;
-  bottom: var(--sp-4);
-  transform: translateX(-50%);
-  z-index: 50;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink);
-  border-radius: 999px;
-  padding: var(--sp-2) var(--sp-4);
-  box-shadow: var(--shadow-2);
-  cursor: pointer;
-  font-size: var(--fs-meta);
+/* Docked running bar on Today — matches the status card's language. */
+.today-run-bar{
+  --tb-signals:#3a72d8; --tb-green:#1f9d55; --tb-caution:#c98218;
+  --tb-card:#ffffff; --tb-ink:#131922; --tb-soft:#5a6675; --tb-line:#e6eaf0; --tb-track:#e9edf2;
+  --tb-shadow:0 14px 40px rgba(20,30,50,.18);
+
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:990;
+  display:flex; align-items:center; gap:12px;
+  width:min(460px, calc(100vw - 28px));
+  padding:11px 14px; border-radius:14px;
+  border:1px solid var(--tb-line); background:var(--tb-card); color:var(--tb-ink);
+  box-shadow:var(--tb-shadow); cursor:pointer; text-align:left;
+  font-family:inherit;
+  animation:tb-in .3s cubic-bezier(.2,.8,.2,1);
 }
-.today-run-bar__trouble { color: var(--caution); }
+@media (prefers-color-scheme: dark){
+  .today-run-bar{--tb-card:#161d26; --tb-ink:#e8edf4; --tb-soft:#9aa6b5; --tb-line:#242c37; --tb-track:#222a34;
+    --tb-signals:#5b91ff; --tb-green:#3ddc84; --tb-caution:#f2b04b; --tb-shadow:0 18px 50px rgba(0,0,0,.6)}
+}
+:root[data-theme="dark"] .today-run-bar, :root.dark .today-run-bar, .dark .today-run-bar{
+  --tb-card:#161d26; --tb-ink:#e8edf4; --tb-soft:#9aa6b5; --tb-line:#242c37; --tb-track:#222a34;
+  --tb-signals:#5b91ff; --tb-green:#3ddc84; --tb-caution:#f2b04b; --tb-shadow:0 18px 50px rgba(0,0,0,.6);
+}
+@keyframes tb-in{from{transform:translateX(-50%) translateY(120%); opacity:0} to{transform:translateX(-50%) translateY(0); opacity:1}}
+@media (prefers-reduced-motion: reduce){ .today-run-bar{animation:none} }
+
+.today-run-bar__dot{width:30px; height:30px; flex:none; border-radius:9px; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--tb-signals) 15%, transparent); color:var(--tb-signals)}
+.today-run-bar[data-done] .today-run-bar__dot{background:color-mix(in srgb, var(--tb-green) 16%, transparent); color:var(--tb-green)}
+.today-run-bar__dot svg{width:16px; height:16px}
+.today-run-bar__spin{width:16px; height:16px; border-radius:50%; border:2px solid transparent; border-top-color:var(--tb-signals); animation:tb-rot .9s linear infinite}
+@keyframes tb-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){ .today-run-bar__spin{animation:none} }
+
+.today-run-bar__body{flex:1; min-width:0}
+.today-run-bar__label{display:block; font-size:13.5px; font-weight:600; color:var(--tb-ink); font-variant-numeric:tabular-nums}
+.today-run-bar[data-done] .today-run-bar__label{color:var(--tb-green)}
+.today-run-bar__trouble{color:var(--tb-caution); font-weight:600}
+.today-run-bar__mini{display:block; height:4px; margin-top:7px; border-radius:4px; background:var(--tb-track); overflow:hidden}
+.today-run-bar__mini-fill{display:block; height:100%; border-radius:4px; background:var(--tb-signals); transition:width .4s ease}
+.today-run-bar[data-done] .today-run-bar__mini-fill{background:var(--tb-green)}
+
+.today-run-bar__open{flex:none; font-size:12px; font-weight:600; color:var(--tb-signals); white-space:nowrap}
+.today-run-bar[data-done] .today-run-bar__open{color:var(--tb-green)}

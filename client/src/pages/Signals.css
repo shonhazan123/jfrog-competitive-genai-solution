@@ -5,6 +5,19 @@
   max-width: var(--content-max);
 }
 
+/* Centered page header — bold, readable title stating what the page delivers */
+.signals-page > header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.signals-page > header .page-heading {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  font-weight: 700;
+}
+
 .signals-page__intro {
   margin-top: var(--sp-2);
   font-size: var(--fs-body);

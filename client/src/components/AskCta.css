@@ -1,0 +1,100 @@
+.ask-cta {
+  margin: 44px auto 0;
+  max-width: 620px;
+  padding: 30px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.ask-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% -30%,
+    var(--brand-jfrog-wash),
+    transparent 70%
+  );
+}
+
+.ask-cta > * {
+  position: relative;
+}
+
+.ask-cta__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--brand-jfrog-wash);
+  color: var(--brand-jfrog);
+  display: grid;
+  place-items: center;
+}
+
+.ask-cta__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 25px;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.ask-cta__lede {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  max-width: 50ch;
+}
+
+.ask-cta__bar {
+  display: flex;
+  width: 100%;
+  max-width: 460px;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ask-cta__input {
+  flex: 1;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  text-align: left;
+}
+
+.ask-cta__input::placeholder {
+  color: var(--ink-muted);
+}
+
+.ask-cta__btn {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--r-md);
+  padding: 0 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ask-cta__btn:hover {
+  background: var(--accent-hover);
+}
