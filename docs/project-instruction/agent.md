@@ -28,6 +28,12 @@ Generic per-target loop shared by Industry, Signals, and Comparison agents:
   source (`internal://{agent}_research`); the web-search hit URL is stored on
   `capture.blob_path` with `provenance="web_search"`. Consumer serializers resolve citation
   links from `blob_path`, not the synthetic source URL.
+- **NUL / control-byte sanitization:** PostgreSQL text/varchar columns reject NUL
+  (`0x00`). Web-search text (and the LLM syntheses derived from it) can carry NUL or
+  other C0 control bytes, so `provenance.sanitize_text` strips them (keeping tab /
+  newline / carriage-return). It is applied at every write boundary: `web_search`
+  hits (`_clean`), `record_finding` / `index_finding`, and each `persist_*` before it
+  builds `Signal` / `Claim` / `Evidence` rows.
 
 ## Industry agent
 

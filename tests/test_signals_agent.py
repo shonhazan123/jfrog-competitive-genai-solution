@@ -63,3 +63,39 @@ def test_persist_signals_writes_cards_and_indexes(session, monkeypatch):
     sonatype = session.query(Entity).filter_by(slug="sonatype").one()
     assert n == 1
     assert session.query(Signal).filter_by(entity_id=sonatype.id, signal_type="talent_org").count() == 1
+
+
+def test_persist_signals_strips_nul_bytes_from_web_search_text(session, monkeypatch):
+    """Regression: web-search text with a NUL (0x00) byte must not blow up the
+    capture or Signal inserts (PostgreSQL rejects NUL in text/varchar columns)."""
+    from app.models.registry import Entity
+    from app.models.signal import Signal
+    from app.services.research import provenance, signals_agent
+    from app.services.seeding import seed
+
+    seed(session)
+
+    class FakeEmbedder:
+        def embed(self, texts):
+            return [[0.0] * 1536 for _ in texts]
+
+    monkeypatch.setattr(provenance, "get_embedder", lambda: FakeEmbedder())
+    drafts = [
+        {
+            "competitor": "sonatype",
+            "signal_type": "talent_org",
+            "headline": "Aqua\x00Trivy advisory",
+            "so_what": "path-traversal\x00 disclosed\x07",
+            "why_it_matters": "real-world\x00 impact",
+            "tags": ["SALES"],
+            "source_url": "https://x/a",
+        },
+    ]
+    n = signals_agent.persist_signals(session, drafts)
+    session.flush()
+    sonatype = session.query(Entity).filter_by(slug="sonatype").one()
+    signal = session.query(Signal).filter_by(entity_id=sonatype.id).one()
+    assert n == 1
+    assert "\x00" not in signal.headline
+    assert "\x00" not in signal.so_what_sales
+    assert "\x00" not in signal.why_it_matters

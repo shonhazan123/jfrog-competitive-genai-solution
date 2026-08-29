@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from agent.log import get_logger, step
 
 logger = get_logger("agent.web_search")
+
+# Strip NUL and other C0 control bytes (keeping tab/newline/carriage-return) so
+# downstream persistence never hands PostgreSQL a value it rejects.
+_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+
+
+def _clean(value: str) -> str:
+    return _CONTROL_CHARS.sub("", value) if isinstance(value, str) else value
 
 
 @dataclass(frozen=True)
@@ -129,9 +138,9 @@ class WebSearch:
         raw = self._client.run(query, k)
         hits = [
             SearchHit(
-                title=r.get("title", ""),
-                url=r.get("url", ""),
-                snippet=r.get("snippet", ""),
+                title=_clean(r.get("title", "")),
+                url=_clean(r.get("url", "")),
+                snippet=_clean(r.get("snippet", "")),
                 published_at=r.get("published_at"),
             )
             for r in raw

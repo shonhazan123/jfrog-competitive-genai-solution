@@ -9,7 +9,7 @@ from app.models.ledger import Claim, Evidence
 from app.models.registry import Entity
 from app.services.comparison_matrix import load_dimensions
 from app.services.research.competitors import load_competitors
-from app.services.research.provenance import index_finding, record_finding
+from app.services.research.provenance import index_finding, record_finding, sanitize_text
 
 
 def build_cells() -> list[dict]:
@@ -49,19 +49,20 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
     for draft in drafts:
         if draft.get("stance") == "none":
             continue
+        summary = sanitize_text(draft["summary"])
         competitor = session.query(Entity).filter_by(slug=draft["competitor"]).one()
         capture = record_finding(
             session,
             "comparison",
             draft["source_url"],
-            draft["summary"],
+            summary,
         )
         claim = _find_claim(session, competitor.id, jfrog.id, draft["dimension"])
         if claim is None:
             claim = Claim(
                 subject_entity_id=jfrog.id,
                 asserting_entity_id=competitor.id,
-                claim_text=draft["summary"],
+                claim_text=summary,
                 claim_type="positioning",
                 capability_tags=[draft["dimension"]],
                 dimension=draft["dimension"],
@@ -72,7 +73,7 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
             )
             session.add(claim)
         else:
-            claim.claim_text = draft["summary"]
+            claim.claim_text = summary
             claim.stance = draft["stance"]
             claim.last_confirmed_at = now
         session.flush()
@@ -85,7 +86,7 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
                 Evidence(
                     claim_id=claim.id,
                     capture_id=capture.id,
-                    quote=draft["summary"],
+                    quote=summary,
                     quote_offset=0,
                 )
             )
@@ -94,7 +95,7 @@ def persist_comparison(session: Session, drafts: list[dict]) -> int:
             session,
             record_type="claim",
             record_id=claim.id,
-            text=draft["summary"],
+            text=summary,
             entity_id=competitor.id,
             signal_type="positioning_messaging",
             published_at=now,

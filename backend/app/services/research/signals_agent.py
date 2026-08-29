@@ -14,7 +14,7 @@ from app.services.collection.apis.lever import LeverAdapter
 from app.services.collection.apis.osv import OsvAdapter
 from app.services.collection.fetcher import StaticFetcher
 from app.services.research.competitors import load_competitors
-from app.services.research.provenance import index_finding, record_finding
+from app.services.research.provenance import index_finding, record_finding, sanitize_text
 from app.services.scoring.materiality import score
 from agent.graphs.research.query import broaden_query, dedupe_names
 
@@ -142,12 +142,15 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
     for draft in drafts:
         if draft.get("absent"):
             continue
+        headline = sanitize_text(draft["headline"])
+        so_what = sanitize_text(draft["so_what"])
+        why_it_matters = sanitize_text(draft["why_it_matters"])
         entity = session.query(Entity).filter_by(slug=draft["competitor"]).one()
         capture = record_finding(
             session,
             "signals",
             draft["source_url"],
-            f'{draft["headline"]}\n{draft["so_what"]}',
+            f"{headline}\n{so_what}",
         )
         facets = {
             "signal_type": draft["signal_type"],
@@ -158,20 +161,20 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
             "corroboration_count": 1,
             "capability_tags": draft.get("tags") or [],
             "occurred_at": now,
-            "text": draft["headline"],
+            "text": headline,
         }
-        cluster_src = f"{draft['competitor']}:{draft['signal_type']}:{draft['headline']}"
+        cluster_src = f"{draft['competitor']}:{draft['signal_type']}:{headline}"
         signal = Signal(
             source_id=capture.source_id,
             entity_id=entity.id,
             signal_type=draft["signal_type"],
-            headline=draft["headline"][:256],
+            headline=headline[:256],
             occurred_at=now,
             cluster_key=hashlib.sha256(cluster_src.encode()).hexdigest()[:128],
-            so_what_sales=draft["so_what"],
-            so_what_product=draft["so_what"],
-            so_what_exec=draft["so_what"],
-            why_it_matters=draft["why_it_matters"],
+            so_what_sales=so_what,
+            so_what_product=so_what,
+            so_what_exec=so_what,
+            why_it_matters=why_it_matters,
             capability_tags=draft.get("tags") or [],
             score_sales=score(facets, "sales", cfg).total,
             score_product=score(facets, "product", cfg).total,
@@ -183,7 +186,7 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
             SignalEvidence(
                 signal_id=signal.id,
                 capture_id=capture.id,
-                quote=draft["headline"],
+                quote=headline,
                 quote_offset=0,
                 match_method="synthesis",
             )
@@ -192,7 +195,7 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
             session,
             record_type="signal",
             record_id=signal.id,
-            text=draft["so_what"],
+            text=so_what,
             entity_id=entity.id,
             signal_type=draft["signal_type"],
             published_at=now,

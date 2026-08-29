@@ -10,6 +10,31 @@ def test_web_search_maps_client_results_to_hits():
     assert hits == [SearchHit(title="T", url="https://x.com/a", snippet="S", published_at=None)]
 
 
+def test_web_search_strips_nul_and_control_bytes_from_hits():
+    from agent.tools.web_search import WebSearch, SearchHit
+
+    class FakeClient:
+        def run(self, query, k):
+            return [
+                {
+                    "title": "Aqua\x00Trivy advisory",
+                    "url": "https://x.com/a",
+                    "snippet": "path-traversal\x00 disclosed\x07",
+                    "published_at": None,
+                }
+            ]
+
+    hits = WebSearch(client=FakeClient()).search("trivy cve", k=3)
+    assert hits == [
+        SearchHit(
+            title="AquaTrivy advisory",
+            url="https://x.com/a",
+            snippet="path-traversal disclosed",
+            published_at=None,
+        )
+    ]
+
+
 def test_web_search_drops_results_without_a_url():
     from agent.tools.web_search import WebSearch
 

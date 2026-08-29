@@ -1,6 +1,36 @@
 from datetime import UTC, datetime
 
 
+def test_sanitize_text_strips_nul_and_control_chars_but_keeps_whitespace():
+    from app.services.research.provenance import sanitize_text
+
+    assert sanitize_text("Aqua\x00Trivy") == "AquaTrivy"
+    assert sanitize_text("a\x07b\x1fc") == "abc"
+    # tab / newline / carriage-return survive
+    assert sanitize_text("line1\nline2\tend\r") == "line1\nline2\tend\r"
+    # non-strings pass through untouched
+    assert sanitize_text(None) is None
+
+
+def test_record_finding_strips_nul_so_postgres_accepts_it(session):
+    from app.models.capture import RawCapture
+    from app.services.seeding import seed
+    from app.services.research.provenance import record_finding
+
+    seed(session)
+    cap = record_finding(
+        session,
+        "signals",
+        "https://x.com/a\x00b",
+        "Aqua\x00Trivy path-traversal\x07 advisory",
+    )
+    session.flush()
+    stored = session.query(RawCapture).filter_by(id=cap.id).one()
+    assert "\x00" not in stored.extracted_text
+    assert "\x00" not in stored.blob_path
+    assert stored.extracted_text == "AquaTrivy path-traversal advisory"
+
+
 def test_record_finding_creates_capture_under_synthetic_source(session):
     from app.models.capture import RawCapture
     from app.models.registry import Source

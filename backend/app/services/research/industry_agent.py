@@ -11,7 +11,7 @@ from app.config.loader import load_config
 from app.db.session import SessionLocal
 from app.models.registry import Entity
 from app.models.signal import Signal, SignalEvidence
-from app.services.research.provenance import index_finding, record_finding
+from app.services.research.provenance import index_finding, record_finding, sanitize_text
 from app.services.scoring.materiality import score
 from app.settings import settings
 
@@ -30,11 +30,14 @@ def persist_industry(session: Session, drafts: list[dict]) -> int:
     written = 0
     for draft in drafts:
         for item in draft["items"]:
+            headline = sanitize_text(item["headline"])
+            body = sanitize_text(item["body"])
+            why_it_matters = sanitize_text(item["why_it_matters"])
             capture = record_finding(
                 session,
                 "industry",
                 item["source_url"],
-                f'{item["headline"]}\n{item["body"]}',
+                f"{headline}\n{body}",
             )
             facets = {
                 "signal_type": draft["signal_type"],
@@ -45,20 +48,20 @@ def persist_industry(session: Session, drafts: list[dict]) -> int:
                 "corroboration_count": 1,
                 "capability_tags": [],
                 "occurred_at": now,
-                "text": item["body"],
+                "text": body,
             }
             signal = Signal(
                 source_id=capture.source_id,
                 entity_id=industry.id,
                 signal_type=draft["signal_type"],
                 theme_key=draft["bucket"],
-                headline=item["headline"][:256],
+                headline=headline[:256],
                 occurred_at=now,
                 cluster_key=hashlib.sha256(
-                    (draft["bucket"] + item["headline"]).encode()
+                    (draft["bucket"] + headline).encode()
                 ).hexdigest()[:128],
-                so_what_product=item["body"],
-                why_it_matters=item["why_it_matters"],
+                so_what_product=body,
+                why_it_matters=why_it_matters,
                 score_sales=score(facets, "sales", cfg).total,
                 score_product=score(facets, "product", cfg).total,
                 score_exec=score(facets, "exec", cfg).total,
@@ -69,7 +72,7 @@ def persist_industry(session: Session, drafts: list[dict]) -> int:
                 SignalEvidence(
                     signal_id=signal.id,
                     capture_id=capture.id,
-                    quote=item["headline"],
+                    quote=headline,
                     quote_offset=0,
                     match_method="synthesis",
                 )
@@ -78,7 +81,7 @@ def persist_industry(session: Session, drafts: list[dict]) -> int:
                 session,
                 record_type="signal",
                 record_id=signal.id,
-                text=item["body"],
+                text=body,
                 entity_id=industry.id,
                 signal_type=draft["signal_type"],
                 published_at=now,
