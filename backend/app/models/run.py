@@ -23,6 +23,10 @@ class Run:
     status: RunStatus = "running"
     message: str = ""
     new_items: int = 0
+    step_label: str = ""
+    step_detail: str | None = None
+    surface: str | None = None
+    batch_id: str | None = None
     started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     finished_at: datetime | None = None
 
@@ -88,5 +92,8 @@ def progress_body(run: Run) -> dict:
         "stage_label": stage_label(run.stage_key),
         "progress": {"current": run.current, "total": run.total},
         "new_items": run.new_items,
+        "surface": run.surface,
+        "step_label": run.step_label,
+        "step_detail": run.step_detail,
         "message": run.message,
     }

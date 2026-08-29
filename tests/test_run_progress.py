@@ -128,6 +128,18 @@ def test_manual_run_invokes_collection_and_scoring(monkeypatch):
     assert get_run(run.id).status == "done"
 
 
+def test_progress_body_exposes_human_step_and_detail():
+    from app.models.run import create_run, update_run, progress_body, get_run
+    run = create_run()
+    update_run(run.id, surface="comparison", step_label="Researching each rival's strengths",
+               step_detail="12 of 30", current=12, total=30)
+    body = progress_body(get_run(run.id))
+    assert body["surface"] == "comparison"
+    assert body["step_label"] == "Researching each rival's strengths"
+    assert body["step_detail"] == "12 of 30"
+    assert body["progress"] == {"current": 12, "total": 30}
+
+
 def test_surface_run_advances_to_done_stage(monkeypatch):
     from app.controllers import runs as runs_controller
     from app.models.run import create_run, get_run
