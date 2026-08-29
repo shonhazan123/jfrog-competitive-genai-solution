@@ -7,6 +7,9 @@ import runStatusFixture from "../fixtures/run_status.json";
 import { StatusStrip } from "../components/StatusStrip";
 import { Sidebar } from "../components/nav/Sidebar";
 import { BottomBar } from "../components/nav/BottomBar";
+import { RunProvider } from "../state/runStore";
+import { RunStatusCard } from "../components/RunStatusCard";
+import { TodayRunBar } from "../components/TodayRunBar";
 
 const MOBILE_BREAKPOINT = 900;
 
@@ -33,17 +36,21 @@ export function AppShell() {
   });
 
   return (
-    <div className="app-shell">
-      <header className="status-strip" aria-label="Run status">
-        <StatusStrip data={runStatus} />
-      </header>
-      <div className="app-shell__body">
-        {!isMobile ? <Sidebar runStatus={runStatus} /> : null}
-        <main className="app-shell__main">
-          <Outlet />
-        </main>
+    <RunProvider>
+      <div className="app-shell">
+        <header className="status-strip" aria-label="Run status">
+          <StatusStrip data={runStatus} />
+        </header>
+        <div className="app-shell__body">
+          {!isMobile ? <Sidebar runStatus={runStatus} /> : null}
+          <main className="app-shell__main">
+            <Outlet />
+          </main>
+        </div>
+        {isMobile ? <BottomBar /> : null}
+        <RunStatusCard />
+        <TodayRunBar />
       </div>
-      {isMobile ? <BottomBar /> : null}
-    </div>
+    </RunProvider>
   );
 }

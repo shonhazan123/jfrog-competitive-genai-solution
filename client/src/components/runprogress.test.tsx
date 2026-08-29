@@ -2,92 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, beforeEach, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { AppRoutes } from "../app/routes";
 import { api } from "../api/client";
 import { queryClient } from "../api/queryClient";
-import type { RunProgress } from "../api/types";
 
-vi.mock("../config/runPolling", () => ({
-  RUN_POLL_INTERVAL_MS: 10,
-}));
-
-interface RenderAppOptions {
-  runStages?: string[];
-  finishAfterMs?: number;
-  failWith?: string;
-}
-
-function buildRunningProgress(
-  runId: string,
-  stageLabel: string,
-  current: number,
-  total: number,
-): RunProgress {
-  return {
-    run_id: runId,
-    status: "running",
-    stage_label: stageLabel,
-    progress: { current, total },
-    new_items: 0,
-    message: "",
-  };
-}
-
-function renderApp(options: RenderAppOptions = {}) {
+function renderApp() {
   queryClient.clear();
-
-  const runId = "test-run";
-  let pollCount = 0;
-  const stages = options.runStages ?? [
-    "Checking sources",
-    "Reading new documents",
-    "Done",
-  ];
-  const total = stages.length;
-
-  vi.spyOn(api, "startRun").mockResolvedValue({ run_id: runId });
-  // Keep the post-invalidation ["today"] refetch pending so the invalidated
-  // flag stays observable (fixture-mode getToday would otherwise resolve
-  // synchronously and immediately clear it).
-  vi.spyOn(api, "getToday").mockReturnValue(new Promise<never>(() => {}));
-  vi.spyOn(api, "getRun").mockImplementation(async () => {
-    pollCount += 1;
-
-    if (options.failWith) {
-      return {
-        run_id: runId,
-        status: "failed",
-        stage_label: "Failed",
-        progress: { current: 0, total },
-        new_items: 0,
-        message: options.failWith,
-      };
-    }
-
-    if (options.finishAfterMs !== undefined) {
-      if (pollCount === 1) {
-        return buildRunningProgress(runId, "Checking sources", 1, total);
-      }
-      return {
-        run_id: runId,
-        status: "done",
-        stage_label: "Done",
-        progress: { current: total, total },
-        new_items: 11,
-        message: "",
-      };
-    }
-
-    const stageIndex = Math.min(pollCount - 1, stages.length - 1);
-    return buildRunningProgress(
-      runId,
-      stages[stageIndex],
-      stageIndex + 1,
-      total,
-    );
-  });
-
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={["/"]}>
@@ -106,41 +27,36 @@ afterEach(() => {
   queryClient.clear();
 });
 
-test("Run now starts a run and does not block navigation", async () => {
+test("Run now fires the batch fan-out, not the legacy manual run", async () => {
   const user = userEvent.setup();
-  renderApp({ runStages: ["Checking sources", "Reading new documents"] });
+  const startAll = vi.spyOn(api, "startAllRuns").mockResolvedValue({
+    batch_id: "b1",
+    run_ids: { industry: "i", signals: "s", comparison: "c" },
+  });
+  const startRun = vi.spyOn(api, "startRun");
+  vi.spyOn(api, "getActiveBatch").mockResolvedValue({ batch_id: null, runs: [] });
+  vi.spyOn(api, "getRunProgress").mockResolvedValue({
+    run_id: "i", status: "running", surface: "industry", step_label: "Searching the web for the latest", step_detail: null, stage_label: "Researching", progress: { current: 0, total: 3 }, new_items: 0, message: "",
+  });
 
+  renderApp();
   await user.click(screen.getByRole("button", { name: /run now/i }));
-  expect(screen.getByTestId("run-progress")).toBeVisible();
-
-  await user.click(screen.getByRole("link", { name: /comparison/i }));
-  expect(screen.getByTestId("run-progress")).toBeVisible();
+  expect(startAll).toHaveBeenCalledTimes(1);
+  expect(startRun).not.toHaveBeenCalled();
 });
 
-test("stages advance with human labels and a counter", async () => {
+test("Run now disables the button while a batch is active", async () => {
   const user = userEvent.setup();
-  renderApp({ runStages: ["Checking sources", "Reading new documents"] });
+  vi.spyOn(api, "startAllRuns").mockResolvedValue({
+    batch_id: "b1",
+    run_ids: { industry: "i", signals: "s", comparison: "c" },
+  });
+  vi.spyOn(api, "getActiveBatch").mockResolvedValue({ batch_id: null, runs: [] });
+  vi.spyOn(api, "getRunProgress").mockResolvedValue({
+    run_id: "i", status: "running", surface: "industry", step_label: "…", step_detail: null, stage_label: "Researching", progress: { current: 0, total: 3 }, new_items: 0, message: "",
+  });
 
+  renderApp();
   await user.click(screen.getByRole("button", { name: /run now/i }));
-  expect(await screen.findByText(/checking sources/i)).toBeVisible();
-  expect(await screen.findByText(/reading new documents/i)).toBeVisible();
-});
-
-test("completion refreshes the current screen in place", async () => {
-  const user = userEvent.setup();
-  renderApp({ finishAfterMs: 10 });
-
-  await user.click(screen.getByRole("button", { name: /run now/i }));
-  expect(await screen.findByText(/new items/i)).toBeVisible();
-  expect(queryClient.getQueryState(["today"])?.isInvalidated).toBe(true);
-});
-
-test("a failure states what happened in plain language", async () => {
-  const user = userEvent.setup();
-  renderApp({ failWith: "Could not reach 2 of 23 sources" });
-
-  await user.click(screen.getByRole("button", { name: /run now/i }));
-  expect(
-    await screen.findByText(/could not reach 2 of 23 sources/i),
-  ).toBeVisible();
+  expect(await screen.findByRole("button", { name: /running/i })).toBeDisabled();
 });
