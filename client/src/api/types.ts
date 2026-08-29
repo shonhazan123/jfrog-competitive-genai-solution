@@ -561,3 +561,25 @@ export interface RunProgress {
   new_items: number;
   message: string;
 }
+
+export interface SurfaceProgress {
+  run_id: string;
+  status: "running" | "done" | "failed";
+  surface: string | null;
+  step_label: string;
+  step_detail: string | null;
+  stage_label: string;
+  progress: { current: number; total: number };
+  new_items: number;
+  message: string;
+}
+
+export interface ActiveBatch {
+  batch_id: string | null;
+  runs: SurfaceProgress[];
+}
+
+export interface StartAllResponse {
+  batch_id: string;
+  run_ids: { industry: string; signals: string; comparison: string };
+}

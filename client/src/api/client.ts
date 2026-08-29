@@ -57,8 +57,11 @@ import type {
   Persona,
   PutMaterialityRequest,
   PutWatchlistRequest,
+  ActiveBatch,
   RunProgress,
   RunStatus,
+  StartAllResponse,
+  SurfaceProgress,
   Signal,
   SignalDetail,
   SinceLastVisit,
@@ -154,6 +157,23 @@ const FIXTURE_RUN_ID = "fixture-run";
 const FIXTURE_RUN_PROGRESS: RunProgress = {
   run_id: FIXTURE_RUN_ID,
   status: "done",
+  stage_label: "Done",
+  progress: { current: 5, total: 5 },
+  new_items: 0,
+  message: "",
+};
+
+const FIXTURE_START_ALL: StartAllResponse = {
+  batch_id: "fixture-batch",
+  run_ids: { industry: "industry-run", signals: "signals-run", comparison: "comparison-run" },
+};
+
+const FIXTURE_SURFACE_PROGRESS: SurfaceProgress = {
+  run_id: FIXTURE_RUN_ID,
+  status: "done",
+  surface: null,
+  step_label: "Done",
+  step_detail: null,
   stage_label: "Done",
   progress: { current: 5, total: 5 },
   new_items: 0,
@@ -612,6 +632,24 @@ export const api = {
       { ...FIXTURE_RUN_PROGRESS, run_id: runId },
       paths.runPath(runId),
     );
+  },
+
+  startAllRuns(): Promise<StartAllResponse> {
+    return fixtureOrLive(FIXTURE_START_ALL, paths.runsAllPath(), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+    });
+  },
+
+  getRunProgress(runId: string): Promise<SurfaceProgress> {
+    return fixtureOrLive(
+      { ...FIXTURE_SURFACE_PROGRESS, run_id: runId },
+      paths.runPath(runId),
+    );
+  },
+
+  getActiveBatch(): Promise<ActiveBatch> {
+    return fixtureOrLive({ batch_id: null, runs: [] }, paths.runsActivePath());
   },
 
   runSurface,

@@ -26,6 +26,14 @@ export function runsPath(): string {
   return "/runs";
 }
 
+export function runsAllPath(): string {
+  return "/runs/all";
+}
+
+export function runsActivePath(): string {
+  return "/runs/active";
+}
+
 export function runPath(runId: string): string {
   return `/runs/${encodeURIComponent(runId)}`;
 }
