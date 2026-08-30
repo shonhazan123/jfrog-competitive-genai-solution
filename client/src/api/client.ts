@@ -91,6 +91,13 @@ function getMode(): ApiMode {
   return "fixture";
 }
 
+// Exposed so pages can seed React Query with fixture `initialData` only in
+// fixture mode. In live mode we start with no seed so an empty database renders
+// the instructive first-run onboarding instead of flashing demo content.
+export function isFixtureMode(): boolean {
+  return getMode() === "fixture";
+}
+
 function getBaseUrl(): string {
   return import.meta.env.VITE_API_BASE ?? DEFAULT_BASE;
 }

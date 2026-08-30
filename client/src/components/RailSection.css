@@ -24,7 +24,8 @@
 }
 
 .rail-section__title-wrap {
-  transition: opacity 0.28s ease;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  will-change: opacity, transform;
   margin-top: 12px;
   min-height: 92px;
 }

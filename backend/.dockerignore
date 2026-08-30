@@ -1,0 +1,17 @@
+# Python caches / local virtualenvs — never ship these into the image.
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+.pytest_cache
+.ruff_cache
+*.egg-info
+
+# Local blob storage (runtime data lives in a Docker volume)
+data/blobs
+
+# Editor / VCS noise
+.git
+.gitignore
+.DS_Store

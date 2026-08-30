@@ -6,7 +6,8 @@ interface RailCardProps {
   card: RailCardData;
   /** css var string for the group accent, e.g. "var(--sig-talent)" */
   accent: string;
-  roomPath: string;
+  /** where the card links to (e.g. the Signals room). */
+  cardPath: string;
   /** index of this card's group, used by the scroll-sync logic */
   groupIndex: number;
   /** marks the first card of a group so the rail can find group offsets */
@@ -23,7 +24,7 @@ function washFor(accent: string): string {
 export function RailCard({
   card,
   accent,
-  roomPath,
+  cardPath,
   groupIndex,
   isFirst,
 }: RailCardProps) {
@@ -34,7 +35,7 @@ export function RailCard({
 
   return (
     <Link
-      to={roomPath}
+      to={cardPath}
       className="rail-card"
       style={style}
       data-testid="signal-card"

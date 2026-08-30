@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { queryClient } from "../api/queryClient";
@@ -29,6 +29,22 @@ test("signal cards render inside a Competitors rail", () => {
   expect(screen.getByTestId("rail-competitors")).toBeInTheDocument();
   const cards = screen.getAllByTestId("signal-card");
   expect(cards.length).toBeGreaterThan(0);
+});
+
+test("competitor cards open the Signals page, not Competitors", () => {
+  renderPage(<Today />);
+  const rail = screen.getByTestId("rail-competitors");
+  const cards = within(rail).getAllByTestId("signal-card");
+  expect(cards.length).toBeGreaterThan(0);
+  expect(cards[0]).toHaveAttribute("href", "/signals");
+});
+
+test("the industry rail groups by theme, not competitor signal types", () => {
+  renderPage(<Today />);
+  const rail = screen.getByTestId("rail-industry");
+  const tabs = within(rail).getAllByRole("tab");
+  const labels = tabs.map((t) => t.textContent ?? "");
+  expect(labels.some((l) => l.includes("Supply chain"))).toBe(true);
 });
 
 test("nothing on Today shows a raw score or a machine label", () => {

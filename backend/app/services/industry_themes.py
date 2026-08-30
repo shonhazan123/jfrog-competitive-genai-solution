@@ -90,6 +90,15 @@ def _bucket_by_key(buckets: list[dict], key: str) -> dict | None:
     return next((b for b in buckets if b["key"] == key), None)
 
 
+def theme_label_map() -> dict[str, str]:
+    """Human label for every industry theme key, including the 'other' catch-all.
+    Consumers (e.g. the Today industry rail) use this to group by theme the same
+    way the Industry page does, rather than by raw signal type."""
+    labels = {bucket["key"]: bucket["label"] for bucket in _load_buckets()}
+    labels[_OTHER_THEME["key"]] = _OTHER_THEME["label"]
+    return labels
+
+
 def list_themes(session: Session) -> list[dict]:
     buckets = _load_buckets()
     signals = fetch_active_industry_signals(session)

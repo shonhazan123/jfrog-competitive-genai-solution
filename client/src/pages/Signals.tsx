@@ -1,7 +1,9 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api/client";
+import { api, isFixtureMode } from "../api/client";
 import type { ListResponse, Signal, SignalType } from "../api/types";
+import { EmptyState } from "../components/EmptyState";
+import { RunNowButton } from "../components/RunNowButton";
 import { SignalAccordionRow } from "../components/SignalAccordionRow";
 import { FilterChips } from "../components/primitives/FilterChips";
 import { SIGNAL_TYPE_ORDER, signalHue, signalTypeLabel } from "../config/labels";
@@ -36,11 +38,18 @@ function groupByType(
 
 export function Signals() {
   const queryClient = useQueryClient();
-  const { data } = useQuery({
+  const fixtureMode = isFixtureMode();
+  const { data, isLoading } = useQuery({
     queryKey: ["signals", "all"],
     queryFn: () => api.getSignals({}),
-    initialData: signalsTodayFixture as ListResponse<LabeledSignal>,
+    initialData: fixtureMode
+      ? (signalsTodayFixture as ListResponse<LabeledSignal>)
+      : undefined,
   });
+  const items = useMemo<LabeledSignal[]>(
+    () => (data?.items ?? []) as LabeledSignal[],
+    [data],
+  );
 
   const [selectedFilter, setSelectedFilter] = useState<FilterValue>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -65,14 +74,14 @@ export function Signals() {
     }
   };
 
-  const typeCounts = useMemo(() => countByType(data.items), [data.items]);
+  const typeCounts = useMemo(() => countByType(items), [items]);
   const presentTypes = SIGNAL_TYPE_ORDER.filter(
     (type) => (typeCounts[type] ?? 0) > 0,
   );
 
   const filterChips = useMemo(() => {
     const entries: { value: FilterValue; label: string }[] = [
-      { value: "all", label: `All (${data.items.length})` },
+      { value: "all", label: `All (${items.length})` },
     ];
     for (const type of presentTypes) {
       entries.push({
@@ -81,7 +90,7 @@ export function Signals() {
       });
     }
     return entries;
-  }, [data.items.length, presentTypes, typeCounts]);
+  }, [items.length, presentTypes, typeCounts]);
 
   const selectedChipLabel =
     filterChips.find((entry) => entry.value === selectedFilter)?.label ??
@@ -89,10 +98,10 @@ export function Signals() {
 
   const filteredItems = useMemo(() => {
     if (selectedFilter === "all") {
-      return data.items;
+      return items;
     }
-    return data.items.filter((signal) => signal.signal_type === selectedFilter);
-  }, [data.items, selectedFilter]);
+    return items.filter((signal) => signal.signal_type === selectedFilter);
+  }, [items, selectedFilter]);
 
   const visibleTypes =
     selectedFilter === "all" ? presentTypes : [selectedFilter as SignalType];
@@ -149,6 +158,31 @@ export function Signals() {
         ) : null}
       </header>
 
+      {items.length === 0 ? (
+        isLoading ? (
+          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
+            Loading…
+          </p>
+        ) : (
+          <EmptyState
+            eyebrow="First run"
+            title="No signals gathered yet"
+            action={<RunNowButton />}
+            testId="signals-empty"
+          >
+            <p>
+              Signals are the public moves — job posts, pricing changes,
+              changelog entries — that reveal where competitors are investing.
+              None have been collected yet.
+            </p>
+            <p className="empty-state__note">
+              Click <strong>Run now</strong> to gather them. This also fills the
+              Today, Industry and Competitors rooms.
+            </p>
+          </EmptyState>
+        )
+      ) : (
+      <>
       <div
         className="signals-page__filters"
         data-testid="signal-type-filter"
@@ -203,6 +237,8 @@ export function Signals() {
           </section>
         );
       })}
+      </>
+      )}
     </div>
   );
 }

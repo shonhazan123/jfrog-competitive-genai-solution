@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api/client";
+import { api, isFixtureMode } from "../api/client";
 import type { ComparisonMatrix } from "../api/types";
 import { ComparisonGrid } from "../components/ComparisonGrid";
+import { EmptyState } from "../components/EmptyState";
+import { RunNowButton } from "../components/RunNowButton";
 import comparisonMatrixFixture from "../fixtures/comparison_matrix.json";
 import "./Comparison.css";
 
@@ -11,11 +13,23 @@ export function Comparison() {
   const [isRunning, setIsRunning] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
 
-  const { data } = useQuery({
+  const fixtureMode = isFixtureMode();
+  const { data, isLoading } = useQuery({
     queryKey: ["comparison-matrix"],
     queryFn: () => api.getComparisonMatrix(),
-    initialData: comparisonMatrixFixture as ComparisonMatrix,
+    initialData: fixtureMode ? (comparisonMatrixFixture as ComparisonMatrix) : undefined,
   });
+  // Competitors and dimensions come from config, so the matrix is scaffolded
+  // (every cell stance "none", no evidence) even before any collection. Treat
+  // "no cell has a real stance or any evidence" as the first-run empty state.
+  const hasIntel =
+    !!data &&
+    data.dimensions.some((dimension) =>
+      dimension.cells.some(
+        (cell) => cell.stance !== "none" || cell.evidence.length > 0,
+      ),
+    );
+  const isEmpty = !hasIntel;
 
   const handleRunThisPage = async () => {
     if (isRunning) return;
@@ -82,7 +96,32 @@ export function Comparison() {
         ) : null}
       </header>
 
-      <ComparisonGrid matrix={data} />
+      {isEmpty ? (
+        isLoading ? (
+          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
+            Loading…
+          </p>
+        ) : (
+          <EmptyState
+            eyebrow="First run"
+            title="No competitor landscape yet"
+            action={<RunNowButton />}
+            testId="comparison-empty"
+          >
+            <p>
+              This grid shows where each rival stands versus JFrog across the
+              buyer-facing capability dimensions. No competitors have been
+              assessed yet.
+            </p>
+            <p className="empty-state__note">
+              Click <strong>Run now</strong> to build the matrix. This also fills
+              the Today, Signals and Industry rooms.
+            </p>
+          </EmptyState>
+        )
+      ) : data ? (
+        <ComparisonGrid matrix={data} />
+      ) : null}
     </div>
   );
 }

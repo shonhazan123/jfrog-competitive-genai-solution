@@ -9,6 +9,11 @@
 # UI:  http://localhost:5173
 # API: http://localhost:8000/health
 #
+# The app boots with NO setup — the site starts empty and instructs you to
+# click "Run now". To let "Run now" gather live data, add your OpenAI key to a
+# .env file (see .env.example). The .env file is OPTIONAL: the stack still
+# starts without it.
+#
 # Do not run `npm run dev` inside client/ separately — the client container
 # above is the only UI you need. A local Vite on :5173 will shadow Docker.
 
@@ -27,19 +32,16 @@ services:
   api:
     build: ./backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    # .env is optional — the stack starts without it (Run now needs OPENAI_API_KEY).
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://ci:ci@db:5432/ci
       PYTHONPATH: /app
-      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
-      TESTCONTAINERS_RYUK_DISABLED: "true"
     volumes:
       - ./config:/app/config:ro
       - blobs:/app/data/blobs
-      - ./tests:/tests:ro
-      - ./client:/client:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     ports: ["8000:8000"]
     depends_on:
       db: { condition: service_healthy }
@@ -47,7 +49,8 @@ services:
     build: ./backend
     command: python -m worker.main
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://ci:ci@db:5432/ci
       BACKFILL_SOURCE: fixtures

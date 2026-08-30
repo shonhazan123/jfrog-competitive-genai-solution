@@ -101,6 +101,11 @@ export interface SignalDetail extends Signal {
 export interface IndustryRadarItem {
   id: string;
   signal_type: string;
+  /** Industry theme bucket key (e.g. "supply_chain_vulns"); groups the rail the
+   *  same way the Industry page does, rather than by raw signal type. */
+  theme_key?: string;
+  /** Human label for the theme bucket (e.g. "AI Code-Gen & ML Security"). */
+  theme_label?: string;
   headline: string;
   summary: string;
   why_it_matters: string | null;

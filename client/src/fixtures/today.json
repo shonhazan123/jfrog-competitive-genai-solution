@@ -241,6 +241,8 @@
     {
       "id": "ind_supply_npm_pypi",
       "signal_type": "security_trust",
+      "theme_key": "supply_chain_vulns",
+      "theme_label": "Software Supply-Chain Vulnerabilities & Exploits",
       "headline": "Malicious packages surge across npm and PyPI registries",
       "summary": "A fresh wave of typosquatted and dependency-confusion packages is landing in public registries at record volume.",
       "why_it_matters": "Registry-level provenance and SBOM checks move up the buying agenda for platforms that own the artifact path.",
@@ -260,6 +262,8 @@
     {
       "id": "ind_supply_buildsystem",
       "signal_type": "security_trust",
+      "theme_key": "supply_chain_vulns",
+      "theme_label": "Software Supply-Chain Vulnerabilities & Exploits",
       "headline": "New build-system compromise technique disclosed",
       "summary": "A disclosed technique poisons artifacts during the build step, before signing, evading downstream scanners.",
       "why_it_matters": "Raises the bar for artifact signing and pipeline integrity across the toolchain.",
@@ -279,6 +283,8 @@
     {
       "id": "ind_ai_secure_dev",
       "signal_type": "product_capability",
+      "theme_key": "ai_secops",
+      "theme_label": "AI Code-Gen & ML Security",
       "headline": "Guidance lands on securing AI-assisted development",
       "summary": "New guidance frames model and dependency provenance as part of the AppSec scope for AI-generated code.",
       "why_it_matters": "Model and dependency provenance become part of AppSec scope for teams shipping AI-assisted code.",
@@ -298,6 +304,8 @@
     {
       "id": "ind_pipeline_consolidation",
       "signal_type": "partnership_ecosystem",
+      "theme_key": "pipeline_devsecops",
+      "theme_label": "Pipeline Security & DevSecOps Platform",
       "headline": "Buyers push to consolidate scanning into the pipeline",
       "summary": "Enterprises are folding point scanners into platforms that already own the artifact and CI/CD path.",
       "why_it_matters": "Favors platforms that own artifact plus CI/CD, not standalone point tools.",
@@ -317,6 +325,8 @@
     {
       "id": "ind_reg_sbom_federal",
       "signal_type": "market_regulatory",
+      "theme_key": "regulation_compliance",
+      "theme_label": "Regulatory, Compliance & Standards",
       "headline": "SBOM mandates tighten for federal software suppliers",
       "summary": "Updated federal guidance turns SBOM generation from a recommendation into a procurement gate.",
       "why_it_matters": "Turns SBOM generation from nice-to-have into a hard requirement for suppliers in scope.",

@@ -167,9 +167,49 @@ function industryToCard(item: IndustryRadarItem): RailCardData {
   };
 }
 
-/** Group industry radar items by their signal_type string, mapped to the
- *  matching SignalType for hue/label/copy; unknown types fall back gracefully. */
-export function groupIndustry(items: IndustryRadarItem[]): RailGroup[] {
+/** Presentation for each industry theme bucket (keys mirror
+ *  config/industry_buckets.yaml). Short tab label, rail accent, and a plain
+ *  one-line explainer — the theme's human label comes from the API. */
+const INDUSTRY_THEME_META: Record<
+  string,
+  { short: string; accent: string; explain: string }
+> = {
+  supply_chain_vulns: {
+    short: "Supply chain",
+    accent: "var(--sig-security)",
+    explain:
+      "Malicious packages and exploits moving through the public registries your builds pull from.",
+  },
+  ai_secops: {
+    short: "AI security",
+    accent: "var(--sig-product)",
+    explain:
+      "Model and dependency provenance becoming part of the security conversation for AI-built code.",
+  },
+  pipeline_devsecops: {
+    short: "Pipeline",
+    accent: "var(--sig-partnership)",
+    explain:
+      "How scanning and controls are consolidating into the build and delivery path.",
+  },
+  regulation_compliance: {
+    short: "Regulation",
+    accent: "var(--sig-regulatory)",
+    explain:
+      "Compliance mandates reshaping what buyers must require of their suppliers.",
+  },
+  other: {
+    short: "Other",
+    accent: "var(--accent)",
+    explain: "Recent developments across the wider market.",
+  },
+};
+
+const INDUSTRY_THEME_ORDER = Object.keys(INDUSTRY_THEME_META);
+
+/** Group industry radar items by their signal_type — the legacy path used only
+ *  when items predate theme tagging (no `theme_key`). */
+function groupIndustryBySignalType(items: IndustryRadarItem[]): RailGroup[] {
   const byType = new Map<string, IndustryRadarItem[]>();
   for (const item of items) {
     const list = byType.get(item.signal_type);
@@ -177,7 +217,6 @@ export function groupIndustry(items: IndustryRadarItem[]): RailGroup[] {
     else byType.set(item.signal_type, [item]);
   }
 
-  // Order known types by the canonical order; unknown ones keep insertion order.
   const keys = [...byType.keys()];
   keys.sort((a, b) => {
     const ia = SIGNAL_TYPE_ORDER.indexOf(a as SignalType);
@@ -212,6 +251,50 @@ export function groupIndustry(items: IndustryRadarItem[]): RailGroup[] {
         cards: items2.map(industryToCard),
       });
     }
+  }
+  return groups;
+}
+
+/** Group industry radar items by their theme bucket — the same lens the
+ *  Industry page uses — so the rail reads as market themes (supply chain, AI
+ *  security, pipeline, regulation) rather than competitor signal types. Falls
+ *  back to signal_type grouping only for items that predate theme tagging. */
+export function groupIndustry(items: IndustryRadarItem[]): RailGroup[] {
+  if (!items.some((item) => item.theme_key)) {
+    return groupIndustryBySignalType(items);
+  }
+
+  const byTheme = new Map<string, IndustryRadarItem[]>();
+  for (const item of items) {
+    const key = item.theme_key ?? "other";
+    const list = byTheme.get(key);
+    if (list) list.push(item);
+    else byTheme.set(key, [item]);
+  }
+
+  const keys = [...byTheme.keys()];
+  keys.sort((a, b) => {
+    const ia = INDUSTRY_THEME_ORDER.indexOf(a);
+    const ib = INDUSTRY_THEME_ORDER.indexOf(b);
+    const ra = ia === -1 ? Number.MAX_SAFE_INTEGER : ia;
+    const rb = ib === -1 ? Number.MAX_SAFE_INTEGER : ib;
+    return ra - rb;
+  });
+
+  const groups: RailGroup[] = [];
+  for (const key of keys) {
+    const themeItems = byTheme.get(key)!;
+    const meta = INDUSTRY_THEME_META[key];
+    const label =
+      themeItems[0]?.theme_label ?? meta?.short ?? key.replace(/_/g, " ");
+    groups.push({
+      key,
+      shortLabel: meta?.short ?? label,
+      title: <>{kw(label)}</>,
+      explain: meta?.explain ?? "Recent developments across the wider market.",
+      accent: meta?.accent ?? "var(--accent)",
+      cards: themeItems.map(industryToCard),
+    });
   }
   return groups;
 }

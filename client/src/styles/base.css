@@ -87,6 +87,14 @@ button {
   overflow-y: auto;
 }
 
+/* Center each page's content column, matching the Today layout. Pages render a
+   single root element into main; constrain it to the shared content width and
+   center it horizontally so content no longer hugs the left on wide screens. */
+.app-shell__main > * {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
 @media (max-width: 899px) {
   .app-shell__main {
     padding-bottom: calc(var(--sp-5) + 3.5rem);

@@ -1,8 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "../api/client";
+import { api, isFixtureMode } from "../api/client";
 import type { IndustryItem, IndustryTheme } from "../api/types";
 import { signalHue } from "../config/labels";
+import { EmptyState } from "../components/EmptyState";
+import { RunNowButton } from "../components/RunNowButton";
 import { ThemeTile } from "../components/ThemeTile";
 import { Chip } from "../components/primitives/Chip";
 import { Quote } from "../components/primitives/Quote";
@@ -148,11 +150,17 @@ export function Industry() {
   const [isRunning, setIsRunning] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
 
-  const { data: themes } = useQuery({
+  const fixtureMode = isFixtureMode();
+  const { data: themes, isLoading } = useQuery({
     queryKey: ["industry", "themes"],
     queryFn: () => api.getThemes(),
-    initialData: industryThemesFixture as IndustryTheme[],
+    initialData: fixtureMode ? (industryThemesFixture as IndustryTheme[]) : undefined,
   });
+  const themeList = themes ?? [];
+  // Theme definitions come from config, so /industry/themes is non-empty even
+  // before any collection (every theme has count 0). Treat "no gathered items
+  // across all themes" as the first-run empty state.
+  const gatheredItems = themeList.reduce((sum, t) => sum + (t.count ?? 0), 0);
 
   const handleRunThisPage = async () => {
     if (isRunning) return;
@@ -209,24 +217,52 @@ export function Industry() {
         ) : null}
       </header>
 
-      <div
-        data-testid="card-grid"
-        data-columns={gridColumns}
-        className="industry__grid"
-        style={{ display: "grid" }}
-      >
-        {themes.map((theme) => (
-          <ThemeTile key={theme.key} theme={theme} />
-        ))}
-      </div>
+      {gatheredItems === 0 ? (
+        isLoading ? (
+          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
+            Loading…
+          </p>
+        ) : (
+          <EmptyState
+            eyebrow="First run"
+            title="No industry themes yet"
+            action={<RunNowButton />}
+            testId="industry-empty"
+          >
+            <p>
+              This room maps the DevSecOps market into stable themes — supply
+              chain, AI security, pipeline, regulation. Nothing has been
+              gathered yet.
+            </p>
+            <p className="empty-state__note">
+              Click <strong>Run now</strong> to build the landscape. This also
+              fills the Today, Signals and Competitors rooms.
+            </p>
+          </EmptyState>
+        )
+      ) : (
+        <>
+          <div
+            data-testid="card-grid"
+            data-columns={gridColumns}
+            className="industry__grid"
+            style={{ display: "grid" }}
+          >
+            {themeList.map((theme) => (
+              <ThemeTile key={theme.key} theme={theme} />
+            ))}
+          </div>
 
-      <footer className="industry__footer">
-        <p className="industry__footer-note">
-          Themes are stable week-to-week so you can track developments without
-          losing your bearings. Each industry item carries a JFrog relevance
-          line — that is what keeps it intel rather than a news reader.
-        </p>
-      </footer>
+          <footer className="industry__footer">
+            <p className="industry__footer-note">
+              Themes are stable week-to-week so you can track developments
+              without losing your bearings. Each industry item carries a JFrog
+              relevance line — that is what keeps it intel rather than a news
+              reader.
+            </p>
+          </footer>
+        </>
+      )}
     </div>
   );
 }

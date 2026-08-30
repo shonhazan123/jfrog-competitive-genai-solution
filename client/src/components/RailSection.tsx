@@ -8,7 +8,11 @@ import "./RailSection.css";
 interface RailSectionProps {
   eyebrow: string;
   roomName: string;
+  /** where "See all" and the trailing card lead (the room this rail previews). */
   roomPath: string;
+  /** where an individual card leads; defaults to roomPath. Lets a rail preview
+   *  one room (e.g. Competitors) while its cards open another (e.g. Signals). */
+  cardPath?: string;
   groups: RailGroup[];
   testId?: string;
 }
@@ -27,11 +31,17 @@ export function RailSection({
   eyebrow,
   roomName,
   roomPath,
+  cardPath,
   groups,
   testId,
 }: RailSectionProps) {
+  const cardDestination = cardPath ?? roomPath;
   const railRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
+  // After a segment click we optimistically set the active group; suppress
+  // scroll-driven detection briefly so the clicked title isn't overridden by
+  // the settling smooth-scroll (which may clamp short of the target near the end).
+  const lockUntilRef = useRef(0);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [displayIndex, setDisplayIndex] = useState(0);
@@ -56,8 +66,21 @@ export function RailSection({
   const currentGroup = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return 0;
-    const probe = rail.scrollLeft + 40;
     const firsts = rail.querySelectorAll<HTMLElement>('[data-first="true"]');
+    // At (or all but) the end, the trailing groups can never reach the left
+    // edge, so snap to the last group once we've hit max scroll.
+    const maxScroll = rail.scrollWidth - rail.clientWidth;
+    if (maxScroll > 0 && rail.scrollLeft >= maxScroll - 4) {
+      let last = 0;
+      firsts.forEach((fc) => {
+        last = Math.max(last, Number(fc.dataset.gi ?? 0));
+      });
+      return last;
+    }
+    // Otherwise the active group is the one occupying the viewport centre —
+    // this lets every group (not just those reachable at the left edge) become
+    // active as the rail scrolls.
+    const probe = rail.scrollLeft + rail.clientWidth * 0.5;
     let gi = 0;
     firsts.forEach((fc) => {
       if (fc.offsetLeft <= probe) gi = Number(fc.dataset.gi ?? 0);
@@ -77,6 +100,7 @@ export function RailSection({
     if (!rail) return;
 
     const handleScroll = () => {
+      if (Date.now() < lockUntilRef.current) return;
       if (rafRef.current != null) return;
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = null;
@@ -115,6 +139,10 @@ export function RailSection({
   const scrollToGroup = useCallback((gi: number) => {
     const rail = railRef.current;
     if (!rail) return;
+    // Show the clicked group's title immediately, and hold it while the
+    // smooth-scroll settles (it may clamp short of a trailing group).
+    lockUntilRef.current = Date.now() + 700;
+    setActiveIndex(gi);
     const target = rail.querySelector<HTMLElement>(
       `[data-first="true"][data-gi="${gi}"]`,
     );
@@ -132,6 +160,7 @@ export function RailSection({
   const titleWrapStyle = {
     "--grp-accent": shown.accent,
     opacity: titleVisible ? 1 : 0,
+    transform: titleVisible ? "translateY(0)" : "translateY(8px)",
   } as CSSProperties;
 
   let flatIndex = 0;
@@ -186,7 +215,7 @@ export function RailSection({
                   key={`${g.key}-${card.id}-${flatIndex}`}
                   card={card}
                   accent={g.accent}
-                  roomPath={roomPath}
+                  cardPath={cardDestination}
                   groupIndex={gi}
                   isFirst={ci === 0}
                 />

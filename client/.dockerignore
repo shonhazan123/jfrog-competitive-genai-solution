@@ -1,0 +1,12 @@
+# Never copy host build artifacts into the image — they may be built for a
+# different OS/arch and will break the container. npm install runs inside build.
+node_modules
+dist
+.vite
+*.log
+npm-debug.log*
+
+# Editor / VCS noise
+.git
+.gitignore
+.DS_Store

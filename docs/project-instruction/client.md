@@ -11,9 +11,32 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   `http://localhost:8000`) is the live base URL. `client/src/api/client.ts`
   resolves every read from the imported fixture in `fixture` mode and calls
   `fetch(base + path, init ?? {})` in `live` mode. `setMode()` flips it at runtime
-  (used by tests). Errors shaped `{ error: { message } }` reject with that message.
+  (used by tests). `isFixtureMode()` is exported so pages seed React Query
+  `initialData` from fixtures **only in fixture mode**. Errors shaped
+  `{ error: { message } }` reject with that message.
 - Docker: `docker-compose.yml` `client` service runs `npm run dev` with
   `VITE_API_MODE=live`, `depends_on: [api]`, exposed on `5173`.
+
+## First-run onboarding (empty live database)
+- In **live** mode the four consumer rooms pass `initialData: undefined` (no
+  fixture seed), so a fresh, empty database renders an **instructive empty
+  state** instead of flashing demo content that then vanishes. In `fixture`
+  mode the fixtures still seed `initialData`, so tests and offline dev are
+  unchanged.
+- `components/EmptyState.tsx` is the shared, token-styled placeholder (eyebrow,
+  serif title, body, action). `components/RunNowButton.tsx` triggers the global
+  batch run via `runStore.startAll()` (`POST /runs/all`) and surfaces a plain
+  error if the API is unreachable; per-surface progress is shown by the existing
+  `RunStatusCard`.
+- Per page (each keyed by its own emptiness check, with a `Loading…` line while
+  the first live fetch is in flight):
+  - **Today** (`data-testid="today-empty"`) — full welcome + numbered 3-step
+    guide + a note that Run now needs `OPENAI_API_KEY` in `.env`.
+  - **Signals** (`signals-empty`), **Industry** (`industry-empty`),
+    **Competitors** (`comparison-empty`) — short room-specific copy + Run now.
+- Run-now failures (e.g. missing OpenAI key) surface the backend's readable
+  error message through the run card, so a keyless demo reads clearly rather
+  than looking broken.
 
 ## Structure that encodes decisions
 - **IA is data:** `client/src/config/navigation.ts` (`NAVIGATION`, grouped
@@ -66,14 +89,32 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   + date** are ALWAYS visible. Only `HOW THIS WAS PRODUCED` (provenance trace)
   collapses. There is no score and no "Why this score" breakdown, and no
   `was → now` change block (all removed in the verdict-first redesign).
-- **Today (`/`, daily group):** `GET /today` returns `{ headline, cards }` — a
-  Fraunces italic **verdict block** (amber left-rule, `data-testid="today-headline"`)
-  with a tier tally strip and eyebrow meta from `run-status`, then at most five
-  read-only `IntelCard`s in a responsive grid (`repeat(auto-fill,
-  minmax(380px, 1fr))`, `data-testid="card-grid"`). Cards are ranked by tier then
-  internal materiality (score never exposed). The heavy `SignalCard` (actions +
-  trace) is reserved for Signals/Divisions; Today uses the lean `IntelCard` only.
-  The KIT grid is retired. Fixture: `client/src/fixtures/today.json`. Query keys:
+- **Today (`/`, daily group):** `GET /today` returns `{ headline, cards, industry }`
+  — a Fraunces italic **verdict block** (amber left-rule,
+  `data-testid="today-headline"`) with a tier tally strip and eyebrow meta from
+  `run-status`, then two horizontal **`RailSection` rails** (not a card grid):
+  a **Competitors · Recent Movements** rail (`data-testid="rail-competitors"`,
+  `roomPath="/comparison"`) and an **Industry · Recent News** rail
+  (`data-testid="rail-industry"`, `roomPath="/industry"`). Each rail groups its
+  cards, shows one group heading + plain explainer at a time, and cross-fades /
+  slides the heading as you scroll between groups (`config/railCopy.tsx`).
+  - **Card destination vs. room:** a rail previews one room but its cards may open
+    another via the optional `cardPath` prop. Competitor cards set
+    `cardPath="/signals"` — **clicking a signal opens the Signals room, not the
+    Competitors matrix** — while "See all" and the trailing card still lead to
+    `roomPath`. Industry cards default to `roomPath` (`/industry`).
+  - **Competitor grouping (`groupSignals`):** by `signal_type`, Hiring first.
+    The backend (`/today`) already hands the client a *diversified* slice — one
+    card per (competitor, kind) so a rival's near-duplicate posts collapse, spread
+    across kinds — so the rail shows several tabs (Hiring, Pricing, Product,
+    Security, …) rather than one kind on repeat.
+  - **Industry grouping (`groupIndustry`):** by **theme bucket** (`theme_key` /
+    `theme_label` from the API, e.g. *Supply chain*, *AI security*, *Pipeline*,
+    *Regulation*) — the same lens the Industry page uses — **not** by signal type.
+    `INDUSTRY_THEME_META` (in `railCopy.tsx`) supplies each theme's short tab
+    label, accent, and explainer; it falls back to signal-type grouping only for
+    items that predate theme tagging.
+  Score is never exposed. Fixture: `client/src/fixtures/today.json`. Query keys:
   `["today"]`, `["run-status"]` (eyebrow date + sources tally).
 - **Competitors (`/comparison`):** a **competitor × capability-dimension matrix**
   (`ComparisonGrid`) from `GET /comparison/matrix`, transposed client-side over
