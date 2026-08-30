@@ -1,0 +1,14 @@
+# Normalize line endings across machines.
+#
+# Shell scripts and Docker entrypoints MUST stay LF. If they are checked out
+# with CRLF (the Windows default when core.autocrlf=true), they break inside
+# Linux containers — the kernel tries to run interpreter "/bin/sh\r", the
+# container crashes on startup, and the API becomes unreachable
+# (ERR_CONNECTION_REFUSED). This is the #1 "works on one PC, fails on another"
+# bug for Dockerized shell entrypoints.
+* text=auto
+
+*.sh            text eol=lf
+docker-entrypoint.sh text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf

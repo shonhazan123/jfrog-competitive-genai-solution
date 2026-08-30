@@ -50,11 +50,22 @@ first build takes a few minutes; later starts are fast. When it's up:
 - **Web UI:** http://localhost:5173
 - **API health check:** http://localhost:8000/health → `{"status":"ok"}`
 
-To stop: press **Ctrl+C**, then:
+> **Keep this terminal open.** The app runs *only while this command is
+> running*. If you close the terminal or press **Ctrl+C**, all four services
+> stop — the browser tab may still show the page, but every request will fail
+> with `ERR_CONNECTION_REFUSED` because the API is no longer running. To run it
+> so it survives closing the terminal, start it detached instead:
+> `docker compose up --build -d` (see "Run it in the background" below).
+
+To stop when you're done: press **Ctrl+C** in this terminal, then:
 
 ```bash
 docker compose down
 ```
+
+Sanity check that everything is actually up: `docker compose ps` should list
+`api`, `client`, `worker` and `db` with status **Up** (and `api` showing
+`0.0.0.0:8000->8000`).
 
 > If you started the app *before* adding your key, add it to `.env` now and
 > restart so the containers pick it up:
@@ -90,11 +101,17 @@ docker compose down              # stop
 
 - **`docker compose up` says the Docker daemon isn't running** — start Docker
   Desktop first and wait until it reports "running".
+- **The page shows errors like `ERR_CONNECTION_REFUSED` (in the browser console)
+  or "Couldn't start the run — is the API reachable?"** — the containers aren't
+  running, so nothing is listening on port 8000. This is **not** a key problem.
+  Run `docker compose ps`: if `api` isn't **Up**, start the stack with
+  `docker compose up --build` (and keep that terminal open, or use `-d`). Then
+  refresh the browser. If `api` keeps exiting, check `docker compose logs api`.
 - **Port 5173 or 8000 already in use** — something else is bound to that port.
   Stop it, or change the host port mappings in `docker-compose.yml`
   (e.g. `"5174:5173"`), then re-run.
-- **UI loads but stays empty / Run now fails** — you likely haven't set
-  `OPENAI_API_KEY`. Add it to `.env` (see above) and restart.
+- **Run now fails with an OpenAI key message** — add a valid `OPENAI_API_KEY` to
+  `.env` (Step 1) and restart: `docker compose down && docker compose up --build`.
 - **The site looks up even after `docker compose down`** — you may have a
   separate local `npm run dev` running on :5173. Use **only** Docker; a stray
   local Vite shadows the container and won't have the API behind it.

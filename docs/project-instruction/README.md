@@ -32,6 +32,15 @@ in it, so boot doesn't depend on host paths that differ across machines.
 
 On startup, **api** and **worker** each run `alembic upgrade head` (via `backend/docker-entrypoint.sh`)
 before uvicorn or the worker process starts, so the Postgres volume always matches the code.
+
+**Cross-machine line endings (critical for a Windows clone).** The entrypoint is a
+shell script, so it must reach the Linux container with LF endings. Two guards keep
+this true regardless of the cloning machine's `core.autocrlf`: a root `.gitattributes`
+pins `*.sh` / `docker-entrypoint.sh` / `Dockerfile` to `eol=lf`, **and** the backend
+`Dockerfile` runs `sed -i 's/\r$//'` on the entrypoint at build time. Without these,
+a CRLF checkout makes the container fail to start ("bad interpreter" / no such file),
+which surfaces to the user only as `ERR_CONNECTION_REFUSED` on port 8000 (the API
+looks "not running" even though `docker compose up --build` reported success).
 The worker seeds the registry but **does not** replay Wayback backfill on boot by default
 (`BACKFILL_ON_START=false`; change-detection is benched). Set `BACKFILL_ON_START=true` on the
 worker service to opt into offline archive replay — missing fixtures for a snapshot source are
