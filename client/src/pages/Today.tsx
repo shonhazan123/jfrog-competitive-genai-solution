@@ -41,7 +41,7 @@ export function Today() {
   // of flashing demo content that then disappears.
   const fixtureMode = isFixtureMode();
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["today"],
     queryFn: () => api.getToday(),
     initialData: fixtureMode ? (todayFixture as TodayBrief) : undefined,
@@ -61,58 +61,51 @@ export function Today() {
     return (
       <div className="today-page">
         <div className="today-page__inner">
-          {isLoading ? (
-            <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
-              Loading…
+          <EmptyState
+            eyebrow="First run"
+            title="Your intelligence desk is empty — for now"
+            action={<RunNowButton />}
+            testId="today-empty"
+          >
+            <p>
+              This is a live competitive-intelligence workspace for JFrog. It
+              starts with a clean slate — no competitors analysed, no signals,
+              no industry news — because nothing has been gathered yet.
             </p>
-          ) : (
-            <EmptyState
-              eyebrow="First run"
-              title="Your intelligence desk is empty — for now"
-              action={<RunNowButton />}
-              testId="today-empty"
-            >
-              <p>
-                This is a live competitive-intelligence workspace for JFrog. It
-                starts with a clean slate — no competitors analysed, no signals,
-                no industry news — because nothing has been gathered yet.
-              </p>
-              <ol className="empty-state__steps">
-                <li>
-                  <span className="empty-state__step-num" aria-hidden="true">
-                    1
-                  </span>
-                  <span>
-                    Click <strong>Run now</strong> below. Three research agents
-                    fan out across competitors, market signals and industry
-                    news.
-                  </span>
-                </li>
-                <li>
-                  <span className="empty-state__step-num" aria-hidden="true">
-                    2
-                  </span>
-                  <span>
-                    Watch the progress card in the corner — a full sweep takes a
-                    few minutes.
-                  </span>
-                </li>
-                <li>
-                  <span className="empty-state__step-num" aria-hidden="true">
-                    3
-                  </span>
-                  <span>
-                    This page fills in automatically: a daily brief, competitor
-                    movements and industry news. The other rooms populate too.
-                  </span>
-                </li>
-              </ol>
-              <p className="empty-state__note">
-                Run now gathers live data and needs an OpenAI API key in your{" "}
-                <code>.env</code> file — see the README.
-              </p>
-            </EmptyState>
-          )}
+            <ol className="empty-state__steps">
+              <li>
+                <span className="empty-state__step-num" aria-hidden="true">
+                  1
+                </span>
+                <span>
+                  Click <strong>Run now</strong> below. Three research agents
+                  fan out across competitors, market signals and industry news.
+                </span>
+              </li>
+              <li>
+                <span className="empty-state__step-num" aria-hidden="true">
+                  2
+                </span>
+                <span>
+                  Watch the progress card in the corner — a full sweep takes a
+                  few minutes.
+                </span>
+              </li>
+              <li>
+                <span className="empty-state__step-num" aria-hidden="true">
+                  3
+                </span>
+                <span>
+                  This page fills in automatically: a daily brief, competitor
+                  movements and industry news. The other rooms populate too.
+                </span>
+              </li>
+            </ol>
+            <p className="empty-state__note">
+              Run now gathers live data and needs an OpenAI API key in your{" "}
+              <code>.env</code> file — see the README.
+            </p>
+          </EmptyState>
         </div>
       </div>
     );

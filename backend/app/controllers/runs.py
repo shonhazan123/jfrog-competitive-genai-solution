@@ -101,8 +101,27 @@ def _stage_jobs_for_kind(kind: str) -> dict[str, list[tuple[str, dict]]]:
     return jobs_by_stage
 
 
+_MISSING_KEY_MESSAGE = (
+    "OpenAI API key missing or invalid. Add OPENAI_API_KEY to your .env file, "
+    "then rebuild: docker compose down && docker compose up --build."
+)
+
+# Substrings that identify an OpenAI auth/key failure across the SDK's phrasings
+# (unset key, invalid key, 401). Kept specific so unrelated errors pass through.
+_KEY_ERROR_MARKERS = (
+    "openai_api_key",
+    "api_key client option",
+    "invalid_api_key",
+    "incorrect api key",
+    "no api key provided",
+)
+
+
 def _readable_error(exc: BaseException) -> str:
     message = str(exc).strip()
+    lowered = message.lower()
+    if any(marker in lowered for marker in _KEY_ERROR_MARKERS):
+        return _MISSING_KEY_MESSAGE
     if message and "Traceback" not in message:
         return message
     return "The run could not complete. Try again in a moment."

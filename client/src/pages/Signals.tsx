@@ -39,7 +39,7 @@ function groupByType(
 export function Signals() {
   const queryClient = useQueryClient();
   const fixtureMode = isFixtureMode();
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["signals", "all"],
     queryFn: () => api.getSignals({}),
     initialData: fixtureMode
@@ -159,28 +159,22 @@ export function Signals() {
       </header>
 
       {items.length === 0 ? (
-        isLoading ? (
-          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
-            Loading…
+        <EmptyState
+          eyebrow="First run"
+          title="No signals gathered yet"
+          action={<RunNowButton />}
+          testId="signals-empty"
+        >
+          <p>
+            Signals are the public moves — job posts, pricing changes, changelog
+            entries — that reveal where competitors are investing. None have
+            been collected yet.
           </p>
-        ) : (
-          <EmptyState
-            eyebrow="First run"
-            title="No signals gathered yet"
-            action={<RunNowButton />}
-            testId="signals-empty"
-          >
-            <p>
-              Signals are the public moves — job posts, pricing changes,
-              changelog entries — that reveal where competitors are investing.
-              None have been collected yet.
-            </p>
-            <p className="empty-state__note">
-              Click <strong>Run now</strong> to gather them. This also fills the
-              Today, Industry and Competitors rooms.
-            </p>
-          </EmptyState>
-        )
+          <p className="empty-state__note">
+            Click <strong>Run now</strong> to gather them. This also fills the
+            Today, Industry and Competitors rooms.
+          </p>
+        </EmptyState>
       ) : (
       <>
       <div

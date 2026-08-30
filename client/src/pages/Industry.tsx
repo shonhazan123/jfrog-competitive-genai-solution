@@ -151,7 +151,7 @@ export function Industry() {
   const [runError, setRunError] = useState<string | null>(null);
 
   const fixtureMode = isFixtureMode();
-  const { data: themes, isLoading } = useQuery({
+  const { data: themes } = useQuery({
     queryKey: ["industry", "themes"],
     queryFn: () => api.getThemes(),
     initialData: fixtureMode ? (industryThemesFixture as IndustryTheme[]) : undefined,
@@ -218,28 +218,22 @@ export function Industry() {
       </header>
 
       {gatheredItems === 0 ? (
-        isLoading ? (
-          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
-            Loading…
+        <EmptyState
+          eyebrow="First run"
+          title="No industry themes yet"
+          action={<RunNowButton />}
+          testId="industry-empty"
+        >
+          <p>
+            This room maps the DevSecOps market into stable themes — supply
+            chain, AI security, pipeline, regulation. Nothing has been gathered
+            yet.
           </p>
-        ) : (
-          <EmptyState
-            eyebrow="First run"
-            title="No industry themes yet"
-            action={<RunNowButton />}
-            testId="industry-empty"
-          >
-            <p>
-              This room maps the DevSecOps market into stable themes — supply
-              chain, AI security, pipeline, regulation. Nothing has been
-              gathered yet.
-            </p>
-            <p className="empty-state__note">
-              Click <strong>Run now</strong> to build the landscape. This also
-              fills the Today, Signals and Competitors rooms.
-            </p>
-          </EmptyState>
-        )
+          <p className="empty-state__note">
+            Click <strong>Run now</strong> to build the landscape. This also
+            fills the Today, Signals and Competitors rooms.
+          </p>
+        </EmptyState>
       ) : (
         <>
           <div

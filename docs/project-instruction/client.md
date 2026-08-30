@@ -17,25 +17,41 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
 - Docker: `docker-compose.yml` `client` service runs `npm run dev` with
   `VITE_API_MODE=live`, `depends_on: [api]`, exposed on `5173`.
 
+## Forced light theme
+- `client/index.html` sets `<html data-theme="light">`, which pins the app to
+  the light theme. `tokens.css` only applies its dark palette under
+  `:root:not([data-theme="light"])` + `@media (prefers-color-scheme: dark)`, so
+  the explicit attribute disables OS-driven dark mode. This keeps the UI
+  identical on every machine regardless of the viewer's system theme (a dark-mode
+  machine previously rendered the whole app dark, which read as a different UI).
+
 ## First-run onboarding (empty live database)
 - In **live** mode the four consumer rooms pass `initialData: undefined` (no
   fixture seed), so a fresh, empty database renders an **instructive empty
-  state** instead of flashing demo content that then vanishes. In `fixture`
-  mode the fixtures still seed `initialData`, so tests and offline dev are
-  unchanged.
+  state**. It is shown **immediately whenever there is no data** — there is no
+  `Loading…` placeholder and it never hangs. If a reachable API later returns
+  real data the page swaps to the dashboard; if the API is unreachable the
+  onboarding simply stays. In `fixture` mode the fixtures still seed
+  `initialData`, so tests and offline dev are unchanged.
 - `components/EmptyState.tsx` is the shared, token-styled placeholder (eyebrow,
   serif title, body, action). `components/RunNowButton.tsx` triggers the global
   batch run via `runStore.startAll()` (`POST /runs/all`) and surfaces a plain
   error if the API is unreachable; per-surface progress is shown by the existing
   `RunStatusCard`.
-- Per page (each keyed by its own emptiness check, with a `Loading…` line while
-  the first live fetch is in flight):
-  - **Today** (`data-testid="today-empty"`) — full welcome + numbered 3-step
-    guide + a note that Run now needs `OPENAI_API_KEY` in `.env`.
-  - **Signals** (`signals-empty`), **Industry** (`industry-empty`),
-    **Competitors** (`comparison-empty`) — short room-specific copy + Run now.
-- Run-now failures (e.g. missing OpenAI key) surface the backend's readable
-  error message through the run card, so a keyless demo reads clearly rather
+- Emptiness is content-aware, because some surfaces are config-scaffolded:
+  - **Today** (`today-empty`) — empty when `cards` and `industry` are both empty.
+    Full welcome + numbered 3-step guide + a note that Run now needs
+    `OPENAI_API_KEY` in `.env`.
+  - **Signals** (`signals-empty`) — empty when `items` is empty.
+  - **Industry** (`industry-empty`) — themes come from config (always present),
+    so empty means the **sum of theme `count`s is 0**.
+  - **Competitors** (`comparison-empty`) — the matrix is scaffolded from config,
+    so empty means **no cell has a real `stance` or any `evidence`**.
+- Run-now failures surface the backend's readable error in a prominent
+  `RunStatusCard` banner (`data-testid="run-card-alert"`). A missing/invalid
+  OpenAI key is detected in `backend/app/controllers/runs.py::_readable_error`
+  and returned as an actionable message ("Add OPENAI_API_KEY to your .env …
+  rebuild: docker compose up --build"), so a keyless demo reads clearly rather
   than looking broken.
 
 ## Structure that encodes decisions

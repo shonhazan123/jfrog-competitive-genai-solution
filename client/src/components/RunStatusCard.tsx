@@ -123,6 +123,10 @@ export function RunStatusCard() {
   const resolved = surfaces.filter((s) => s.status === "done" || s.status === "failed").length;
   const overallPct = surfaces.length ? Math.round((resolved / surfaces.length) * 100) : 0;
   const eta = etaSeconds(surfaces);
+  // Surface the failure reason once, prominently, rather than only as small
+  // per-lane text. A missing/invalid OpenAI key is the most common cause on a
+  // first run; the backend returns an actionable message for it.
+  const failureMessage = surfaces.find((s) => s.status === "failed" && s.message)?.message;
 
   return (
     <section
@@ -156,6 +160,12 @@ export function RunStatusCard() {
       >
         <div className="run-card__overall-fill" style={{ width: `${overallPct}%` }} />
       </div>
+
+      {failureMessage ? (
+        <div className="run-card__alert" role="alert" data-testid="run-card-alert">
+          {failureMessage}
+        </div>
+      ) : null}
 
       <div className="run-card__lanes">
         {surfaces.map((s) => (

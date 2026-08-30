@@ -14,7 +14,7 @@ export function Comparison() {
   const [runError, setRunError] = useState<string | null>(null);
 
   const fixtureMode = isFixtureMode();
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["comparison-matrix"],
     queryFn: () => api.getComparisonMatrix(),
     initialData: fixtureMode ? (comparisonMatrixFixture as ComparisonMatrix) : undefined,
@@ -97,28 +97,22 @@ export function Comparison() {
       </header>
 
       {isEmpty ? (
-        isLoading ? (
-          <p className="mono-label" style={{ color: "var(--ink-muted)" }}>
-            Loading…
+        <EmptyState
+          eyebrow="First run"
+          title="No competitor landscape yet"
+          action={<RunNowButton />}
+          testId="comparison-empty"
+        >
+          <p>
+            This grid shows where each rival stands versus JFrog across the
+            buyer-facing capability dimensions. No competitors have been
+            assessed yet.
           </p>
-        ) : (
-          <EmptyState
-            eyebrow="First run"
-            title="No competitor landscape yet"
-            action={<RunNowButton />}
-            testId="comparison-empty"
-          >
-            <p>
-              This grid shows where each rival stands versus JFrog across the
-              buyer-facing capability dimensions. No competitors have been
-              assessed yet.
-            </p>
-            <p className="empty-state__note">
-              Click <strong>Run now</strong> to build the matrix. This also fills
-              the Today, Signals and Industry rooms.
-            </p>
-          </EmptyState>
-        )
+          <p className="empty-state__note">
+            Click <strong>Run now</strong> to build the matrix. This also fills
+            the Today, Signals and Industry rooms.
+          </p>
+        </EmptyState>
       ) : data ? (
         <ComparisonGrid matrix={data} />
       ) : null}

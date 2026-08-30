@@ -32,6 +32,14 @@
 @keyframes rc-in{from{transform:translateX(-50%) translateY(16px); opacity:0} to{transform:translateX(-50%) translateY(0); opacity:1}}
 @media (prefers-reduced-motion: reduce){ .run-card{animation:none} }
 
+/* failure banner — prominent + actionable (e.g. missing/invalid OpenAI key) */
+.run-card__alert{
+  margin:14px 20px 0; padding:12px 14px; border-radius:12px;
+  background:color-mix(in srgb, var(--rc-amber) 14%, var(--rc-card));
+  border:1px solid color-mix(in srgb, var(--rc-amber) 48%, var(--rc-line));
+  color:var(--rc-ink); font-size:13.5px; line-height:1.45; font-weight:500;
+}
+
 /* header */
 .run-card__head{display:flex; align-items:center; gap:12px; padding:18px 20px 16px; border-bottom:1px solid var(--rc-line)}
 .run-card__title{flex:1; min-width:0; font-size:17px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:10px}
