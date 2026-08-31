@@ -20,8 +20,7 @@ web UI — runs with **one command**.
    cp .env.example .env          # Windows PowerShell:  copy .env.example .env
    ```
 
-2. Open `.env` and paste your key (get one at
-   https://platform.openai.com/api-keys):
+2. Open `.env` and paste your key (provided with in the stage 1 folder):
 
    ```
    OPENAI_API_KEY=sk-...your key...
