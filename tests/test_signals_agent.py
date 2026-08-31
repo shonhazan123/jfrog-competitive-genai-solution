@@ -99,3 +99,75 @@ def test_persist_signals_strips_nul_bytes_from_web_search_text(session, monkeypa
     assert "\x00" not in signal.headline
     assert "\x00" not in signal.so_what_sales
     assert "\x00" not in signal.why_it_matters
+
+
+def test_persist_signals_dedupes_duplicate_events(session, monkeypatch):
+    """N framings of one event (same competitor + signal_type, near-identical
+    headlines) collapse into one signal with corroboration_count = N and N
+    evidence rows — one per source."""
+    from app.models.registry import Entity
+    from app.models.signal import Signal, SignalEvidence
+    from app.services.research import provenance, signals_agent
+    from app.services.seeding import seed
+
+    seed(session)
+
+    class FakeEmbedder:
+        def embed(self, texts):
+            return [[0.0] * 1536 for _ in texts]
+
+    monkeypatch.setattr(provenance, "get_embedder", lambda: FakeEmbedder())
+
+    def draft(headline, url):
+        return {
+            "competitor": "checkmarx",
+            "signal_type": "corporate_financial",
+            "headline": headline,
+            "so_what": "s",
+            "why_it_matters": "w",
+            "tags": ["FUNDING"],
+            "source_url": url,
+        }
+
+    drafts = [
+        draft("Hellman & Friedman completes acquisition of Checkmarx", "https://x/1"),
+        draft("Hellman & Friedman completes the acquisition of Checkmarx", "https://x/2"),
+        draft("Hellman & Friedman completes acquisition of Checkmarx today", "https://x/3"),
+    ]
+    n = signals_agent.persist_signals(session, drafts)
+    session.flush()
+
+    checkmarx = session.query(Entity).filter_by(slug="checkmarx").one()
+    sigs = session.query(Signal).filter_by(entity_id=checkmarx.id).all()
+    assert n == 1 and len(sigs) == 1
+    assert sigs[0].corroboration_count == 3
+    assert session.query(SignalEvidence).filter_by(signal_id=sigs[0].id).count() == 3
+
+
+def test_persist_signals_keeps_distinct_events_separate(session, monkeypatch):
+    """Two different events for the same competitor stay as two signals."""
+    from app.models.registry import Entity
+    from app.models.signal import Signal
+    from app.services.research import provenance, signals_agent
+    from app.services.seeding import seed
+
+    seed(session)
+
+    class FakeEmbedder:
+        def embed(self, texts):
+            return [[0.0] * 1536 for _ in texts]
+
+    monkeypatch.setattr(provenance, "get_embedder", lambda: FakeEmbedder())
+
+    drafts = [
+        {"competitor": "snyk", "signal_type": "talent_org", "headline": "Snyk hiring senior sales engineers",
+         "so_what": "s", "why_it_matters": "w", "tags": [], "source_url": "https://x/1"},
+        {"competitor": "snyk", "signal_type": "talent_org", "headline": "Snyk opens new research office in Boston",
+         "so_what": "s", "why_it_matters": "w", "tags": [], "source_url": "https://x/2"},
+    ]
+    n = signals_agent.persist_signals(session, drafts)
+    session.flush()
+
+    snyk = session.query(Entity).filter_by(slug="snyk").one()
+    assert n == 2
+    assert session.query(Signal).filter_by(entity_id=snyk.id).count() == 2

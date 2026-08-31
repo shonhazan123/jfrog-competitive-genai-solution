@@ -14,6 +14,7 @@ from app.services.collection.apis.lever import LeverAdapter
 from app.services.collection.apis.osv import OsvAdapter
 from app.services.collection.fetcher import StaticFetcher
 from app.services.research.competitors import load_competitors
+from app.services.research.dedup import dedupe_items
 from app.services.research.provenance import index_finding, record_finding, sanitize_text
 from app.services.scoring.materiality import score
 from agent.graphs.research.query import broaden_query, dedupe_names
@@ -138,7 +139,9 @@ def structured_for(session: Session | None = None, fetcher=None):
 def persist_signals(session: Session, drafts: list[dict]) -> int:
     cfg = load_config()
     now = datetime.now(UTC)
-    written = 0
+
+    # Pass 1 — record every finding's capture and build a clusterable item.
+    items: list[dict] = []
     for draft in drafts:
         if draft.get("absent"):
             continue
@@ -152,55 +155,77 @@ def persist_signals(session: Session, drafts: list[dict]) -> int:
             draft["source_url"],
             f"{headline}\n{so_what}",
         )
-        facets = {
+        items.append({
+            "entity": entity,
+            "entity_slug": entity.slug,
             "signal_type": draft["signal_type"],
+            "headline": headline,
+            "so_what": so_what,
+            "why_it_matters": why_it_matters,
+            "tags": draft.get("tags") or [],
+            "capture": capture,
+            "occurred_at": now,
+        })
+
+    # Pass 2 — one Signal per event; the N framings become N evidence rows and
+    # the corroboration count, which feeds the materiality corroboration bonus.
+    written = 0
+    for group in dedupe_items(items, cfg.materiality.cluster):
+        rep = group[0]
+        entity = rep["entity"]
+        headline = rep["headline"]
+        corroboration = len(group)
+        facets = {
+            "signal_type": rep["signal_type"],
             "subject_entity": None,
             "asserting_entity": entity.slug,
             "entity_tier": entity.tier,
             "reliability_grade": "C",
-            "corroboration_count": 1,
-            "capability_tags": draft.get("tags") or [],
+            "corroboration_count": corroboration,
+            "capability_tags": rep["tags"],
             "occurred_at": now,
             "text": headline,
         }
-        cluster_src = f"{draft['competitor']}:{draft['signal_type']}:{headline}"
+        cluster_src = f"{entity.slug}:{rep['signal_type']}:{headline}"
         signal = Signal(
-            source_id=capture.source_id,
+            source_id=rep["capture"].source_id,
             entity_id=entity.id,
-            signal_type=draft["signal_type"],
+            signal_type=rep["signal_type"],
             headline=headline[:256],
             occurred_at=now,
             cluster_key=hashlib.sha256(cluster_src.encode()).hexdigest()[:128],
-            so_what_sales=so_what,
-            so_what_product=so_what,
-            so_what_exec=so_what,
-            why_it_matters=why_it_matters,
-            capability_tags=draft.get("tags") or [],
+            corroboration_count=corroboration,
+            so_what_sales=rep["so_what"],
+            so_what_product=rep["so_what"],
+            so_what_exec=rep["so_what"],
+            why_it_matters=rep["why_it_matters"],
+            capability_tags=rep["tags"],
             score_sales=score(facets, "sales", cfg).total,
             score_product=score(facets, "product", cfg).total,
             score_exec=score(facets, "exec", cfg).total,
         )
         session.add(signal)
         session.flush()
-        session.add(
-            SignalEvidence(
-                signal_id=signal.id,
-                capture_id=capture.id,
-                quote=headline,
-                quote_offset=0,
-                match_method="synthesis",
+        for member in group:
+            session.add(
+                SignalEvidence(
+                    signal_id=signal.id,
+                    capture_id=member["capture"].id,
+                    quote=member["headline"],
+                    quote_offset=0,
+                    match_method="synthesis",
+                )
             )
-        )
         index_finding(
             session,
             record_type="signal",
             record_id=signal.id,
-            text=so_what,
+            text=rep["so_what"],
             entity_id=entity.id,
-            signal_type=draft["signal_type"],
+            signal_type=rep["signal_type"],
             published_at=now,
             reliability_grade="C",
-            url=capture.blob_path,
+            url=rep["capture"].blob_path,
         )
         written += 1
     return written
