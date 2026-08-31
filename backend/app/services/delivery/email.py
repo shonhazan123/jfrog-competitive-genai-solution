@@ -22,6 +22,13 @@ _SUBJECT_BY_PERSONA = {
 }
 
 
+class SmtpNotConfiguredError(RuntimeError):
+    """A real send was attempted without Gmail credentials.
+
+    Lets callers turn a missing-credential state into a friendly message
+    instead of an opaque SMTP rejection."""
+
+
 @dataclass
 class RenderedDigest:
     subject: str
@@ -35,7 +42,11 @@ def _subject_for(persona: str) -> str:
     )
 
 
-def render_digest(digest: Digest, cfg: AppConfig) -> RenderedDigest:
+def render_digest(
+    digest: Digest,
+    cfg: AppConfig,
+    security_news: list[dict] | None = None,
+) -> RenderedDigest:
     template = _ENV.get_template("digest.html.j2")
     html = template.render(
         persona=digest.persona,
@@ -44,6 +55,7 @@ def render_digest(digest: Digest, cfg: AppConfig) -> RenderedDigest:
         silent_entities=digest.silent_entities,
         generated_at=digest.generated_at,
         app_base_url=cfg.delivery.app_base_url,
+        security_news=security_news or [],
     )
     inlined_html = css_inline.inline(html)
     return RenderedDigest(subject=_subject_for(digest.persona), html=inlined_html)
@@ -54,8 +66,10 @@ def send_digest(
     digest: Digest,
     smtp: object,
     cfg: AppConfig,
+    recipients: list[str] | None = None,
+    security_news: list[dict] | None = None,
 ) -> None:
-    rendered = render_digest(digest, cfg)
+    rendered = render_digest(digest, cfg, security_news=security_news)
 
     digest_run = DigestRun(
         persona=digest.persona,
@@ -65,7 +79,9 @@ def send_digest(
     session.add(digest_run)
     session.flush()
 
-    recipients = cfg.delivery.recipients.get(digest.persona) or [
+    # An explicit recipient (the demo's "email me" address) overrides the
+    # per-persona config list; the config fallback keeps scheduled digests working.
+    recipients = recipients or cfg.delivery.recipients.get(digest.persona) or [
         "ci-digest@example.internal"
     ]
 

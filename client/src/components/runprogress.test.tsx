@@ -42,6 +42,8 @@ test("Run now fires the batch fan-out, not the legacy manual run", async () => {
   renderApp();
   const strip = within(screen.getByRole("banner", { name: "Run status" }));
   await user.click(strip.getByRole("button", { name: /run now/i }));
+  // Run now now opens the email prompt; skipping starts the batch.
+  await user.click(await screen.findByRole("button", { name: /skip for now/i }));
   expect(startAll).toHaveBeenCalledTimes(1);
   expect(startRun).not.toHaveBeenCalled();
 });
@@ -60,5 +62,6 @@ test("Run now disables the button while a batch is active", async () => {
   renderApp();
   const strip = within(screen.getByRole("banner", { name: "Run status" }));
   await user.click(strip.getByRole("button", { name: /run now/i }));
+  await user.click(await screen.findByRole("button", { name: /skip for now/i }));
   expect(await strip.findByRole("button", { name: /running/i })).toBeDisabled();
 });

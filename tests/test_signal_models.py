@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from app.models.signal import AnalystAction, Signal, SignalEvidence
+from app.models.signal import Signal, SignalEvidence
 
 def test_signal_stores_a_score_and_so_what_per_persona(session, seeded_source):
     signal = Signal(
@@ -24,9 +24,3 @@ def test_signal_subject_defaults_to_none_not_jfrog(session, seeded_source):
     )
     session.add(signal); session.flush()
     assert signal.subject_entity_id is None
-
-def test_analyst_action_records_actor_and_reason(session, seeded_source):
-    action = AnalystAction(target_type="signal", target_id=1, actor="analyst@jfrog.com",
-                           action="reject", reason="duplicate of yesterday")
-    session.add(action); session.flush()
-    assert action.action == "reject"

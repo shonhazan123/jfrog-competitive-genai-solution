@@ -44,6 +44,12 @@ Legacy `config/jfrog_components.yaml` was removed; the grid no longer uses JFrog
 The API returns **dimension × competitor**. The client transposes this to
 **competitor × capability-dimension** for the Figma-aligned UI.
 
+Layout: `.comparison-page` is full-width inside main and overrides the shell
+`--content-max` (900px) up to **1480px** so the six-column matrix is not
+compressed. Grid columns use `minmax(200px, 260px)` for the competitor name
+plus `minmax(140px, 1fr)` per dimension; horizontal scroll remains on
+`table-scroll` when the viewport is narrower than the grid min-width.
+
 - **Type:** `ComparisonMatrix` uses `dimensions` (not legacy `components`) plus
   `competitors`.
 - **Stance values** from the API: `strong | moderate | weak | none`

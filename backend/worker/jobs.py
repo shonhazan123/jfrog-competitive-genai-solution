@@ -12,22 +12,25 @@ from app.db.session import SessionLocal
 from app.models.capture import RawCapture
 from app.models.registry import Entity, Source
 from app.models.signal import Signal
-from app.services.backfill import backfill_source, collect_snapshot_source
+from app.services.snapshot import collect_snapshot_source
 from agent.log import get_logger, step
 from app.services.collection.apis.greenhouse import GreenhouseAdapter
 from app.services.collection.apis.hackernews import HackerNewsAdapter
 from app.services.collection.apis.lever import LeverAdapter
 from app.services.collection.apis.osv import OsvAdapter
 from app.services.collection.fetcher import Fetcher, StaticFetcher
-from app.services.collection.fixture_fetcher import FixtureFetcher
 from app.services.collection.feeds import parse_feed
 from app.services.collection.robots import RobotsCache
-from app.services.delivery.assembly import assemble
-from app.services.delivery.email import send_digest
+from app.services.delivery.assembly import (
+    Digest,
+    assemble,
+    newest_security_news,
+    select_demo_items,
+)
+from app.services.delivery.email import SmtpNotConfiguredError, send_digest
 from app.services.scoring.materiality import score
 from app.services.seeding import seed
 from app.services.signals.novelty import is_new
-from app.settings import settings
 from app.services.research.industry_agent import run_industry  # noqa: F401
 from app.services.research.signals_agent import run_signals  # noqa: F401
 from app.services.research.comparison_agent import run_comparison  # noqa: F401
@@ -54,45 +57,6 @@ def _due(source: Source, now: datetime) -> bool:
 def run_seed() -> None:
     with SessionLocal() as session:
         seed(session)
-
-
-def run_backfill() -> dict[str, int]:
-    """Replay archive history for every enabled snapshot-mode source.
-
-    Change-detection backfill is benched for verdict-first daily runs. When enabled
-    (``BACKFILL_ON_START=true`` or an explicit call), a missing offline fixture for
-    one source must not abort replay for the rest."""
-    totals = {"captures": 0, "claims": 0, "versions": 0, "skipped": 0}
-    use_fixtures = settings.backfill_source == "fixtures"
-    fetcher: Fetcher = (
-        FixtureFetcher(settings.fixtures_dir) if use_fixtures else StaticFetcher()
-    )
-    robots = None if use_fixtures else RobotsCache()
-    with SessionLocal() as session:
-        sources = session.query(Source).filter_by(mode="snapshot", enabled=True).all()
-        for source in sources:
-            if use_fixtures:
-                source.robots_allowed = True
-            else:
-                source.robots_allowed = robots.allowed(source.url)
-            if not source.robots_allowed or source.requires_js:
-                continue
-            try:
-                report = backfill_source(session, source, fetcher)
-            except LookupError as exc:
-                # Offline fixture replay: new snapshot sources may lack Wayback captures.
-                logger.warning(
-                    "backfill.skipped source=%s reason=%s",
-                    source.key,
-                    exc,
-                )
-                totals["skipped"] += 1
-                continue
-            totals["captures"] += report.captures
-            totals["claims"] += report.claims_created
-            totals["versions"] += report.versions_created
-        session.commit()
-    return totals
 
 
 def _store_capture(
@@ -324,19 +288,27 @@ def _lazy_smtp(cfg) -> object:
 
     class _Smtp:
         def send(self, subject: str, html: str, to: list[str]) -> None:
+            user = os.environ.get("SMTP_USER")
+            password = os.environ.get("SMTP_APP_PASSWORD")
+            if not (user and password):
+                raise SmtpNotConfiguredError(
+                    "Email not sent: Gmail credentials are missing. Add SMTP_USER "
+                    "and SMTP_APP_PASSWORD (a Gmail App Password) to .env, then "
+                    "rebuild: docker compose down && docker compose up --build."
+                )
+            # Gmail requires the envelope sender to be the authenticated account;
+            # from_name is only the display name, so send From that account.
+            from_name = smtp_cfg.get("from_name", "JFrog CI")
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = smtp_cfg.get("from_name", "JFrog CI")
+            msg["From"] = f"{from_name} <{user}>"
             msg["To"] = ", ".join(to)
             msg.attach(MIMEText(html, "html"))
             with smtplib.SMTP(smtp_cfg["host"], smtp_cfg["port"]) as conn:
                 if smtp_cfg.get("starttls"):
                     conn.starttls()
-                user = os.environ.get("SMTP_USER")
-                password = os.environ.get("SMTP_APP_PASSWORD")
-                if user and password:
-                    conn.login(user, password)
-                conn.sendmail(msg["From"], to, msg.as_string())
+                conn.login(user, password)
+                conn.sendmail(user, to, msg.as_string())
 
     return _Smtp()
 
@@ -362,3 +334,50 @@ def run_digest(
         session.commit()
         session.close()
     return {"personas": personas, "sent": len(personas)}
+
+
+def run_demo_digest(
+    session: Session | None = None,
+    to_email: str = "",
+    smtp: object | None = None,
+    cfg=None,
+) -> dict:
+    """One-off demo digest to a single address: the top 3 competitive signals
+    plus the newest industry security news, in the styled email template.
+
+    Raises SmtpNotConfiguredError when Gmail credentials are missing (no default
+    smtp given). Does not commit a caller-provided session — the caller owns it."""
+    own_session = session is None
+    if own_session:
+        session = SessionLocal()
+    cfg = cfg or load_config()
+    as_of = datetime.now(UTC)
+
+    top3 = Digest(
+        persona="sales",
+        items=select_demo_items(session, "sales", limit=3),
+        interrupts=[],
+        silent_entities=[],
+        generated_at=as_of,
+    )
+    security_news = newest_security_news(session, limit=3)
+
+    if smtp is None:
+        smtp = _lazy_smtp(cfg)
+    send_digest(
+        session,
+        top3,
+        smtp,
+        cfg,
+        recipients=[to_email],
+        security_news=security_news,
+    )
+
+    if own_session:
+        session.commit()
+        session.close()
+    return {
+        "recipient": to_email,
+        "item_count": len(top3.items),
+        "security_count": len(security_news),
+    }

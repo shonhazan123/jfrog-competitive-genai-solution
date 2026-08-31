@@ -43,7 +43,7 @@ class HackerNewsAdapter:
                 body=body,
                 occurred_at=_parse(hit.get("created_at")),
                 url=hit.get("url") or f"https://news.ycombinator.com/item?id={object_id}",
-                signal_type_hint=None,  # interpret classifies; HN spans many signal types
+                signal_type_hint=None,  # classified downstream; HN spans many signal types
                 extra={"points": hit.get("points", 0), "num_comments": hit.get("num_comments", 0)},
             ))
         return records

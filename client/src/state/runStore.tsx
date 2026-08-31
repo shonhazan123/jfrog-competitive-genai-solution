@@ -9,10 +9,19 @@ import {
 import type { ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import type { SurfaceProgress } from "../api/types";
+import type { DemoDigestResult, SurfaceProgress } from "../api/types";
 
 const POLL_MS = 1500;
 const STORAGE_KEY = "run.batch.v1";
+const EMAIL_KEY = "run.notifyEmail.v1";
+
+function loadEmail(): string {
+  try {
+    return window.localStorage.getItem(EMAIL_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
 
 interface RunStore {
   active: boolean;
@@ -24,6 +33,18 @@ interface RunStore {
   startAll: () => Promise<void>;
   openCard: () => void;
   minimize: () => void;
+  // Pre-run email prompt: requestStart opens it; confirm/skip actually start.
+  startPending: boolean;
+  requestStart: () => void;
+  cancelStart: () => void;
+  confirmStart: (email: string) => Promise<void>;
+  skipStart: () => Promise<void>;
+  // Demo email digest: address to notify when a run finishes, plus send state.
+  notifyEmail: string;
+  setNotifyEmail: (email: string) => void;
+  digestSending: boolean;
+  digestResult: DemoDigestResult | null;
+  sendDigest: () => Promise<void>;
 }
 
 const RunContext = createContext<RunStore | null>(null);
@@ -42,8 +63,53 @@ export function RunProvider({ children }: { children: ReactNode }) {
   const inFlight = useRef(false);
   const invalidatedRef = useRef(false);
 
+  const [notifyEmail, setNotifyEmailState] = useState<string>(loadEmail);
+  const [digestSending, setDigestSending] = useState(false);
+  const [digestResult, setDigestResult] = useState<DemoDigestResult | null>(null);
+  const [startPending, setStartPending] = useState(false);
+  // Kept in a ref so the completion handler can read the latest email without
+  // re-creating the poll callback (which would restart the interval).
+  const notifyEmailRef = useRef(notifyEmail);
+  const digestSentRef = useRef(false);
+  // The address to email for the CURRENT run — set by confirm/skip, kept apart
+  // from the remembered notifyEmail so "Skip" means "don't email this run"
+  // without forgetting the saved address.
+  const activeEmailRef = useRef("");
+
   const active = batchId !== null;
   const allResolved = surfaces.length > 0 && surfaces.every(isResolved);
+
+  const setNotifyEmail = useCallback((email: string) => {
+    setNotifyEmailState(email);
+    notifyEmailRef.current = email;
+    try {
+      window.localStorage.setItem(EMAIL_KEY, email);
+    } catch {
+      // storage unavailable (private mode) — the in-memory value still works
+    }
+  }, []);
+
+  const sendDigest = useCallback(async () => {
+    const email = notifyEmailRef.current.trim();
+    if (!email || digestSending) return;
+    setDigestSending(true);
+    try {
+      const result = await api.sendDemoDigest(email);
+      setDigestResult(result);
+    } catch (err) {
+      setDigestResult({
+        status: "error",
+        recipient: email,
+        detail: err instanceof Error ? err.message : "Couldn't send the digest.",
+      });
+    } finally {
+      setDigestSending(false);
+    }
+  }, [digestSending]);
+
+  // Latest sendDigest, callable from poll() without adding it as a dependency.
+  const sendDigestRef = useRef(sendDigest);
+  sendDigestRef.current = sendDigest;
 
   const stopPolling = useCallback(() => {
     if (pollRef.current !== null) {
@@ -72,6 +138,12 @@ export function RunProvider({ children }: { children: ReactNode }) {
             ["today", "signals", "run-status", "industry", "comparison"].forEach(
               (key) => void queryClient.invalidateQueries({ queryKey: [key] }),
             );
+            // Run finished: email the digest if this run was armed with an
+            // address. Once per batch, guarded so a late poll tick can't re-send.
+            if (activeEmailRef.current.trim() && !digestSentRef.current) {
+              digestSentRef.current = true;
+              void sendDigestRef.current();
+            }
           }
           window.localStorage.removeItem(STORAGE_KEY);
         }
@@ -97,6 +169,8 @@ export function RunProvider({ children }: { children: ReactNode }) {
   const startAll = useCallback(async () => {
     const res = await api.startAllRuns();
     const ids = res.run_ids as unknown as Record<string, string>;
+    digestSentRef.current = false;
+    setDigestResult(null);
     setBatchId(res.batch_id);
     setCardOpen(true);
     setMinimized(false);
@@ -106,6 +180,26 @@ export function RunProvider({ children }: { children: ReactNode }) {
     );
     beginPolling(ids);
   }, [beginPolling]);
+
+  const requestStart = useCallback(() => setStartPending(true), []);
+  const cancelStart = useCallback(() => setStartPending(false), []);
+
+  const confirmStart = useCallback(
+    async (email: string) => {
+      const clean = email.trim();
+      setNotifyEmail(clean); // remember it for next time + the card field
+      activeEmailRef.current = clean; // arm this run to auto-email on completion
+      setStartPending(false);
+      await startAll();
+    },
+    [setNotifyEmail, startAll],
+  );
+
+  const skipStart = useCallback(async () => {
+    activeEmailRef.current = ""; // this run won't auto-email
+    setStartPending(false);
+    await startAll();
+  }, [startAll]);
 
   const openCard = useCallback(() => {
     setCardOpen(true);
@@ -152,6 +246,16 @@ export function RunProvider({ children }: { children: ReactNode }) {
     startAll,
     openCard,
     minimize,
+    startPending,
+    requestStart,
+    cancelStart,
+    confirmStart,
+    skipStart,
+    notifyEmail,
+    setNotifyEmail,
+    digestSending,
+    digestResult,
+    sendDigest,
   };
 
   return <RunContext.Provider value={value}>{children}</RunContext.Provider>;

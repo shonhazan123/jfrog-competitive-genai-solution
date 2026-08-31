@@ -6,20 +6,19 @@ from app.models.capture import PageSnapshot, RawCapture
 from app.models.ledger import Claim, ClaimVersion, Evidence
 from app.models.registry import Entity, Source
 from app.services.collection.fetcher import Fetcher
-from app.services.collection.wayback import list_snapshots
 from app.services.detection.hashing import content_hash, normalized_hash
 from app.services.detection.structural_diff import diff_rows
 from app.services.normalization.parsers.html_dom import parse_html
 from app.services.normalization.tracked_page import ComparisonRow, extract_comparison_rows
-from app.settings import settings
 
 @dataclass
-class BackfillReport:
+class SnapshotReport:
     captures: int = 0
     claims_created: int = 0
     versions_created: int = 0
 
 def _store_blob(digest: str, body: bytes) -> str:
+    from app.settings import settings
     path = Path(settings.blob_dir) / f"{digest}.bin"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(body)
@@ -37,11 +36,11 @@ def _ingest_page(
     http_status: int,
     provenance: str,
     previous: list[ComparisonRow],
-    report: BackfillReport,
+    report: SnapshotReport,
 ) -> list[ComparisonRow]:
     """Store one page version and diff it against the previous one. This is the whole
-    snapshot pipeline for a single capture; backfill calls it per archived version, live
-    collection calls it once. Same code path, different fetcher — see OFFLINE_BACKFILL.md."""
+    snapshot pipeline for a single capture: parse the tracked comparison page into rows,
+    persist the version, and turn any material row change into a claim update."""
     digest = content_hash(body)
     text = body.decode("utf-8", errors="replace")
     capture = RawCapture(
@@ -66,24 +65,6 @@ def _ingest_page(
         _apply(session, source, jfrog, fetched_at, change, capture, report)
     return rows
 
-def backfill_source(session: Session, source: Source, fetcher: Fetcher) -> BackfillReport:
-    """Replay every archived version of a tracked page through the live pipeline."""
-    report = BackfillReport()
-    jfrog = session.query(Entity).filter_by(slug="jfrog").one()
-    previous: list[ComparisonRow] = []
-
-    for snapshot in list_snapshots(source.url, fetcher):
-        result = fetcher.fetch(snapshot.raw_url)
-        if not result.body:
-            continue
-        previous = _ingest_page(
-            session, source, jfrog, result.body, snapshot.timestamp,
-            result.status, "archive", previous, report,
-        )
-
-    session.commit()
-    return report
-
 def _last_snapshot(session: Session, source_id: int) -> PageSnapshot | None:
     return (
         session.query(PageSnapshot)
@@ -93,10 +74,9 @@ def _last_snapshot(session: Session, source_id: int) -> PageSnapshot | None:
     )
 
 def collect_snapshot_source(session: Session, source: Source, fetcher: Fetcher) -> int:
-    """Live counterpart to backfill_source: fetch the tracked page once, now, and run the
-    identical extraction/diff pipeline against the most recent stored version. A live change
-    to a comparison page therefore extends the same claim history the backfill built.
-    Returns the number of captures created (0 if the page is unchanged)."""
+    """Fetch a tracked comparison page once, now, and run the extraction/diff pipeline
+    against the most recent stored version. A live change to the page extends the same
+    claim history. Returns the number of captures created (0 if the page is unchanged)."""
     result = fetcher.fetch(source.url, source.etag)
     if result.not_modified or not result.body:
         return 0
@@ -112,7 +92,7 @@ def collect_snapshot_source(session: Session, source: Source, fetcher: Fetcher) 
         [ComparisonRow(dimension=r["dimension"], cells=r["cells"]) for r in last.rows]
         if last is not None else []
     )
-    report = BackfillReport()
+    report = SnapshotReport()
     _ingest_page(
         session, source, jfrog, result.body, datetime.now(UTC),
         result.status, "live", previous, report,

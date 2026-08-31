@@ -65,7 +65,7 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
 - **Change-detection pages are benched, not deleted:** `Trajectory`
   (`/trajectory`), `Competitors → Us` (`/about-us`), and `ClaimTimeline` remain
   in the repo and reachable by direct URL for the roadmap story, but are removed
-  from `NAVIGATION`. Their engine (backfill / `ClaimVersion` / timeline) stays in
+  from `NAVIGATION`. Their engine (live snapshot `ClaimVersion` / timeline) stays in
   the backend, off every primary surface (single-snapshot rule).
 - **Signals room (`/signals`, daily):** reads `GET /signals`, filtered client-side
   by `signal_type` via a `FilterChips` bar (All + present types with counts),
@@ -138,9 +138,11 @@ against `client/src/fixtures/*.json` and switched to the live API by one flag.
   `stance` as strength (Strong/Moderate/Weak/None — `none` is empty/neutral)
   plus summary; row click opens `CompetitorDetail` with per-dimension cards and
   sourced evidence links — never a numeric grade and never a `was → now` diff
-  (see [comparison.md](./comparison.md)). **Run this page** triggers
-  `api.runSurface("comparison")` and refreshes `["comparison-matrix"]`. The
-  legacy claim-by-claim `/comparison` list still exists for the benched
+  (see [comparison.md](./comparison.md)). The page opts out of the shared
+  `--content-max` (900px) via `.app-shell__main > .comparison-page` so the
+  six-column grid can use up to **1480px** of the main pane. **Run this page**
+  triggers `api.runSurface("comparison")` and refreshes `["comparison-matrix"]`.
+  The legacy claim-by-claim `/comparison` list still exists for the benched
   `about-us`/`trajectory` pages but is off the primary surface.
 - Responsive: AppShell switches sidebar (≥900px) ↔ bottom bar of five `primary`
   daily items (<900px) in JS by `window.innerWidth`.

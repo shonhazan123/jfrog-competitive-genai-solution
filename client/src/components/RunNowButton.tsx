@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useRunStore } from "../state/runStore";
 import "./RunPanel.css";
 
@@ -13,35 +12,22 @@ interface RunNowButtonProps {
  */
 export function RunNowButton({ label = "▶ Run now" }: RunNowButtonProps) {
   const store = useRunStore();
-  const [error, setError] = useState<string | null>(null);
   const running = store.active && !store.allResolved;
 
-  const handleRunNow = async () => {
+  const handleRunNow = () => {
     if (running) return;
-    setError(null);
-    try {
-      await store.startAll();
-    } catch {
-      setError("Couldn't start the run — is the API reachable?");
-    }
+    store.requestStart(); // opens the email prompt; confirm/skip actually starts
   };
 
   return (
-    <>
-      <button
-        type="button"
-        className="run-panel__btn"
-        onClick={() => void handleRunNow()}
-        disabled={running}
-        aria-busy={running}
-      >
-        {running ? "Running…" : label}
-      </button>
-      {error ? (
-        <span className="run-panel__error" data-testid="run-error" role="alert">
-          {error}
-        </span>
-      ) : null}
-    </>
+    <button
+      type="button"
+      className="run-panel__btn"
+      onClick={handleRunNow}
+      disabled={running}
+      aria-busy={running}
+    >
+      {running ? "Running…" : label}
+    </button>
   );
 }

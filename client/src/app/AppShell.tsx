@@ -9,6 +9,7 @@ import { Sidebar } from "../components/nav/Sidebar";
 import { BottomBar } from "../components/nav/BottomBar";
 import { RunProvider } from "../state/runStore";
 import { RunStatusCard } from "../components/RunStatusCard";
+import { RunEmailPrompt } from "../components/RunEmailPrompt";
 import { TodayRunBar } from "../components/TodayRunBar";
 
 const MOBILE_BREAKPOINT = 900;
@@ -50,6 +51,7 @@ export function AppShell() {
         {isMobile ? <BottomBar /> : null}
         <RunStatusCard />
         <TodayRunBar />
+        <RunEmailPrompt />
       </div>
     </RunProvider>
   );

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import re
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -10,7 +12,46 @@ from app.models.signal import Signal
 from app.serializers.common import fmt_ts
 from app.services.scoring.materiality import tier_priority
 
+logger = logging.getLogger(__name__)
+
 _PERSONA_TITLE = {"sales": "Sales", "product": "Product"}
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def send_demo_digest(session: Session, to_email: str) -> dict:
+    """Assemble the demo digest and email it to one address, now.
+
+    Returns a structured status (never raises for the expected outcomes) so the
+    UI can show a friendly message: sent, invalid_email, not_configured, error."""
+    to_email = (to_email or "").strip()
+    if not _EMAIL_RE.match(to_email):
+        return {
+            "status": "invalid_email",
+            "detail": "Enter a valid email address.",
+            "recipient": to_email,
+        }
+
+    from app.services.delivery.email import SmtpNotConfiguredError
+    from worker.jobs import run_demo_digest
+
+    try:
+        result = run_demo_digest(session=session, to_email=to_email)
+        session.commit()
+    except SmtpNotConfiguredError as exc:
+        session.rollback()
+        return {"status": "not_configured", "detail": str(exc), "recipient": to_email}
+    except Exception as exc:  # noqa: BLE001 — surface a message, don't 500 the demo
+        session.rollback()
+        logger.exception("demo digest send failed to=%s", to_email)
+        return {"status": "error", "detail": str(exc), "recipient": to_email}
+
+    return {
+        "status": "sent",
+        "recipient": to_email,
+        "item_count": result["item_count"],
+        "security_count": result["security_count"],
+    }
 
 
 def persona_digest(session: Session, persona: str, date: str | None = None) -> dict:

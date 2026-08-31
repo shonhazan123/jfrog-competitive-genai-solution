@@ -29,8 +29,8 @@ entity names and aliases from `entities.yaml`.
 
 `current_instructions()` loads `config/instructions.yaml` (or the in-process override
 from `PUT /config/instructions`). The API persists and returns analyst free-text
-instructions; there is no live path that injects them into interpret LLM prompts in
-Phase 0.
+instructions; there is no live path that injects them into the research/agent LLM
+prompts yet.
 
 ## Tiers (verdict thresholds)
 

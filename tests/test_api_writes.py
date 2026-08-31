@@ -4,11 +4,6 @@ from datetime import UTC, datetime
 from sqlalchemy import text
 
 
-def test_an_analyst_action_is_persisted_with_actor_and_reason(client_with_data):
-    response = client_with_data.post("/signals/1/actions",
-                                     json={"action": "reject", "reason": "duplicate", "actor": "a@jfrog.com"})
-    assert response.status_code == 201
-
 def test_changing_a_weight_rescore_without_re_inference(client_with_data, session):
     """Re-scoring the ledger is a SQL update, not re-running the model."""
     from app.models.signal import Signal
@@ -88,8 +83,8 @@ def client_with_data(session):
     now = datetime(2026, 8, 26, 6, 0, tzinfo=UTC)
     latest = datetime(2026, 8, 26, 8, 0, tzinfo=UTC)
     # Sequences are non-transactional, so signal ids climb across the suite even
-    # though each test rolls back. Restart so the first seeded signal is id=1,
-    # which the analyst-action test addresses directly.
+    # though each test rolls back. Restart so the first seeded signal is id=1 for
+    # stable, predictable ids within this fixture.
     session.execute(text("ALTER SEQUENCE signal_id_seq RESTART WITH 1"))
 
     def _source(slug: str) -> Source:

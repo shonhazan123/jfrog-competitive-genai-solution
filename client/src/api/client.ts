@@ -1,4 +1,3 @@
-import analystActionFixture from "../fixtures/analyst_action.json";
 import askTranscriptFixture from "../fixtures/ask_transcript.json";
 import claimsAboutJfrogFixture from "../fixtures/claims_about_jfrog.json";
 import claimsHistoryTimelineFixture from "../fixtures/claims_history_timeline.json";
@@ -15,7 +14,6 @@ import industryThemesFixture from "../fixtures/industry_themes.json";
 import kitsFixture from "../fixtures/kits.json";
 import materialityWeightsFixture from "../fixtures/materiality_weights.json";
 import runStatusFixture from "../fixtures/run_status.json";
-import signalTraceFixture from "../fixtures/signal_trace.json";
 import signalsProductFixture from "../fixtures/signals_product.json";
 import signalsSalesFixture from "../fixtures/signals_sales.json";
 import signalsTodayFixture from "../fixtures/signals_today.json";
@@ -27,8 +25,6 @@ import watchlistFixture from "../fixtures/watchlist.json";
 import { RUN_POLL_INTERVAL_MS } from "../config/runPolling";
 import * as paths from "./endpoints";
 import type {
-  AnalystActionRequest,
-  AnalystActionResponse,
   ArchiveTimeline,
   AskRequest,
   AskResponse,
@@ -38,6 +34,7 @@ import type {
   ChatStreamEvent,
   BattlecardRow,
   Claim,
+  DemoDigestResult,
   ComparisonMatrix,
   CompetitorsConfig,
   CoverageMatrix,
@@ -63,7 +60,6 @@ import type {
   StartAllResponse,
   SurfaceProgress,
   Signal,
-  SignalDetail,
   SinceLastVisit,
   Source,
   TodayBrief,
@@ -254,8 +250,6 @@ export const FIXTURES = {
   getRunStatus: runStatusFixture,
   getSinceLastVisit: sinceLastVisitFixture,
   getSignals: signalsSalesFixture,
-  getSignal: signalTraceFixture,
-  postAction: analystActionFixture,
   getComparison: comparisonSonatypeFixture,
   getComparisonMatrix: comparisonMatrixFixture,
   getClaims: claimsAboutJfrogFixture,
@@ -287,6 +281,12 @@ export const FIXTURES = {
   startAllRuns: FIXTURE_START_ALL,
   getRunProgress: FIXTURE_SURFACE_PROGRESS,
   getActiveBatch: { batch_id: null, runs: [] },
+  sendDemoDigest: {
+    status: "sent",
+    recipient: "you@example.com",
+    item_count: 3,
+    security_count: 3,
+  },
 } as const;
 
 export const api = {
@@ -308,31 +308,6 @@ export const api = {
     return fixtureOrLive(
       selectSignalsFixture(params),
       paths.signalsPath(params),
-    );
-  },
-
-  getSignal(
-    signalId: string,
-    params?: { persona?: Persona | null },
-  ): Promise<SignalDetail> {
-    return fixtureOrLive(
-      signalTraceFixture as SignalDetail,
-      paths.signalPath(signalId, params),
-    );
-  },
-
-  postAction(
-    signalId: string,
-    body: AnalystActionRequest,
-  ): Promise<AnalystActionResponse> {
-    return fixtureOrLive(
-      analystActionFixture as AnalystActionResponse,
-      paths.signalActionsPath(signalId),
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      },
     );
   },
 
@@ -660,6 +635,18 @@ export const api = {
 
   getActiveBatch(): Promise<ActiveBatch> {
     return fixtureOrLive({ batch_id: null, runs: [] }, paths.runsActivePath());
+  },
+
+  sendDemoDigest(toEmail: string): Promise<DemoDigestResult> {
+    return fixtureOrLive(
+      { status: "sent", recipient: toEmail, item_count: 3, security_count: 3 },
+      paths.sendDemoDigestPath(),
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ to_email: toEmail }),
+      },
+    );
   },
 
   runSurface,

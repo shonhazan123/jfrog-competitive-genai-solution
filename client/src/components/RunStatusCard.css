@@ -104,3 +104,20 @@
 .run-card__toggle-input:checked + .run-card__switch{background:var(--rc-signals)}
 .run-card__toggle-input:checked + .run-card__switch::after{left:17px}
 .run-card__toggle-input:focus-visible + .run-card__switch{outline:2px solid var(--rc-signals); outline-offset:2px}
+
+/* demo digest email */
+.run-card__digest{padding:14px 20px 18px; border-top:1px solid var(--rc-line)}
+.run-card__digest-label{display:block; font-size:12.5px; font-weight:600; color:var(--rc-soft); margin-bottom:8px}
+.run-card__digest-row{display:flex; gap:8px}
+.run-card__digest-input{flex:1; min-width:0; padding:9px 12px; border-radius:10px; border:1px solid var(--rc-line);
+  background:var(--rc-card); color:var(--rc-ink); font-size:14px; font-family:inherit}
+.run-card__digest-input:focus-visible{outline:2px solid var(--rc-signals); outline-offset:1px; border-color:var(--rc-signals)}
+.run-card__digest-input:disabled{opacity:.6}
+.run-card__digest-btn{flex:none; padding:9px 14px; border-radius:10px; border:1px solid var(--rc-signals);
+  background:var(--rc-signals); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer; white-space:nowrap}
+.run-card__digest-btn:hover:not(:disabled){filter:brightness(1.06)}
+.run-card__digest-btn:disabled{opacity:.5; cursor:default}
+.run-card__digest-status{margin:9px 0 0; font-size:12.5px; line-height:1.45; font-weight:500}
+.run-card__digest-status--ok{color:var(--rc-green)}
+.run-card__digest-status--pending{color:var(--rc-soft)}
+.run-card__digest-status--error{color:var(--rc-amber)}

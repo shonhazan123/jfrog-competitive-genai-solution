@@ -14,9 +14,9 @@ def test_rejects_out_of_range_threshold():
             {"quote_matching": {"fuzzy": {"accept_threshold": 150, "min_quote_chars": 25}}}
         )
 
-def test_extract_call_uses_low_reasoning_effort():
+def test_gate_call_uses_low_reasoning_effort():
     from app.config.loader import load_config
-    assert load_config().llm.calls["extract"].reasoning_effort == "low"
+    assert load_config().llm.calls["gate"].reasoning_effort == "low"
 
 def test_source_registry_excludes_jfrog_and_includes_competitor_feeds():
     cfg = load_config()

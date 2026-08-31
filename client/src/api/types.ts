@@ -13,6 +13,20 @@ export type SignalType =
 
 export type Persona = "sales" | "product" | "exec";
 
+export type DemoDigestStatus =
+  | "sent"
+  | "invalid_email"
+  | "not_configured"
+  | "error";
+
+export interface DemoDigestResult {
+  status: DemoDigestStatus;
+  recipient: string;
+  detail?: string;
+  item_count?: number;
+  security_count?: number;
+}
+
 export type Tier = "act_on_it" | "worth_knowing" | "background";
 
 export type ReliabilityGrade = "A" | "B" | "C" | "D" | "E" | "F";
@@ -26,8 +40,6 @@ export type CollectionMode = "feed" | "snapshot" | "api";
 export type SourceKind = "atom" | "rss" | "html_page" | "api" | "sitemap";
 
 export type ClaimType = "capability" | "pricing" | "positioning" | "security";
-
-export type AnalystAction = "confirm" | "reject" | "edit" | "suppress";
 
 export type Handling = "caution";
 
@@ -61,13 +73,6 @@ export interface Change {
   now: string;
 }
 
-export interface TraceStep {
-  n: number;
-  node: string;
-  status: "ok" | "fail" | "skipped";
-  detail: string;
-}
-
 export interface Signal {
   id: string;
   entity: EntityRef;
@@ -92,11 +97,6 @@ export interface Signal {
   interrupt_tier: "critical" | null;
 }
 
-export interface SignalDetail extends Signal {
-  trace: TraceStep[];
-  all_persona_scores: Record<string, ScoreBreakdown>;
-  bullet_classification: Record<string, unknown> | null;
-}
 
 export interface IndustryRadarItem {
   id: string;
@@ -153,23 +153,6 @@ export interface GetSignalsParams {
   include_interrupts?: boolean;
   limit?: number;
   cursor?: string | null;
-}
-
-export interface AnalystActionRequest {
-  action: AnalystAction;
-  actor: string;
-  reason?: string | null;
-  edit?: Record<string, unknown> | null;
-  relevance_adjustment?: number | null;
-}
-
-export interface AnalystActionResponse {
-  id: string;
-  target_type: string;
-  target_id: string;
-  action: AnalystAction;
-  actor: string;
-  at: string;
 }
 
 export interface BattlecardRow {

@@ -52,9 +52,8 @@ ChangeKind       = Literal["new", "substantive", "cosmetic", "removed"]   # DESI
 CollectionMode   = Literal["feed", "snapshot", "api"]         # DESIGN §3 source.mode (api added §9)
 SourceKind       = Literal["atom", "rss", "html_page", "api", "sitemap"]  # DESIGN §3 source.kind
 ClaimType        = Literal["capability", "pricing", "positioning", "security"]  # DESIGN §3
-AnalystAction    = Literal["confirm", "reject", "edit", "suppress"]       # DESIGN §3 analyst_action
 Handling         = Literal["caution"]                         # PRD §6 security_trust in sales view
-Provenance       = Literal["live", "archive"]                 # DESIGN §3 raw_capture.provenance
+Provenance       = Literal["live", "web_search"]              # raw_capture.provenance
 ```
 
 ### Shared shapes
@@ -84,12 +83,6 @@ class Change(TypedDict):               # structural / claim diff, rendered as wa
     was: str
     now: str
 
-class TraceStep(TypedDict):            # one entry per Interpret node (ARCH §3 `trace`)
-    n: int
-    node: str                          # sanitize | detect | extract | verify | contextualize
-    status: Literal["ok", "fail", "skipped"]
-    detail: str
-
 class Signal(TypedDict):
     id: str
     entity: EntityRef                  # who the signal is filed under
@@ -118,8 +111,8 @@ class Signal(TypedDict):
 ## 1. Today (mockup screen ①, `#panel-today`)
 
 Shows: the persistent **status strip**, a **"since you last looked"** banner, the ONE cross-assertion
-**interrupt card** (with a "how was this produced" trace and score arithmetic), a **run funnel**, a
-mixed **card grid**, and a teaching **empty state**.
+**interrupt card** (with score arithmetic), a **run funnel**, a mixed **card grid**, and a teaching
+**empty state**.
 
 ### 1.1 `GET /runs/latest` — run status strip + funnel
 - **Purpose:** power the persistent status strip (`Last run · sources · collected · clustered ·
@@ -183,40 +176,11 @@ class SinceLastVisit(TypedDict):
 - **Response:** `{ "items": list[Signal], "total": int, "cursor": str | null }`
 - **Consumed by:** Today grid; Sales grid (`?persona=sales`); Product grid (`?persona=product`).
 
-### 1.5 `GET /signals/{signal_id}` — single signal with production trace
-- **Purpose:** the interrupt card's **"How was this produced"** pipeline panel (ARCH §3 `trace`) and
-  the **"show the arithmetic"** score breakdown (R4.2). Serves R3.1–R3.4.
-- **Path:** `signal_id`.
-- **Query:** `persona` (Persona | null) — selects which so_what/score to return.
-- **Response:** a full `Signal` plus:
-
-```python
-class SignalDetail(Signal):
-    trace: list[TraceStep]             # sanitize → detect → extract → verify → contextualize
-    all_persona_scores: dict[str, ScoreBreakdown]   # sales/product/exec breakdowns
-    bullet_classification: dict | None # product releases: {"parsed":40,"kept":3,"no_signal":37,
-                                        #   "no_signal_detail":[("bug fix",22),("dep bump",11),
-                                        #                        ("docs",4)]}
-```
-- **Consumed by:** Today interrupt card details; Product "Bullet classification" reveal.
-
-### 1.6 `POST /signals/{signal_id}/actions` — analyst confirm/reject/edit/suppress
-- **Purpose:** the four action buttons on every card (`✓ Confirm · ✗ Reject · ✎ Edit · 🔇 Mute`).
-  Writes an `analyst_action` row (DESIGN §3). Serves R7.1; also the ±1 bounded adjustment R4.4.
-- **Body:**
-
-```python
-class AnalystActionRequest(TypedDict):
-    action: AnalystAction              # confirm | reject | edit | suppress
-    actor: str
-    reason: str | None                 # required for reject/suppress; free-text
-    edit: dict | None                  # field-level overrides when action == "edit"
-    relevance_adjustment: int | None   # R4.4: bounded [-1, +1], logged with reason
-```
-- **Response:** `{ "id": str, "target_type": "signal", "target_id": str, "action": AnalystAction,
-  "actor": str, "at": str }`
-- **Consumed by:** card action rows (all card screens). "🔇 Mute source" maps to
-  `PATCH /sources/{id}` (§7.4) rather than an analyst_action.
+> **Removed in the research-engine architecture:** the per-signal detail endpoint
+> `GET /signals/{signal_id}` (production trace + `SignalDetail`) and the analyst
+> action endpoint `POST /signals/{signal_id}/actions` were part of the v1 Interpret /
+> quarantine flow (per-capture trace and human-in-the-loop review). They no longer
+> exist. See [archive/v1-interpret-approach/](./archive/v1-interpret-approach/).
 
 ---
 
@@ -366,29 +330,29 @@ class Claim(TypedDict):
 ```
 - **Consumed by:** Competitors→Us cards.
 
-### 5.2 `GET /claims/history/{source_id}` — archived version timeline
-- **Purpose:** the timeline widget *"Sonatype's JFrog comparison page, 2021 → 2026 · 19 archived
-  content versions"* backfilled from the web archive (R1.5). Serves R5.3 (history) and the backfill
-  provenance (DESIGN §4).
+### 5.2 `GET /claims/history/{source_id}` — tracked-page version timeline
+- **Purpose:** the timeline widget showing how a tracked comparison page changed over
+  time. Versions are built from live snapshot collection (`snapshot.py`): each
+  material change to the page records a `ClaimVersion`. Serves R5.3 (history).
 - **Path:** `source_id` (the tracked comparison page source).
 - **Response:**
 
 ```python
 class ArchiveVersion(TypedDict):
-    captured_at: str                   # archive timestamp (fetched_at, provenance="archive")
-    label: str                         # "First archived version — feature checklist only"
+    captured_at: str                   # capture timestamp (fetched_at, provenance="live")
+    label: str
     is_milestone: bool
-    size_bytes: int | None             # 20KB → 38KB growth
-    provenance: Provenance             # "archive"
+    size_bytes: int | None
+    provenance: Provenance             # "live"
 
 class ArchiveTimeline(TypedDict):
     source_id: str
     source_url: str
-    method: str                        # "Wayback CDX (collapse=digest)"
-    total_versions: int                # 19
-    sampled: bool                      # true — "sampled, not continuous"
-    span_start: str                    # Feb 2021
-    span_end: str                      # May 2026
+    method: str                        # "live snapshot diff"
+    total_versions: int
+    sampled: bool
+    span_start: str
+    span_end: str
     versions: list[ArchiveVersion]
 ```
 - **Consumed by:** Competitors→Us timeline.
@@ -606,8 +570,6 @@ class EmailPreview(TypedDict):
 | 2 | POST | `/runs` | status strip "Run now" | R6.2 |
 | 3 | GET | `/activity/since-last-visit` | Today "since you last looked" | R7.5 |
 | 4 | GET | `/signals` | Today / Sales / Product grids | R4.1, R4.5 |
-| 5 | GET | `/signals/{id}` | Today interrupt trace · Product bullet reveal | R3.1–R3.4, R4.2 |
-| 6 | POST | `/signals/{id}/actions` | card action buttons | R7.1, R4.4 |
 | 7 | GET | `/digests/{persona}` | Sales / Product headers · Email | R6.3 |
 | 8 | GET | `/digests/exec/weekly` | Executive roll-up · Email | R6.4 |
 | 9 | GET | `/comparison` | Comparison table | R5.1, R5.2, R5.4 |
@@ -703,13 +665,14 @@ needed, (c) v1 or roadmap.
 ### G8 — Archive timeline richness: per-year version counts, size growth, milestone labels
 - **(a) UI shows:** "2022 · 4 versions", "2024 · 6 versions", byte growth "20KB → 38KB", and curated
   milestone captions like *"Pricing 'hidden costs' language added"* (screen ⑥ timeline).
-- **(b) Needed:** backfill (R1.5, DESIGN §4) stores each archived `raw_capture` with `fetched_at` and
-  `content_hash`; **total count (19) and timestamps are derivable**, and **byte size is derivable if
-  `blob` length is stored**. But *milestone semantics* ("this is the version where 'hidden costs' was
-  added") require diffing consecutive archived versions and labelling the meaningful ones — that is
-  claim_version diffing over the backfill, which the design does run, but the **human-readable
-  milestone caption** is not a stored field.
-- **(c) v1 partial:** counts/timestamps/sizes derivable; **milestone captions are editorial and not
+- **(b) Needed:** live snapshot collection (`snapshot.py`) stores each `raw_capture` with `fetched_at`
+  and `content_hash` as a tracked page changes over time; **counts and timestamps are derivable**, and
+  **byte size is derivable if `blob` length is stored**. But *milestone semantics* ("this is the
+  version where 'hidden costs' was added") require diffing consecutive versions and labelling the
+  meaningful ones — the `ClaimVersion` diff runs, but the **human-readable milestone caption** is not a
+  stored field. (Note: without the v1 archive backfill, depth accrues going forward from first
+  collection rather than reaching back years — see [archive](./archive/v1-interpret-approach/).)
+- **(c) partial:** counts/timestamps/sizes derivable; **milestone captions are editorial and not
   stored** — flag.
 
 ### G9 — "Since you last looked: 12 new signals and 2 claim changes" (unread state)

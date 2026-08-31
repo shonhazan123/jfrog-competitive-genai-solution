@@ -8,8 +8,6 @@ touching code.
 
 | Call | Where it runs | Purpose |
 |---|---|---|
-| `extract` | reserved — no live consumer | Role retained for legacy interpret path removal; no code binds it yet. |
-| `contextualize` | reserved — no live consumer | Role retained for legacy interpret path removal; no code binds it yet. |
 | `gate` | Industry / Signals / Comparison research graphs | Per-box relevance or usability gate; cheap structured verdict (`gpt-5-mini`, low reasoning). |
 | `synthesize` | reserved for richer card synthesis | Optional heavier synthesis pass; not wired in initial agent landing. |
 | `ask` | Ask endpoint — `app/services/ask_service.py` | Answers analyst questions strictly from retrieved ledger evidence and refuses when unsupported. Read-only. |
@@ -47,7 +45,7 @@ in `app/config/schema.py`, which merges `defaults` into each call) →
 ## Runtime model override
 
 A model name can be overridden without editing config via the `ROLES_<CALL>`
-environment variable, e.g. `ROLES_EXTRACT=gpt-5` or `ROLES_ASK=gpt-5-mini`.
+environment variable, e.g. `ROLES_GATE=gpt-5` or `ROLES_ASK=gpt-5-mini`.
 Only the model name is overridable this way; all other knobs come from config.
 
 `get_model` is cached per call, and `load_config` is cached per process, so

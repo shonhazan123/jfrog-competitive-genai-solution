@@ -21,6 +21,11 @@ vi.mock("../state/runStore", () => ({
     startAll: vi.fn(),
     openCard: vi.fn(),
     minimize: vi.fn(),
+    notifyEmail: "",
+    setNotifyEmail: vi.fn(),
+    digestSending: false,
+    digestResult: null,
+    sendDigest: vi.fn(),
   }),
   RunProvider: ({ children }: { children: ReactNode }) => children,
 }));

@@ -96,7 +96,7 @@
 
 .comparison-grid {
   width: 100%;
-  min-width: 700px;
+  min-width: 960px;
 }
 
 .comparison-grid__header-row,
@@ -104,8 +104,8 @@
   display: grid;
   gap: 1px;
   grid-template-columns:
-    minmax(160px, 220px)
-    repeat(var(--dimension-count), minmax(0, 1fr));
+    minmax(200px, 260px)
+    repeat(var(--dimension-count), minmax(140px, 1fr));
 }
 
 .comparison-grid__header-row {

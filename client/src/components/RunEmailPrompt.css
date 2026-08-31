@@ -1,0 +1,70 @@
+/* Pre-run email prompt — theme-aware, component-scoped tokens. */
+.run-prompt__backdrop{
+  position:fixed; inset:0; z-index:1100;
+  display:grid; place-items:center; padding:20px;
+  background:rgba(15,20,32,.5); backdrop-filter:blur(2px);
+  animation:rp-fade .2s ease;
+}
+@keyframes rp-fade{from{opacity:0}to{opacity:1}}
+
+.run-prompt{
+  --rp-card:#ffffff; --rp-ink:#131922; --rp-soft:#5a6675; --rp-line:#e6eaf0;
+  --rp-accent:#3a72d8; --rp-track:#eef1f5;
+  position:relative; width:min(440px, 100%);
+  background:var(--rp-card); color:var(--rp-ink);
+  border:1px solid var(--rp-line); border-radius:18px;
+  box-shadow:0 24px 60px rgba(20,30,50,.28);
+  padding:26px 24px 22px;
+  animation:rp-in .26s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes rp-in{from{transform:translateY(12px); opacity:0}to{transform:translateY(0); opacity:1}}
+@media (prefers-reduced-motion: reduce){ .run-prompt, .run-prompt__backdrop{animation:none} }
+
+@media (prefers-color-scheme: dark){
+  .run-prompt{
+    --rp-card:#161d26; --rp-ink:#e8edf4; --rp-soft:#9aa6b5; --rp-line:#242c37;
+    --rp-accent:#5b91ff; --rp-track:#222a34;
+  }
+}
+:root[data-theme="dark"] .run-prompt, :root.dark .run-prompt, .dark .run-prompt{
+  --rp-card:#161d26; --rp-ink:#e8edf4; --rp-soft:#9aa6b5; --rp-line:#242c37;
+  --rp-accent:#5b91ff; --rp-track:#222a34;
+}
+
+.run-prompt__close{
+  position:absolute; top:14px; right:14px; width:30px; height:30px;
+  border:none; background:transparent; color:var(--rp-soft);
+  font-size:22px; line-height:1; cursor:pointer; border-radius:8px;
+}
+.run-prompt__close:hover:not(:disabled){background:var(--rp-track)}
+.run-prompt__close:disabled{opacity:.4; cursor:default}
+
+.run-prompt__title{margin:0 0 6px; font-size:19px; font-weight:700; letter-spacing:-.01em}
+.run-prompt__lede{margin:0 0 18px; font-size:13.5px; line-height:1.5; color:var(--rp-soft)}
+
+.run-prompt__input{
+  width:100%; box-sizing:border-box; padding:11px 13px;
+  border:1px solid var(--rp-line); border-radius:11px;
+  background:var(--rp-card); color:var(--rp-ink); font-size:15px; font-family:inherit;
+}
+.run-prompt__input:focus-visible{outline:2px solid var(--rp-accent); outline-offset:1px; border-color:var(--rp-accent)}
+.run-prompt__input[aria-invalid="true"]{border-color:#d9534f}
+.run-prompt__input:disabled{opacity:.6}
+
+.run-prompt__error{margin:9px 0 0; font-size:12.5px; color:#d9534f; font-weight:500}
+
+.run-prompt__actions{display:flex; gap:10px; margin-top:18px; justify-content:flex-end}
+.run-prompt__skip{
+  padding:10px 16px; border-radius:11px; border:1px solid var(--rp-line);
+  background:transparent; color:var(--rp-soft); font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+}
+.run-prompt__skip:hover:not(:disabled){background:var(--rp-track); color:var(--rp-ink)}
+.run-prompt__confirm{
+  padding:10px 18px; border-radius:11px; border:1px solid var(--rp-accent);
+  background:var(--rp-accent); color:#fff; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+}
+.run-prompt__confirm:hover:not(:disabled){filter:brightness(1.06)}
+.run-prompt__confirm:disabled{opacity:.5; cursor:default}
+.run-prompt__skip:disabled{opacity:.5; cursor:default}

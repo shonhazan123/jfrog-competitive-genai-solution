@@ -1,10 +1,23 @@
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.controllers import digests
 from app.db.session import get_session
 
 router = APIRouter(prefix="/digests", tags=["digests"])
+
+
+class SendDemoRequest(BaseModel):
+    to_email: str
+
+
+@router.post("/send-demo")
+def send_demo(
+    body: SendDemoRequest,
+    session: Session = Depends(get_session),
+) -> dict:
+    return digests.send_demo_digest(session, body.to_email)
 
 
 @router.get("/exec/weekly")

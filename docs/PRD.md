@@ -178,7 +178,7 @@ entire output format for that persona.
 | R1.2 | Honour `robots.txt` per domain; record and display the compliance decision per source | ✅ |
 | R1.3 | Identify as a named agent with contact details; enforce per-domain rate limiting | ✅ |
 | R1.4 | Use conditional GET (ETag / If-Modified-Since); treat `304` as definitive no-change | ✅ |
-| R1.5 | Backfill historical versions of tracked pages from a public web archive at seed time | ✅ |
+| R1.5 | ~~Backfill historical versions of tracked pages from a public web archive at seed time~~ — **descoped** (v1 approach; see [archive](./archive/v1-interpret-approach/)) | ⛔ |
 | R1.6 | Store raw responses immutably; never overwrite a capture | ✅ |
 | R1.7 | Flag sources requiring JavaScript rendering as blocked rather than failing silently | ✅ |
 | R1.8 | Render JavaScript-dependent pages | ⏭ roadmap |

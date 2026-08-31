@@ -5,9 +5,6 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://ci:ci@db:5432/ci"
     config_dir: str = "/app/config"
     blob_dir: str = "/app/data/blobs"
-    backfill_source: str = "live"
-    backfill_on_start: bool = False
-    fixtures_dir: str = "/app/fixtures/wayback"
     user_agent: str = "jfrog-ci-bot/0.1 (+contact: shonhazan19955@gmail.com)"
     log_level: str = "INFO"
 

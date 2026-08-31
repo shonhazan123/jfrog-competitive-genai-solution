@@ -4,12 +4,11 @@ from types import SimpleNamespace
 
 from app.models.capture import RawCapture
 from app.models.ledger import ClaimVersion
-from app.services.backfill import backfill_source, collect_snapshot_source
+from app.services.snapshot import collect_snapshot_source
 from app.services.collection.apis.greenhouse import GreenhouseAdapter
 from app.services.collection.apis.hackernews import HackerNewsAdapter
 from app.services.collection.apis.lever import LeverAdapter
 from app.services.collection.fetcher import FetchResult
-from app.services.collection.wayback import Snapshot
 
 V1 = b"<html><body><table><tr><th>Capability</th><th>JFrog</th></tr>" \
      b"<tr><td>Malware detection</td><td>Limited</td></tr></table></body></html>"
@@ -34,32 +33,32 @@ def _static(body: bytes):
 
 # --- live snapshot collection -------------------------------------------------------------
 
-def test_live_snapshot_extends_the_backfilled_claim_history(session, seeded_source, monkeypatch):
-    """A live change to a tracked page runs the identical pipeline as backfill and records a
-    ClaimVersion against the same claim, with provenance 'live'."""
-    snaps = [Snapshot(datetime(2021, 2, 27, tzinfo=UTC), "d1", "https://x.test/c")]
-    monkeypatch.setattr("app.services.backfill.list_snapshots", lambda *a, **k: snaps)
-    backfill_source(session, seeded_source, ScriptedFetcher({snaps[0].raw_url: V1}))
+def test_live_snapshot_records_a_claim_version_on_change(session, seeded_source):
+    """A change to a tracked page between two live collections records a ClaimVersion
+    against the same claim, with provenance 'live'."""
+    # First collection establishes the baseline version.
+    baseline = collect_snapshot_source(session, seeded_source, ScriptedFetcher({seeded_source.url: V1}))
+    assert baseline == 1
 
+    # A later collection sees the changed page and records the version delta.
     created = collect_snapshot_source(session, seeded_source, ScriptedFetcher({seeded_source.url: V2}))
 
     assert created == 1
-    assert session.query(RawCapture).filter_by(provenance="live").count() == 1
+    assert session.query(RawCapture).filter_by(provenance="live").count() == 2
     version = session.query(ClaimVersion).one()
     assert version.old_text == "Limited"
     assert version.new_text == "Very limited, not proactive"
 
 
-def test_live_snapshot_skips_when_page_is_unchanged(session, seeded_source, monkeypatch):
-    snaps = [Snapshot(datetime(2021, 2, 27, tzinfo=UTC), "d1", "https://x.test/c")]
-    monkeypatch.setattr("app.services.backfill.list_snapshots", lambda *a, **k: snaps)
-    backfill_source(session, seeded_source, ScriptedFetcher({snaps[0].raw_url: V1}))
+def test_live_snapshot_skips_when_page_is_unchanged(session, seeded_source):
+    # First collection establishes the baseline.
+    collect_snapshot_source(session, seeded_source, ScriptedFetcher({seeded_source.url: V1}))
 
     # Same content as the last stored version -> no new capture, no version.
     created = collect_snapshot_source(session, seeded_source, ScriptedFetcher({seeded_source.url: V1}))
 
     assert created == 0
-    assert session.query(RawCapture).filter_by(provenance="live").count() == 0
+    assert session.query(RawCapture).filter_by(provenance="live").count() == 1
 
 
 # --- adapters -----------------------------------------------------------------------------

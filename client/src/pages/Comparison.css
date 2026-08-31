@@ -2,7 +2,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
-  width: 70%;
+  width: 100%;
+}
+
+/* Six-column matrix needs more than the shared --content-max (900px).
+   Beat .app-shell__main > * so the grid can use the main pane. */
+.app-shell__main > .comparison-page {
+  max-width: min(100%, 1480px);
 }
 
 /* Centered page header — bold, readable title stating what the page delivers */
@@ -23,10 +29,3 @@
   color: var(--interrupt);
 }
 
-/* Below large screens the 70% target leaves too little room for the
-   dimension columns, so let the page fill the main area instead. */
-@media (max-width: 1280px) {
-  .comparison-page {
-    width: 100%;
-  }
-}

@@ -43,22 +43,4 @@ class SignalEvidence(Base, TimestampMixin):
     capture_id: Mapped[int] = mapped_column(ForeignKey("raw_capture.id"))
     quote: Mapped[str] = mapped_column(Text)
     quote_offset: Mapped[int] = mapped_column(Integer)
-    match_method: Mapped[str] = mapped_column(String(16))     # exact | fuzzy
-
-class AnalystQueue(Base, TimestampMixin):
-    __tablename__ = "analyst_queue"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    thread_id: Mapped[str] = mapped_column(String(128), unique=True)
-    capture_id: Mapped[int] = mapped_column(ForeignKey("raw_capture.id"))
-    reason: Mapped[str] = mapped_column(String(64))
-    payload: Mapped[dict] = mapped_column(JSON)
-    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
-class AnalystAction(Base, TimestampMixin):
-    __tablename__ = "analyst_action"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    target_type: Mapped[str] = mapped_column(String(16))       # signal | claim
-    target_id: Mapped[int] = mapped_column(Integer)
-    actor: Mapped[str] = mapped_column(String(128))
-    action: Mapped[str] = mapped_column(String(16))            # confirm|reject|edit|suppress
-    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    match_method: Mapped[str] = mapped_column(String(16))     # synthesis | exact | fuzzy

@@ -4,10 +4,8 @@
 `backend/docker-entrypoint.sh`) so schema matches models before any run job touches Postgres.
 Both may start migrations concurrently; `backend/alembic/env.py` serializes them with a Postgres
 session advisory lock (`MIGRATION_LOCK_KEY`) so only one container applies revisions at a time.
-The worker seeds sources but skips Wayback backfill unless `BACKFILL_ON_START=true` (verdict-first:
-change-detection is benched). When backfill is enabled with `BACKFILL_SOURCE=fixtures`, a snapshot
-source with no committed Wayback fixture is skipped with a warning — it does not fail the worker or
-`POST /runs`.
+The worker seeds sources on boot and starts the scheduler; findings are gathered on
+demand by **Run now** and on the scheduler's cadence.
 
 Manual and scheduled runs share the same worker jobs (`worker.jobs`). The in-memory
 run store holds **multiple concurrent runs** (each with a unique

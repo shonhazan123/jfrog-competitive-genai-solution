@@ -183,6 +183,69 @@ export function RunStatusCard() {
         <span className="run-card__switch" aria-hidden="true" />
         <span>{showTech ? "Hide what the system is doing" : "Show what the system is doing"}</span>
       </label>
+
+      <DigestEmail />
     </section>
+  );
+}
+
+/** Email field + send state for the demo digest (top 3 signals + latest
+ *  security news). Auto-sends when the run finishes; offers a manual re-send. */
+function DigestEmail() {
+  const store = useRunStore();
+  const result = store.digestResult;
+
+  const statusLine = (() => {
+    if (store.digestSending) return { tone: "pending", text: "Sending the digest…" };
+    if (!result) {
+      if (store.notifyEmail.trim() && !store.allResolved) {
+        return { tone: "pending", text: `We'll email it to ${store.notifyEmail.trim()} when the run finishes.` };
+      }
+      return null;
+    }
+    if (result.status === "sent") {
+      return { tone: "ok", text: `📧 Digest sent to ${result.recipient}.` };
+    }
+    return {
+      tone: "error",
+      text: result.detail ?? "Couldn't send the digest.",
+    };
+  })();
+
+  return (
+    <div className="run-card__digest">
+      <label className="run-card__digest-label" htmlFor="digest-email">
+        Email me this digest
+      </label>
+      <div className="run-card__digest-row">
+        <input
+          id="digest-email"
+          type="email"
+          className="run-card__digest-input"
+          placeholder="you@example.com"
+          value={store.notifyEmail}
+          onChange={(e) => store.setNotifyEmail(e.target.value)}
+          disabled={store.digestSending}
+        />
+        {store.allResolved ? (
+          <button
+            type="button"
+            className="run-card__digest-btn"
+            onClick={() => void store.sendDigest()}
+            disabled={store.digestSending || !store.notifyEmail.trim()}
+          >
+            {result?.status === "sent" ? "Re-send" : "Send now"}
+          </button>
+        ) : null}
+      </div>
+      {statusLine ? (
+        <p
+          className={`run-card__digest-status run-card__digest-status--${statusLine.tone}`}
+          role={statusLine.tone === "error" ? "alert" : undefined}
+        >
+          {statusLine.text}
+        </p>
+      ) : null}
+    </div>
   );
 }

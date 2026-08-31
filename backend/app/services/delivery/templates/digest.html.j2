@@ -54,6 +54,27 @@
       color: #666666;
       font-style: italic;
     }
+    .section {
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 2px solid #0b3d91;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0b3d91;
+      margin: 0 0 4px;
+    }
+    .section-lede {
+      font-size: 13px;
+      color: #666666;
+      margin: 0 0 8px;
+    }
+    .news-meta {
+      font-size: 13px;
+      color: #777777;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -65,14 +86,36 @@
       {% for item in items %}
         <div class="item">
           <p class="headline">{{ item.headline }}</p>
-          <p class="so-what">{{ item.so_what }}</p>
+          {% if item.so_what %}
+            <p class="so-what">{{ item.so_what }}</p>
+          {% endif %}
           <p class="link">
-            <a href="{{ app_base_url }}/signals/{{ item.signal_id }}">View signal</a>
+            <a href="{{ app_base_url }}/signals">View in Signals →</a>
           </p>
         </div>
       {% endfor %}
     {% else %}
       <p class="empty">No material competitive movement today.</p>
+    {% endif %}
+
+    {% if security_news %}
+      <div class="section">
+        <p class="section-title">🔒 Latest security news from the industry</p>
+        <p class="section-lede">Newest security findings from the industry research sweep.</p>
+        {% for news in security_news %}
+          <div class="item">
+            <p class="headline">{{ news.headline }}</p>
+            {% if news.entity or news.occurred_on %}
+              <p class="news-meta">
+                {{ news.entity }}{% if news.entity and news.occurred_on %} · {% endif %}{{ news.occurred_on }}
+              </p>
+            {% endif %}
+            <p class="link">
+              <a href="{{ app_base_url }}/industry">View in Industry →</a>
+            </p>
+          </div>
+        {% endfor %}
+      </div>
     {% endif %}
   </div>
 </body>

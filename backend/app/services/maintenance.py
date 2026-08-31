@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.models.delivery import Chunk
 from app.models.ledger import Claim, ClaimVersion, Evidence
-from app.models.signal import AnalystAction, AnalystQueue, Signal, SignalEvidence
+from app.models.signal import Signal, SignalEvidence
 
 
 def reset_findings(session: Session) -> dict[str, int]:
-    """Delete every row produced by the interpret/agent pipeline, keeping the
+    """Delete every row produced by the research-engine pipeline, keeping the
     registry (entities, sources) and raw captures. Children before parents so
     foreign keys never block the delete."""
     counts: dict[str, int] = {}
@@ -19,8 +19,6 @@ def reset_findings(session: Session) -> dict[str, int]:
         ClaimVersion,     # claim children
         Signal,
         Claim,
-        AnalystQueue,
-        AnalystAction,
     ):
         counts[model.__tablename__] = session.query(model).delete()
     session.flush()

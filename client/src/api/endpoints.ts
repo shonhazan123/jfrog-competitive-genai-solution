@@ -56,19 +56,6 @@ export function signalsPath(params?: GetSignalsParams): string {
   })}`;
 }
 
-export function signalPath(
-  signalId: string,
-  params?: { persona?: Persona | null },
-): string {
-  return `/signals/${encodeURIComponent(signalId)}${buildQuery({
-    persona: params?.persona,
-  })}`;
-}
-
-export function signalActionsPath(signalId: string): string {
-  return `/signals/${encodeURIComponent(signalId)}/actions`;
-}
-
 export function comparisonPath(params?: {
   competitor?: string;
   changed_within_days?: number | null;
@@ -151,6 +138,10 @@ export function emailPreviewPath(params?: {
 
 export function execWeeklyPath(params?: { week_of?: string | null }): string {
   return `/digests/exec/weekly${buildQuery({ week_of: params?.week_of })}`;
+}
+
+export function sendDemoDigestPath(): string {
+  return "/digests/send-demo";
 }
 
 export function kitsPath(): string {

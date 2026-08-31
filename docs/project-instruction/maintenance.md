@@ -1,6 +1,6 @@
 # Maintenance — purge stale pipeline data
 
-Operators can wipe interpreted findings while keeping the entity/source registry
+Operators can wipe research findings while keeping the entity/source registry
 and raw captures intact.
 
 ## `reset_findings`
@@ -12,12 +12,11 @@ and raw captures intact.
 python -m app.services.maintenance
 ```
 
-`reset_findings(session)` deletes every row produced by the interpret/agent pipeline:
+`reset_findings(session)` deletes every row produced by the research-engine pipeline:
 
 - Vector chunks (`Chunk`)
 - Signals and signal evidence (`Signal`, `SignalEvidence`)
 - Claims, versions, and evidence (`Claim`, `ClaimVersion`, `Evidence`)
-- Analyst queue rows (`AnalystQueue`, `AnalystAction`)
 
 It does **not** delete:
 

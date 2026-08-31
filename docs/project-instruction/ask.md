@@ -24,5 +24,3 @@ non-empty subset of retrieved chunk ids, or the turn is a refusal (see chat.md Â
 `app/` never imports `langgraph` / `langchain` / `openai` literals (enforced by
 `tests/test_boundaries.py`). `ask_service.py` imports only `agent.log` and
 `app.services.chat_service`; the graph is built inside `chat_service` via `agent/`.
-Interpret still goes through `agent_service.py` (worker jobs); that is a different
-graph and a different caller.

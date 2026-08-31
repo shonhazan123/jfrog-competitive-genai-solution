@@ -24,7 +24,7 @@ crashes the api or worker. See the root [README.md](../../README.md) and
 [.env.example](../../.env.example) for setup.
 
 The shipped compose keeps only the mounts needed to run the product
-(`config`, `blobs`, and the worker's `fixtures/wayback`). Test-only mounts
+(`config` and `blobs`). Test-only mounts
 (`/var/run/docker.sock`, `./tests`, `./client`) and testcontainers env are not
 in it, so boot doesn't depend on host paths that differ across machines.
 `.dockerignore` files in `backend/` and `client/` keep host artifacts
@@ -41,10 +41,8 @@ pins `*.sh` / `docker-entrypoint.sh` / `Dockerfile` to `eol=lf`, **and** the bac
 a CRLF checkout makes the container fail to start ("bad interpreter" / no such file),
 which surfaces to the user only as `ERR_CONNECTION_REFUSED` on port 8000 (the API
 looks "not running" even though `docker compose up --build` reported success).
-The worker seeds the registry but **does not** replay Wayback backfill on boot by default
-(`BACKFILL_ON_START=false`; change-detection is benched). Set `BACKFILL_ON_START=true` on the
-worker service to opt into offline archive replay — missing fixtures for a snapshot source are
-logged and skipped rather than crashing the worker.
+On boot the worker seeds the entity/source registry and starts the scheduler; data
+is gathered on demand by **Run now** and on the scheduler's cadence.
 
 - `docker compose down` — stop everything
 - `docker compose down -v` — stop and wipe the database volume (start clean)
@@ -67,7 +65,7 @@ this folder instead.
 
 The system is **verdict-first**: consumer screens show a tier word + one-line
 reason backed by a clickable source, with no numbers and no historical diffing.
-Numeric scoring and change-detection (backfill / `ClaimVersion` / Trajectory /
+Numeric scoring and change-detection (live snapshot `ClaimVersion` / Trajectory /
 `ClaimTimeline`) still exist internally but are off every primary surface.
 
 | File | Covers |
@@ -78,8 +76,8 @@ Numeric scoring and change-detection (backfill / `ClaimVersion` / Trajectory /
 | [runs.md](./runs.md) | `POST /runs` async progress, `GET /runs/{id}`, human stages |
 | [kits.md](./kits.md) | `GET /kits`, KIT rollup, citations, display labels (backend only; grid retired) |
 | [ask.md](./ask.md) | Ask graph routing, hit accumulation, `POST /ask` bridge |
-| [agent.md](./agent.md) | Interpret/Ask graph step logging and failure signals |
+| [agent.md](./agent.md) | Research/Ask graph step logging and failure signals |
 | [llm.md](./llm.md) | Per-call LLM tuning via `config/llm.yaml`, `get_model` wiring, env overrides |
-| [client.md](./client.md) | React client: verdict-first IA, fixture/live switch, tokens, SignalCard rule, live-wiring contract drift |
+| [client.md](./client.md) | React client: verdict-first IA, fixture/live switch, tokens, live-wiring contract drift |
 | [industry.md](./industry.md) | Industry feed + stable themes (`/industry/themes`), JFrog-relevance lines |
 | [maintenance.md](./maintenance.md) | `python -m app.services.maintenance` — purge findings, keep registry + captures |

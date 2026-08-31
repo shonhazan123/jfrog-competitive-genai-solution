@@ -104,3 +104,24 @@ def test_send_records_a_delivery_row_and_never_calls_smtp_in_tests(session, fake
     from app.models.delivery import Delivery
     assert session.query(Delivery).count() == 1
     assert fake_smtp.sent == 1
+
+
+def test_security_news_section_renders_when_present(sample_digests):
+    security_news = [
+        {
+            "signal_id": 42,
+            "entity": "sonatype",
+            "headline": "Critical CVE disclosed in Nexus",
+            "occurred_on": "Aug 29, 2026",
+        }
+    ]
+    html = render_digest(
+        sample_digests["sales"], cfg=CFG, security_news=security_news
+    ).html
+    assert "Critical CVE disclosed in Nexus" in html
+    assert "security news" in html.lower()
+
+
+def test_security_section_is_absent_when_no_news(sample_digests):
+    html = render_digest(sample_digests["sales"], cfg=CFG).html
+    assert "security news" not in html.lower()

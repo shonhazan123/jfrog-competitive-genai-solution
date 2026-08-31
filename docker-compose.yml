@@ -53,11 +53,9 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql+psycopg://ci:ci@db:5432/ci
-      BACKFILL_SOURCE: fixtures
     volumes:
       - ./config:/app/config:ro
       - blobs:/app/data/blobs
-      - ./fixtures/wayback:/app/fixtures/wayback
     depends_on:
       db: { condition: service_healthy }
   client:

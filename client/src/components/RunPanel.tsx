@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { RunStatus } from "../api/types";
 import { useRunStore } from "../state/runStore";
 import "./RunPanel.css";
@@ -18,17 +17,11 @@ function formatTimestamp(iso: string): string {
 
 export function RunPanel({ data }: RunPanelProps) {
   const store = useRunStore();
-  const [error, setError] = useState<string | null>(null);
   const running = store.active && !store.allResolved;
 
-  const handleRunNow = async () => {
+  const handleRunNow = () => {
     if (running) return;
-    setError(null);
-    try {
-      await store.startAll();
-    } catch {
-      setError("Couldn't start the run — is the API reachable?");
-    }
+    store.requestStart(); // opens the email prompt; confirm/skip actually starts
   };
 
   const lastRunAt = data ? (data.finished_at ?? data.started_at) : null;
@@ -44,17 +37,12 @@ export function RunPanel({ data }: RunPanelProps) {
       <button
         type="button"
         className="run-panel__btn"
-        onClick={() => void handleRunNow()}
+        onClick={handleRunNow}
         disabled={running}
         aria-busy={running}
       >
         {running ? "Running…" : "▶ Run now"}
       </button>
-      {error ? (
-        <span className="run-panel__error" data-testid="run-error" role="alert">
-          {error}
-        </span>
-      ) : null}
       {data ? (
         <span className="run-panel__meta">
           {lastRunAt ? <>Last run {formatTimestamp(lastRunAt)} · </> : null}

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { RunStatus } from "../api/types";
 import { useRunStore } from "../state/runStore";
 
@@ -18,17 +17,11 @@ function formatTimestamp(iso: string): string {
 
 export function StatusStrip({ data }: StatusStripProps) {
   const store = useRunStore();
-  const [error, setError] = useState<string | null>(null);
   const running = store.active && !store.allResolved;
 
-  const handleRunNow = async () => {
+  const handleRunNow = () => {
     if (running) return;
-    setError(null);
-    try {
-      await store.startAll();
-    } catch {
-      setError("Couldn't start the run — is the API reachable?");
-    }
+    store.requestStart(); // opens the email prompt; confirm/skip actually starts
   };
 
   const lastRunAt = data ? (data.finished_at ?? data.started_at) : null;
@@ -55,18 +48,9 @@ export function StatusStrip({ data }: StatusStripProps) {
           <span>Next run: {formatTimestamp(data.next_run_at)}</span>
         </>
       ) : null}
-      {error ? (
-        <span
-          data-testid="run-error"
-          role="alert"
-          style={{ color: "var(--interrupt)" }}
-        >
-          {error}
-        </span>
-      ) : null}
       <button
         type="button"
-        onClick={() => void handleRunNow()}
+        onClick={handleRunNow}
         disabled={running}
         aria-busy={running}
         style={{
