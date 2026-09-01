@@ -77,6 +77,7 @@ Numeric scoring and change-detection (live snapshot `ClaimVersion` / Trajectory 
 | [kits.md](./kits.md) | `GET /kits`, KIT rollup, citations, display labels (backend only; grid retired) |
 | [ask.md](./ask.md) | Ask graph routing, hit accumulation, `POST /ask` bridge |
 | [agent.md](./agent.md) | Research/Ask graph step logging and failure signals |
+| [research-agents/](./research-agents/) | Three-agent pipeline: orchestration, per-agent flows, DB persist |
 | [llm.md](./llm.md) | Per-call LLM tuning via `config/llm.yaml`, `get_model` wiring, env overrides |
 | [client.md](./client.md) | React client: verdict-first IA, fixture/live switch, tokens, live-wiring contract drift |
 | [industry.md](./industry.md) | Industry feed + stable themes (`/industry/themes`), JFrog-relevance lines |

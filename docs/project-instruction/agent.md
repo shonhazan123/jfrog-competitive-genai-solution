@@ -1,5 +1,18 @@
 # Agent graphs — ask and research
 
+## Three surface research agents (Industry / Signals / Comparison)
+
+**Run now** fans out all three concurrently (`POST /runs/all` → `ThreadPoolExecutor`
+max_workers=3). Each agent resolves its targets in a second pool inside `run_research`
+(`RESEARCH_MAX_WORKERS`, default 4). Full step-by-step flows with diagrams:
+
+| Doc | Covers |
+|---|---|
+| [research-agents/00-three-agent-orchestration.md](./research-agents/00-three-agent-orchestration.md) | Threading, skeleton, shared provenance — **not** legacy `interpret` or `run_collection` |
+| [research-agents/industry-agent-pipeline.md](./research-agents/industry-agent-pipeline.md) | 4 buckets, web search, `Signal` persist |
+| [research-agents/signals-agent-pipeline.md](./research-agents/signals-agent-pipeline.md) | Structured ATS/OSV + search fallback, competitor `Signal` persist |
+| [research-agents/comparison-agent-pipeline.md](./research-agents/comparison-agent-pipeline.md) | 25 cells, stance gate, `Claim` upsert |
+
 ## Research skeleton (Foundation)
 
 Generic per-target loop shared by Industry, Signals, and Comparison agents:
